@@ -125,6 +125,16 @@ body {
   display: none;
 }
 
+/* ===== 모바일 카드 프리뷰 스케일링 ===== */
+@media (max-width: 767px) {
+  .preview-mobile-scale {
+    transform: scale(calc((100vw - 32px) / 700));
+    transform-origin: top center;
+    width: 700px;
+    margin: 0 auto;
+  }
+}
+
 /* 아이콘 색상 반전 (라이트모드: 검정배경→흰아이콘) */
 .icon-invert {
   filter: invert(1);
