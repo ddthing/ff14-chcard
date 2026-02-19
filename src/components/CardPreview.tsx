@@ -82,7 +82,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                     if (!mJob) return null;
                     return (
                         <div className="flex items-center gap-4 bg-neutral-50 dark:bg-[#2d2d2f] rounded-xl p-4">
-                            <img src={mJob.iconUrl} alt={mJob.nameKr} className="w-12 h-12 dark:invert" />
+                            <img src={mJob.iconUrl} alt={mJob.nameKr} className="w-12 h-12 dark-invert" />
                             <div>
                                 <div className="text-xs text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider">주 직업</div>
                                 <div className="text-xl font-bold leading-tight">{mJob.nameKr}</div>
@@ -102,7 +102,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                                 <div className="flex flex-wrap gap-2">
                                     {battleJobs.filter(j => j.id !== mainJob).map(job => (
                                         <div key={job.id} className="flex items-center gap-1.5 bg-neutral-50 dark:bg-[#2d2d2f] rounded-lg px-2.5 py-1.5">
-                                            <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark:invert" />
+                                            <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark-invert" />
                                             <span className="text-xs font-medium text-neutral-700 dark:text-[#d1d1d6]">{job.nameKr}</span>
                                             <span className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold">Lv.{jobLevels[job.id] || '?'}</span>
                                         </div>
@@ -118,7 +118,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                                 <div className="flex flex-wrap gap-2">
                                     {craftingJobs.map(job => (
                                         <div key={job.id} className="flex items-center gap-1.5 bg-purple-50 dark:bg-purple-500/10 rounded-lg px-2.5 py-1.5">
-                                            <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark:invert" />
+                                            <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark-invert" />
                                             <span className="text-xs font-medium text-purple-700 dark:text-purple-300">{job.nameKr}</span>
                                             <span className="text-[10px] text-purple-400 dark:text-purple-400/70 font-semibold">Lv.{jobLevels[job.id] || '?'}</span>
                                         </div>
@@ -134,7 +134,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                                 <div className="flex flex-wrap gap-2">
                                     {gatheringJobs.map(job => (
                                         <div key={job.id} className="flex items-center gap-1.5 bg-amber-50 dark:bg-amber-500/10 rounded-lg px-2.5 py-1.5">
-                                            <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark:invert" />
+                                            <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark-invert" />
                                             <span className="text-xs font-medium text-amber-700 dark:text-amber-300">{job.nameKr}</span>
                                             <span className="text-[10px] text-amber-400 dark:text-amber-400/70 font-semibold">Lv.{jobLevels[job.id] || '?'}</span>
                                         </div>
