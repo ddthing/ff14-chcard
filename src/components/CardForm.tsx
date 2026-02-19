@@ -210,7 +210,7 @@ export function CardForm({ playerInfo, setPlayerInfo }: CardFormProps) {
                                 onClick={() => toggleJob(job.id)}
                                 className={`flex flex-col items-center justify-center p-2 rounded-xl border transition-all ${isSelected ? 'bg-[#f5f5f7] dark:bg-[#2d2d2f] border-[#d2d2d7] dark:border-[#48484a]' : 'border-transparent hover:bg-[#f5f5f7] dark:hover:bg-[#2d2d2f]'} ${isMain ? 'ring-2 ring-[#0071e3]' : ''}`}
                             >
-                                <img src={job.iconUrl} alt={job.nameKr} className={`w-7 h-7 ${isSelected ? 'opacity-100' : 'opacity-25 grayscale'}`} />
+                                <img src={job.iconUrl} alt={job.nameKr} className={`w-7 h-7 dark:invert ${isSelected ? 'opacity-100' : 'opacity-25 grayscale'}`} />
                                 <span className={`text-[10px] mt-1 font-medium ${isSelected ? 'text-[#1d1d1f] dark:text-[#f5f5f7]' : 'text-[#86868b]'}`}>{job.nameKr}</span>
                             </button>
                         );
@@ -249,7 +249,7 @@ export function CardForm({ playerInfo, setPlayerInfo }: CardFormProps) {
                                 if (!job) return null;
                                 return (
                                     <div key={jobId} className="flex items-center gap-2 bg-[#f5f5f7] dark:bg-[#2d2d2f] rounded-lg px-2.5 py-1.5">
-                                        <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5" />
+                                        <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark:invert" />
                                         <span className="text-xs font-medium text-[#6e6e73] dark:text-[#a1a1a6] flex-1 truncate">{job.nameKr}</span>
                                         <input
                                             type="number"
