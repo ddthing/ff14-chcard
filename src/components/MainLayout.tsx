@@ -1,9 +1,61 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useRef, useState, useEffect, useCallback } from 'react';
 import { ThemeToggle } from './ThemeToggle';
 
 interface MainLayoutProps {
     form: ReactNode;
     preview: ReactNode;
+}
+
+function PreviewScaler({ children }: { children: ReactNode }) {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const innerRef = useRef<HTMLDivElement>(null);
+    const [scale, setScale] = useState(1);
+    const [innerHeight, setInnerHeight] = useState<number | undefined>(undefined);
+
+    const CARD_WIDTH = 700;
+    const PADDING = 32; // 16px * 2
+
+    const updateScale = useCallback(() => {
+        if (!containerRef.current) return;
+        const containerWidth = containerRef.current.clientWidth - PADDING;
+        const newScale = Math.min(1, containerWidth / CARD_WIDTH);
+        setScale(newScale);
+    }, []);
+
+    const updateHeight = useCallback(() => {
+        if (!innerRef.current) return;
+        setInnerHeight(innerRef.current.offsetHeight);
+    }, []);
+
+    useEffect(() => {
+        updateScale();
+        updateHeight();
+        const observer = new ResizeObserver(() => {
+            updateScale();
+            updateHeight();
+        });
+        if (containerRef.current) observer.observe(containerRef.current);
+        if (innerRef.current) observer.observe(innerRef.current);
+        return () => observer.disconnect();
+    }, [updateScale, updateHeight]);
+
+    const wrapperHeight = innerHeight && scale < 1 ? innerHeight * scale : undefined;
+
+    return (
+        <div ref={containerRef} className="w-full flex justify-center px-4 py-6 lg:p-8">
+            <div
+                style={{
+                    transform: `scale(${scale})`,
+                    transformOrigin: 'top center',
+                    height: wrapperHeight ? `${wrapperHeight}px` : undefined,
+                }}
+            >
+                <div ref={innerRef}>
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
 }
 
 export function MainLayout({ form, preview }: MainLayoutProps) {
@@ -31,10 +83,12 @@ export function MainLayout({ form, preview }: MainLayoutProps) {
                     </div>
                 </div>
 
-                {/* Right Panel: Preview — sticky */}
-                <div className="flex-1 bg-[#f5f5f7] dark:bg-black flex items-start justify-center p-8 transition-colors duration-300">
-                    <div className="lg:sticky lg:top-16 transition-transform duration-300">
-                        {preview}
+                {/* Right Panel: Preview — responsive scaling */}
+                <div className="flex-1 bg-[#f5f5f7] dark:bg-black flex items-start justify-center overflow-x-hidden transition-colors duration-300">
+                    <div className="lg:sticky lg:top-16 w-full">
+                        <PreviewScaler>
+                            {preview}
+                        </PreviewScaler>
                     </div>
                 </div>
             </main>
