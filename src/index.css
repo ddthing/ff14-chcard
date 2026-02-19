@@ -136,6 +136,6 @@ body {
 }
 
 /* 다크모드에서만 아이콘 색상 반전 (검정 아이콘 → 흰 아이콘) */
-:where(.dark, .dark *) .dark-invert {
-  filter: invert(1);
+.dark .dark-invert {
+  filter: invert(1) !important;
 }
