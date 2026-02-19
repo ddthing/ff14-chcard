@@ -1,0 +1,136 @@
+@import url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff');
+
+@import "tailwindcss";
+
+/* Tailwind v4 dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ===== Web Fonts (CDN) ===== */
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css");
+@import url('https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gowun+Dodum&family=Nanum+Myeongjo:wght@400;700;800&display=swap');
+
+/* Gmarket Sans */
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff') format('woff');
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GmarketSans';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');
+  font-weight: 700;
+  font-display: swap;
+}
+
+/* S-Core Dream */
+@font-face {
+  font-family: 'SBAggroB';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2108@1.1/SBAggroB.woff') format('woff');
+  font-weight: normal;
+  font-display: swap;
+}
+
+/* 쿠키런 */
+@font-face {
+  font-family: 'CookieRun';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Regular.woff') format('woff');
+  font-weight: normal;
+  font-display: swap;
+}
+
+/* 여기어때 잘난체 */
+@font-face {
+  font-family: 'yg-jalnan';
+  src: url('https://fastly.jsdelivr.net/gh/projectnoonnu/noonfonts_four@1.2/JalnanOTF00.woff') format('woff');
+  font-weight: normal;
+  font-display: swap;
+}
+
+/* 양진체 */
+@font-face {
+  font-family: 'Yangjin';
+  src: url('https://fastly.jsdelivr.net/gh/supernovice-lab/font@0.9/yangjin.woff') format('woff');
+  font-weight: normal;
+  font-display: swap;
+}
+
+/* ===== Base ===== */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===== Card Font Classes ===== */
+.font-pretendard {
+  font-family: 'Pretendard', sans-serif !important;
+}
+
+.font-gmarket {
+  font-family: 'GmarketSans', sans-serif !important;
+}
+
+.font-myeongjo {
+  font-family: 'Nanum Myeongjo', serif !important;
+}
+
+.font-dodum {
+  font-family: 'Gowun Dodum', sans-serif !important;
+}
+
+.font-aggro {
+  font-family: 'SBAggroB', sans-serif !important;
+}
+
+.font-cookie {
+  font-family: 'CookieRun', sans-serif !important;
+}
+
+.font-jalnan {
+  font-family: 'yg-jalnan', sans-serif !important;
+}
+
+.font-yangjin {
+  font-family: 'Yangjin', sans-serif !important;
+}
+
+.font-apple {
+  font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif !important;
+}
+
+.font-bh {
+  font-family: 'Black Han Sans', sans-serif !important;
+}
+
+/* ===== Utilities ===== */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* 아이콘 색상 반전 (라이트모드: 검정배경→흰아이콘) */
+.icon-invert {
+  filter: invert(1);
+}
+
+/* 다크모드: 흰배경→검정아이콘이므로 반전 해제 */
+:where(.dark, .dark *) .icon-invert {
+  filter: invert(0);
+}
