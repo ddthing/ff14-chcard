@@ -17,12 +17,13 @@ const defaultPlayerInfo: PlayerInfo = {
   playstyles: [],
   activeTime: '',
   comment: '',
-  font: 'font-gmarket',
+  font: 'font-pretendard',
   mainJob: undefined,
   isNicknameChanged: false,
   isSprout: false,
   isMentor: false,
   jobLevels: {},
+  imagePosition: { x: 0, y: 0, scale: 1 },
 };
 
 function loadPlayerInfo(): PlayerInfo {
@@ -52,6 +53,10 @@ function App() {
       // Silently fail if quota exceeded
     }
   }, [playerInfo]);
+
+  const handleImagePositionChange = useCallback((position: { x: number; y: number; scale: number }) => {
+    setPlayerInfo(prev => ({ ...prev, imagePosition: position }));
+  }, []);
 
   const handleDownload = useCallback(() => {
     if (previewRef.current === null) return;
@@ -93,7 +98,12 @@ function App() {
         </div>
       }
       preview={
-        <CardPreview ref={previewRef} playerInfo={playerInfo} id="card-preview" />
+        <CardPreview
+          ref={previewRef}
+          playerInfo={playerInfo}
+          onImagePositionChange={handleImagePositionChange}
+          id="card-preview"
+        />
       }
     />
   );

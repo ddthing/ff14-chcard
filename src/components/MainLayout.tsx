@@ -1,4 +1,4 @@
-import { type ReactNode } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { ThemeToggle } from './ThemeToggle';
 
 interface MainLayoutProps {
@@ -7,6 +7,36 @@ interface MainLayoutProps {
 }
 
 export function MainLayout({ form, preview }: MainLayoutProps) {
+    const [scale, setScale] = useState(1);
+    const containerRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const calculateScale = () => {
+            if (containerRef.current) {
+                const containerWidth = containerRef.current.offsetWidth;
+                // Padding is 16px (p-4) on each side -> 32px total.
+                // But containerRef is the parent div with p-4.
+                // Available content width is containerWidth - 32.
+                // However, let's use a specialized wrapper ref to get exact content width.
+                // Simplification: We know padding is 32px on mobile (p-4).
+
+                const isMobile = window.innerWidth < 1024; // lg breakpoint matches CSS
+
+                if (isMobile) {
+                    const availableWidth = Math.min(containerWidth - 32, window.innerWidth - 32);
+                    const newScale = Math.min(1, availableWidth / 700);
+                    setScale(newScale);
+                } else {
+                    setScale(1);
+                }
+            }
+        };
+
+        calculateScale();
+        window.addEventListener('resize', calculateScale);
+        return () => window.removeEventListener('resize', calculateScale);
+    }, []);
+
     return (
         <div className="min-h-screen bg-[#f5f5f7] dark:bg-black text-[#1d1d1f] dark:text-[#f5f5f7] flex flex-col transition-colors duration-300">
             {/* Header — Apple navbar style */}
@@ -32,8 +62,14 @@ export function MainLayout({ form, preview }: MainLayoutProps) {
                 </div>
 
                 {/* Right Panel: Preview — responsive scaling via CSS zoom */}
-                <div className="flex-1 bg-[#f5f5f7] dark:bg-black flex items-start justify-center overflow-hidden transition-colors duration-300 p-4 lg:p-8">
-                    <div className="lg:sticky lg:top-16 preview-mobile-scale">
+                <div ref={containerRef} className="flex-1 bg-[#f5f5f7] dark:bg-black flex items-start justify-center overflow-hidden transition-colors duration-300 p-4 lg:p-8">
+                    <div
+                        className="lg:sticky lg:top-16 origin-top"
+                        style={{
+                            transform: `scale(${scale})`,
+                            width: 700 // Explicit layout width for the transform container
+                        }}
+                    >
                         {preview}
                     </div>
                 </div>

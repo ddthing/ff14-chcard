@@ -1,8 +1,8 @@
-import { type ChangeEvent, type Dispatch, type SetStateAction, useRef, useState } from 'react';
+import { type ChangeEvent, type Dispatch, type SetStateAction, useEffect, useRef, useState } from 'react';
 import type { PlayerInfo, Region } from '../types';
 import { DATA_CENTERS, WORLDS } from '../data/servers';
 import { JOBS, PLAYSTYLES } from '../data/jobs';
-import { Upload, Swords, Hammer, Sprout as SproutIcon, Crown, Leaf } from 'lucide-react';
+import { Upload, Swords, Hammer, Sprout as SproutIcon, Crown, Leaf, ChevronDown, Check } from 'lucide-react';
 
 interface CardFormProps {
     playerInfo: PlayerInfo;
@@ -31,6 +31,18 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export function CardForm({ playerInfo, setPlayerInfo }: CardFormProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const mainJobRef = useRef<HTMLDivElement>(null);
+    const [isMainJobOpen, setIsMainJobOpen] = useState(false);
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (mainJobRef.current && !mainJobRef.current.contains(event.target as Node)) {
+                setIsMainJobOpen(false);
+            }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
     const [jobTab, setJobTab] = useState<'Battle' | 'Crafting' | 'Gathering'>('Battle');
     const [isCustomTime, setIsCustomTime] = useState(false);
     const [batchLevel, setBatchLevel] = useState(100);
@@ -146,7 +158,7 @@ export function CardForm({ playerInfo, setPlayerInfo }: CardFormProps) {
                         onClick={() => handleChange('isSprout', !playerInfo.isSprout)}
                         className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm font-medium transition-all ${playerInfo.isSprout ? 'bg-[#34c759]/10 border-[#34c759]/40 text-[#248a3d] dark:text-[#30d158]' : 'border-[#d2d2d7] dark:border-[#424245] text-[#86868b]'}`}
                     >
-                        <SproutIcon size={16} /> 초보
+                        <SproutIcon size={16} /> 새싹
                     </button>
                     <button
                         onClick={() => handleChange('isMentor', !playerInfo.isMentor)}
@@ -177,24 +189,67 @@ export function CardForm({ playerInfo, setPlayerInfo }: CardFormProps) {
                 </div>
 
                 {/* Main Job Selector */}
+                {/* Main Job Selector (Dropdown) */}
                 {playerInfo.jobs.length > 0 && (
-                    <div className="bg-[#f5f5f7] dark:bg-[#2d2d2f] p-3 rounded-xl space-y-2">
+                    <div className="bg-[#f5f5f7] dark:bg-[#2d2d2f] p-3 rounded-xl space-y-2 relative" ref={mainJobRef}>
                         <span className="text-xs font-semibold text-[#86868b]">주 직업 선택</span>
-                        <div className="flex flex-wrap gap-1.5">
-                            {playerInfo.jobs.map(jobId => {
-                                const job = JOBS.find(j => j.id === jobId);
-                                if (!job) return null;
-                                return (
-                                    <button
-                                        key={jobId}
-                                        onClick={() => handleChange('mainJob', jobId)}
-                                        className={`px-2.5 py-1 rounded-lg text-xs font-medium border transition-all flex items-center gap-1.5 ${playerInfo.mainJob === jobId ? 'bg-[#1d1d1f] dark:bg-[#f5f5f7] text-white dark:text-[#1d1d1f] border-transparent' : 'bg-white dark:bg-[#3a3a3c] border-[#d2d2d7] dark:border-[#48484a] text-[#6e6e73] dark:text-[#a1a1a6]'}`}
-                                    >
-                                        <img src={job.iconUrl} alt={job.nameKr} className={`w-4 h-4 ${playerInfo.mainJob === jobId ? 'icon-invert' : ''}`} />
-                                        {job.nameKr}
-                                    </button>
-                                );
-                            })}
+
+                        <div className="relative">
+                            <button
+                                type="button"
+                                onClick={() => setIsMainJobOpen(!isMainJobOpen)}
+                                className={`${inputClass} flex items-center justify-between cursor-pointer`}
+                            >
+                                <div className="flex items-center gap-2">
+                                    {playerInfo.mainJob ? (() => {
+                                        const job = JOBS.find(j => j.id === playerInfo.mainJob);
+                                        if (!job) return <span className="text-[#86868b]">선택해주세요</span>;
+                                        return (
+                                            <>
+                                                <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark-invert" />
+                                                <span className="font-semibold text-[#1d1d1f] dark:text-[#f5f5f7]">{job.nameKr}</span>
+                                            </>
+                                        );
+                                    })() : (
+                                        <span className="text-[#86868b]">주 직업을 선택해주세요</span>
+                                    )}
+                                </div>
+                                <ChevronDown size={16} className={`text-[#86868b] transition-transform ${isMainJobOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {/* Dropdown Menu */}
+                            {isMainJobOpen && (
+                                <div className="absolute top-full left-0 right-0 mt-2 bg-white/90 dark:bg-[#1d1d1f]/90 backdrop-blur-xl border border-[#d2d2d7] dark:border-[#424245] rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto p-1.5 space-y-0.5">
+                                    {playerInfo.jobs.map(jobId => {
+                                        const job = JOBS.find(j => j.id === jobId);
+                                        if (!job) return null;
+                                        const isSelected = playerInfo.mainJob === jobId;
+                                        return (
+                                            <button
+                                                key={jobId}
+                                                type="button"
+                                                onClick={() => {
+                                                    handleChange('mainJob', jobId);
+                                                    setIsMainJobOpen(false);
+                                                }}
+                                                className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${isSelected
+                                                    ? 'bg-[#f5f5f7] dark:bg-[#3a3a3c]'
+                                                    : 'hover:bg-[#f5f5f7] dark:hover:bg-[#2d2d2f]'
+                                                    }`}
+                                            >
+                                                <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark-invert" />
+                                                <span className={`text-sm flex-1 text-left ${isSelected
+                                                    ? 'font-bold text-[#1d1d1f] dark:text-[#f5f5f7]'
+                                                    : 'font-medium text-[#1d1d1f] dark:text-[#f5f5f7]'
+                                                    }`}>
+                                                    {job.nameKr}
+                                                </span>
+                                                {isSelected && <Check size={14} className="text-[#0071e3]" />}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}
@@ -345,16 +400,14 @@ export function CardForm({ playerInfo, setPlayerInfo }: CardFormProps) {
             <Section title="폰트">
                 <div className="grid grid-cols-2 gap-1.5">
                     {[
-                        { id: 'font-gmarket', name: 'Gmarket Sans' },
-                        { id: 'font-pretendard', name: 'Pretendard' },
-                        { id: 'font-myeongjo', name: '나눔명조' },
-                        { id: 'font-dodum', name: '고운돋움' },
-                        { id: 'font-aggro', name: 'S-Core Dream' },
-                        { id: 'font-cookie', name: '쿠키런' },
-                        { id: 'font-jalnan', name: '여기어때 잘난체' },
-                        { id: 'font-yangjin', name: '양진체' },
-                        { id: 'font-apple', name: 'Apple SD Gothic' },
-                        { id: 'font-bh', name: 'Black Han Sans' },
+                        { id: 'font-pretendard', name: '프리텐다드' },
+                        { id: 'font-paperozi', name: '페이퍼로지' },
+                        { id: 'font-a2z', name: '에이투지체' },
+                        { id: 'font-jump', name: 'KBL 점프체' },
+                        { id: 'font-tmoney', name: '티머니 둥근바람' },
+                        { id: 'font-cookie', name: '쿠키런체' },
+                        { id: 'font-police', name: '그리운 경찰공평체' },
+                        { id: 'font-myungjo', name: '부크크 명조' },
                     ].map(font => (
                         <button
                             key={font.id}
