@@ -62,12 +62,16 @@ function App() {
   const handleDownload = useCallback(() => {
     if (previewRef.current === null) return;
 
-    const isDark = document.documentElement.classList.contains('dark');
+
 
     toPng(previewRef.current, {
       cacheBust: true,
       pixelRatio: 2,
-      backgroundColor: isDark ? '#1d1d1f' : '#ffffff',
+      // Remove backgroundColor to preserve transparency (rounded corners) and avoid masking issues
+      // Override shadow to prevent rendering artifacts/memory issues on mobile
+      style: {
+        boxShadow: 'none',
+      },
     })
       .then((dataUrl) => {
         const link = document.createElement('a');
