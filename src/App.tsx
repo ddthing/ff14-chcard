@@ -24,6 +24,7 @@ const defaultPlayerInfo: PlayerInfo = {
   isMentor: false,
   jobLevels: {},
   imagePosition: { x: 0, y: 0, scale: 1 },
+  language: 'ko',
 };
 
 function loadPlayerInfo(): PlayerInfo {

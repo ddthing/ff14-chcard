@@ -25,4 +25,5 @@ export interface PlayerInfo {
     isMentor: boolean;
     jobLevels: Record<string, number>; // Job ID -> Level mapping
     imagePosition?: { x: number; y: number; scale: number };
+    language: 'ko' | 'en';
 }

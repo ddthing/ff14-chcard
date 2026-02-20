@@ -178,15 +178,56 @@
   font-display: swap;
 }
 
-/* 6. KBL 점프체 */
+/* 6. PF 스타더스트 3.0체 */
 @font-face {
-  font-family: 'KblJumpCondensed';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-5@1.0/KBLJump_EB_CondensedTTF.woff2') format('woff2');
+  font-family: 'PfStardust';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/PFStardust.woff') format('woff');
   font-weight: normal;
   font-display: swap;
 }
 
-/* 7. 페이퍼로지 */
+/* 7. 강원교육모두체 */
+@font-face {
+  font-family: 'GangwonEducationModuche';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.woff') format('woff');
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'GangwonEducationModuche';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff') format('woff');
+  font-weight: 700;
+  font-display: swap;
+}
+
+/* 8. 갈무리11체 */
+@import url('https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css');
+
+@font-face {
+  font-family: 'Galmuri11';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2506-1@1.0/Galmuri11-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+/* 9. 탕바체 */
+@font-face {
+  font-family: 'Tangba';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-4@1.1/Tangba12.woff2') format('woff2');
+  font-weight: normal;
+  font-display: swap;
+}
+
+/* 10. 푸라닭 젠틀 고딕체 */
+@font-face {
+  font-family: 'PuradakGentleGothic';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.1/PuradakGentleGothicR.woff2') format('woff2');
+  font-weight: normal;
+  font-display: swap;
+}
+
+/* 11. 페이퍼로지 */
 @font-face {
   font-family: 'Paperozi';
   src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-1Thin.woff2') format('woff2');
@@ -250,7 +291,7 @@
   font-display: swap;
 }
 
-/* 8. 티머니 둥근바람 */
+/* 12. 티머니 둥근바람 */
 @font-face {
   font-family: 'TMoneyDungunbaram';
   src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-07@1.0/TmoneyRoundWindRegular.woff') format('woff');
@@ -298,8 +339,24 @@ body {
   font-family: 'BookkMyungjo', serif !important;
 }
 
-.font-jump {
-  font-family: 'KblJumpCondensed', sans-serif !important;
+.font-stardust {
+  font-family: 'PfStardust', sans-serif !important;
+}
+
+.font-gangwon {
+  font-family: 'GangwonEducationModuche', sans-serif !important;
+}
+
+.font-galmuri {
+  font-family: 'Galmuri11', sans-serif !important;
+}
+
+.font-tangba {
+  font-family: 'Tangba', sans-serif !important;
+}
+
+.font-puradak {
+  font-family: 'PuradakGentleGothic', sans-serif !important;
 }
 
 .font-paperozi {

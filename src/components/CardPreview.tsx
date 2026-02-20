@@ -2,6 +2,7 @@ import { forwardRef, useState } from 'react';
 import type { PlayerInfo } from '../types';
 import { JOBS } from '../data/jobs';
 import { Sprout, Crown, ImagePlus, ZoomIn, Check } from 'lucide-react';
+import { i18n, playstyleTranslate } from '../utils/i18n';
 
 interface CardPreviewProps {
     playerInfo: PlayerInfo;
@@ -11,6 +12,9 @@ interface CardPreviewProps {
 
 export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playerInfo, id, onImagePositionChange }, ref) => {
     const { name, server, region, jobs, playstyles, activeTime, comment, image, font, mainJob, isSprout, isMentor, jobLevels, isNicknameChanged } = playerInfo;
+
+    const lang = playerInfo.language || 'ko';
+    const t = i18n[lang].preview;
 
     // Image Drag & Zoom Logic
     const [isEditing, setIsEditing] = useState(false);
@@ -118,7 +122,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                     {!isEditing && onImagePositionChange && (
                         <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <span className="text-white font-medium text-sm flex items-center gap-2">
-                                <ImagePlus size={16} /> 클릭하여 편집
+                                <ImagePlus size={16} /> {t.clickToEdit}
                             </span>
                         </div>
                     )}
@@ -130,7 +134,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                             <button
                                 onClick={handleSavePosition}
                                 className="absolute top-4 right-4 bg-white text-black p-2 rounded-full shadow-lg hover:scale-110 transition-transform"
-                                title="편집 완료"
+                                title={t.editDone}
                             >
                                 <Check size={20} />
                             </button>
@@ -150,7 +154,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                                 <span className="text-white/80 text-xs w-8 text-right">{currentOffset.scale.toFixed(1)}x</span>
                             </div>
                             <div className="text-white/60 text-[10px] text-center mt-2 font-medium">
-                                드래그하여 이동 / 슬라이더로 확대
+                                {t.dragToMove}
                             </div>
                         </div>
                     )}
@@ -158,7 +162,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
             ) : (
                 <div className="w-full h-[120px] bg-gradient-to-br from-neutral-100 to-neutral-200 dark:from-[#2d2d2f] dark:to-[#3a3a3c] flex flex-col items-center justify-center gap-2">
                     <ImagePlus size={24} className="text-neutral-300 dark:text-[#6e6e73]" />
-                    <span className="text-neutral-300 dark:text-[#6e6e73] text-xs font-medium">이미지를 업로드해 주세요</span>
+                    <span className="text-neutral-300 dark:text-[#6e6e73] text-xs font-medium">{t.uploadPlease}</span>
                 </div>
             )}
 
@@ -173,17 +177,17 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                                 {name || 'Unknown'}
                             </h1>
                             {isSprout && (
-                                <span className="text-green-500 dark:text-[#30d158]" title="새싹">
+                                <span className="text-green-500 dark:text-[#30d158]" title={t.sprout}>
                                     <Sprout size={22} />
                                 </span>
                             )}
                             {isMentor && (
-                                <span className="text-yellow-500 dark:text-[#ff9f0a]" title="멘토">
+                                <span className="text-yellow-500 dark:text-[#ff9f0a]" title={t.mentor}>
                                     <Crown size={22} />
                                 </span>
                             )}
                             {isNicknameChanged && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-500 font-semibold whitespace-nowrap">인게임과 다름</span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-500 font-semibold whitespace-nowrap">{t.diffIngame}</span>
                             )}
                         </div>
                         <div className="flex items-center gap-2 mt-1.5">
@@ -202,10 +206,10 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                     if (!mJob) return null;
                     return (
                         <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-500/10 rounded-xl p-4">
-                            <img src={mJob.iconUrl} alt={mJob.nameKr} className="w-12 h-12 dark-invert" />
+                            <img src={mJob.iconUrl} alt={lang === 'ko' ? mJob.nameKr : mJob.nameEn} className="w-12 h-12 dark-invert" />
                             <div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider whitespace-nowrap">주 직업</div>
-                                <div className="text-xl font-bold leading-tight text-slate-900 dark:text-slate-100 whitespace-nowrap">{mJob.nameKr}</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider whitespace-nowrap">{t.mainJob}</div>
+                                <div className="text-xl font-bold leading-tight text-slate-900 dark:text-slate-100 whitespace-nowrap">{lang === 'ko' ? mJob.nameKr : mJob.nameEn}</div>
                                 <div className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{mJob.nameEn} · Lv.{jobLevels[mainJob] || '?'}</div>
                             </div>
                         </div>
@@ -218,12 +222,12 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                         {/* Battle Jobs */}
                         {battleJobs.length > 0 && (
                             <div>
-                                <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">전투 직업</div>
+                                <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">{t.battle}</div>
                                 <div className="flex flex-wrap gap-2">
                                     {battleJobs.filter(j => j.id !== mainJob).map(job => (
                                         <div key={job.id} className="flex items-center gap-1.5 bg-neutral-50 dark:bg-[#2d2d2f] rounded-lg px-2.5 py-1.5">
-                                            <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark-invert" />
-                                            <span className="text-xs font-medium text-neutral-700 dark:text-[#d1d1d6] whitespace-nowrap">{job.nameKr}</span>
+                                            <img src={job.iconUrl} alt={lang === 'ko' ? job.nameKr : job.nameEn} className="w-5 h-5 dark-invert" />
+                                            <span className="text-xs font-medium text-neutral-700 dark:text-[#d1d1d6] whitespace-nowrap">{lang === 'ko' ? job.nameKr : job.nameEn}</span>
                                             <span className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold whitespace-nowrap">Lv.{jobLevels[job.id] || '?'}</span>
                                         </div>
                                     ))}
@@ -234,12 +238,12 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                         {/* Crafting Jobs */}
                         {craftingJobs.length > 0 && (
                             <div>
-                                <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">제작</div>
+                                <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">{t.crafting}</div>
                                 <div className="flex flex-wrap gap-2">
                                     {craftingJobs.map(job => (
                                         <div key={job.id} className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-500/20 rounded-lg px-2.5 py-1.5">
-                                            <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark-invert" />
-                                            <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{job.nameKr}</span>
+                                            <img src={job.iconUrl} alt={lang === 'ko' ? job.nameKr : job.nameEn} className="w-5 h-5 dark-invert" />
+                                            <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{lang === 'ko' ? job.nameKr : job.nameEn}</span>
                                             <span className="text-[10px] text-neutral-400 dark:text-neutral-400/70 font-semibold whitespace-nowrap">Lv.{jobLevels[job.id] || '?'}</span>
                                         </div>
                                     ))}
@@ -250,12 +254,12 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                         {/* Gathering Jobs */}
                         {gatheringJobs.length > 0 && (
                             <div>
-                                <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">채집</div>
+                                <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">{t.gathering}</div>
                                 <div className="flex flex-wrap gap-2">
                                     {gatheringJobs.map(job => (
                                         <div key={job.id} className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-500/20 rounded-lg px-2.5 py-1.5">
-                                            <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark-invert" />
-                                            <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{job.nameKr}</span>
+                                            <img src={job.iconUrl} alt={lang === 'ko' ? job.nameKr : job.nameEn} className="w-5 h-5 dark-invert" />
+                                            <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{lang === 'ko' ? job.nameKr : job.nameEn}</span>
                                             <span className="text-[10px] text-neutral-400 dark:text-neutral-400/70 font-semibold whitespace-nowrap">Lv.{jobLevels[job.id] || '?'}</span>
                                         </div>
                                     ))}
@@ -268,11 +272,11 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                 {/* Playstyles */}
                 {playstyles.length > 0 && (
                     <div>
-                        <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">플레이 스타일</div>
+                        <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">{t.playstyle}</div>
                         <div className="flex flex-wrap gap-1.5">
                             {playstyles.map(tag => (
                                 <span key={tag} className="px-2.5 py-1 bg-neutral-100 dark:bg-[#2d2d2f] rounded-full text-xs text-neutral-600 dark:text-[#a1a1a6] font-medium">
-                                    {tag}
+                                    {playstyleTranslate(tag, lang)}
                                 </span>
                             ))}
                         </div>
@@ -282,7 +286,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                 {/* Comment */}
                 {comment && (
                     <div className="bg-neutral-50 dark:bg-[#2d2d2f] rounded-xl p-4">
-                        <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">한마디</div>
+                        <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">{t.comment}</div>
                         <p className="text-sm text-neutral-700 dark:text-[#d1d1d6] whitespace-pre-wrap leading-relaxed">{comment}</p>
                     </div>
                 )}
