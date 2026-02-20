@@ -87,7 +87,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
 
     return (
         <div
-            className={`w-[700px] bg-white dark:bg-[#1d1d1f] text-neutral-900 dark:text-[#f5f5f7] shadow-lg dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] overflow-hidden relative rounded-2xl ${font}`}
+            className={`w-[700px] min-w-[700px] max-w-none bg-white dark:bg-[#1d1d1f] text-neutral-900 dark:text-[#f5f5f7] shadow-lg dark:shadow-[0_8px_30px_rgba(0,0,0,0.5)] overflow-hidden relative rounded-2xl ${font}`}
             ref={ref}
             id={id}
             style={{}}
@@ -169,7 +169,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                 <div className="flex items-end justify-between border-b border-neutral-100 dark:border-[#3a3a3c] pb-5">
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1 className="text-3xl font-bold tracking-tight leading-none">
+                            <h1 className="text-3xl font-bold tracking-tight leading-none whitespace-nowrap">
                                 {name || 'Unknown'}
                             </h1>
                             {isSprout && (
@@ -183,16 +183,16 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                                 </span>
                             )}
                             {isNicknameChanged && (
-                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-500 font-semibold">인게임과 다름</span>
+                                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-orange-100 dark:bg-orange-500/20 text-orange-500 font-semibold whitespace-nowrap">인게임과 다름</span>
                             )}
                         </div>
                         <div className="flex items-center gap-2 mt-1.5">
-                            <span className="text-sm text-neutral-500 dark:text-[#a1a1a6] font-medium">{server}</span>
-                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-[#3a3a3c] text-neutral-400 dark:text-[#86868b] font-semibold">{region}</span>
+                            <span className="text-sm text-neutral-500 dark:text-[#a1a1a6] font-medium whitespace-nowrap">{server}</span>
+                            <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-[#3a3a3c] text-neutral-400 dark:text-[#86868b] font-semibold whitespace-nowrap">{region}</span>
                         </div>
                     </div>
                     {activeTime && (
-                        <span className="text-xs text-neutral-400 dark:text-[#86868b] font-medium">{activeTime}</span>
+                        <span className="text-xs text-neutral-400 dark:text-[#86868b] font-medium whitespace-nowrap">{activeTime}</span>
                     )}
                 </div>
 
@@ -204,9 +204,9 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                         <div className="flex items-center gap-4 bg-slate-50 dark:bg-slate-500/10 rounded-xl p-4">
                             <img src={mJob.iconUrl} alt={mJob.nameKr} className="w-12 h-12 dark-invert" />
                             <div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider">주 직업</div>
-                                <div className="text-xl font-bold leading-tight text-slate-900 dark:text-slate-100">{mJob.nameKr}</div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400">{mJob.nameEn} · Lv.{jobLevels[mainJob] || '?'}</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider whitespace-nowrap">주 직업</div>
+                                <div className="text-xl font-bold leading-tight text-slate-900 dark:text-slate-100 whitespace-nowrap">{mJob.nameKr}</div>
+                                <div className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{mJob.nameEn} · Lv.{jobLevels[mainJob] || '?'}</div>
                             </div>
                         </div>
                     );
@@ -223,8 +223,8 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                                     {battleJobs.filter(j => j.id !== mainJob).map(job => (
                                         <div key={job.id} className="flex items-center gap-1.5 bg-neutral-50 dark:bg-[#2d2d2f] rounded-lg px-2.5 py-1.5">
                                             <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark-invert" />
-                                            <span className="text-xs font-medium text-neutral-700 dark:text-[#d1d1d6]">{job.nameKr}</span>
-                                            <span className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold">Lv.{jobLevels[job.id] || '?'}</span>
+                                            <span className="text-xs font-medium text-neutral-700 dark:text-[#d1d1d6] whitespace-nowrap">{job.nameKr}</span>
+                                            <span className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold whitespace-nowrap">Lv.{jobLevels[job.id] || '?'}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -239,8 +239,8 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                                     {craftingJobs.map(job => (
                                         <div key={job.id} className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-500/20 rounded-lg px-2.5 py-1.5">
                                             <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark-invert" />
-                                            <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{job.nameKr}</span>
-                                            <span className="text-[10px] text-neutral-400 dark:text-neutral-400/70 font-semibold">Lv.{jobLevels[job.id] || '?'}</span>
+                                            <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{job.nameKr}</span>
+                                            <span className="text-[10px] text-neutral-400 dark:text-neutral-400/70 font-semibold whitespace-nowrap">Lv.{jobLevels[job.id] || '?'}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -255,8 +255,8 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                                     {gatheringJobs.map(job => (
                                         <div key={job.id} className="flex items-center gap-1.5 bg-neutral-100 dark:bg-neutral-500/20 rounded-lg px-2.5 py-1.5">
                                             <img src={job.iconUrl} alt={job.nameKr} className="w-5 h-5 dark-invert" />
-                                            <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300">{job.nameKr}</span>
-                                            <span className="text-[10px] text-neutral-400 dark:text-neutral-400/70 font-semibold">Lv.{jobLevels[job.id] || '?'}</span>
+                                            <span className="text-xs font-medium text-neutral-700 dark:text-neutral-300 whitespace-nowrap">{job.nameKr}</span>
+                                            <span className="text-[10px] text-neutral-400 dark:text-neutral-400/70 font-semibold whitespace-nowrap">Lv.{jobLevels[job.id] || '?'}</span>
                                         </div>
                                     ))}
                                 </div>
