@@ -47,7 +47,8 @@ function App() {
   useEffect(() => {
     try {
       // Save without image to avoid localStorage quota issues
-      const { image, ...rest } = playerInfo;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      const { image: _image, ...rest } = playerInfo;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
     } catch {
       // Silently fail if quota exceeded

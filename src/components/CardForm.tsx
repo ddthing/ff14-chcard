@@ -47,7 +47,7 @@ export function CardForm({ playerInfo, setPlayerInfo }: CardFormProps) {
     const [isCustomTime, setIsCustomTime] = useState(false);
     const [batchLevel, setBatchLevel] = useState(100);
 
-    const handleChange = (field: keyof PlayerInfo, value: any) => {
+    const handleChange = <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => {
         setPlayerInfo(prev => ({ ...prev, [field]: value }));
     };
 

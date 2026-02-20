@@ -1,4 +1,4 @@
-import { forwardRef, useState, useEffect } from 'react';
+import { forwardRef, useState } from 'react';
 import type { PlayerInfo } from '../types';
 import { JOBS } from '../data/jobs';
 import { Sprout, Crown, ImagePlus, ZoomIn, Check } from 'lucide-react';
@@ -24,29 +24,21 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
         scale: playerInfo.imagePosition?.scale ?? 1
     });
 
-    useEffect(() => {
-        if (!isDragging && !isEditing) {
-            setCurrentOffset({
-                x: playerInfo.imagePosition?.x ?? 0,
-                y: playerInfo.imagePosition?.y ?? 0,
-                scale: playerInfo.imagePosition?.scale ?? 1
-            });
-        }
-    }, [playerInfo.imagePosition, isDragging, isEditing]);
+
 
     const handleMouseDown = (e: React.MouseEvent | React.TouchEvent) => {
         if (!isEditing) return; // Only allow drag in edit mode
         setIsDragging(true);
-        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        const clientX = 'touches' in e ? (e as React.TouchEvent).touches[0].clientX : (e as React.MouseEvent).clientX;
+        const clientY = 'touches' in e ? (e as React.TouchEvent).touches[0].clientY : (e as React.MouseEvent).clientY;
         setDragStart({ x: clientX, y: clientY });
         setInitialOffset(currentOffset);
     };
 
     const handleMouseMove = (e: React.MouseEvent | React.TouchEvent) => {
         if (!isDragging) return;
-        const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX;
-        const clientY = 'touches' in e ? e.touches[0].clientY : e.clientY;
+        const clientX = 'touches' in e ? (e as React.TouchEvent).touches[0].clientX : (e as React.MouseEvent).clientX;
+        const clientY = 'touches' in e ? (e as React.TouchEvent).touches[0].clientY : (e as React.MouseEvent).clientY;
         const dx = clientX - dragStart.x;
         const dy = clientY - dragStart.y;
         setCurrentOffset({ ...currentOffset, x: initialOffset.x + dx, y: initialOffset.y + dy });
@@ -65,9 +57,21 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
 
     const handleImageClick = () => {
         if (!isEditing && onImagePositionChange) {
+            // Initialize offset state when entering edit mode
+            setCurrentOffset({
+                x: playerInfo.imagePosition?.x ?? 0,
+                y: playerInfo.imagePosition?.y ?? 0,
+                scale: playerInfo.imagePosition?.scale ?? 1
+            });
             setIsEditing(true);
         }
     };
+
+    // Determine which offset to display:
+    // When editing/dragging, use local state (currentOffset).
+    // When viewing, use the saved prop (playerInfo.imagePosition).
+    // This removes the need for a useEffect to sync them, preventing loops/lint errors.
+    const finalOffset = isEditing ? currentOffset : (playerInfo.imagePosition ?? { x: 0, y: 0, scale: 1 });
 
     // Sort jobs: Main job first
     const sortedJobs = JOBS.filter(j => jobs.includes(j.id)).sort((a, b) => {
@@ -106,7 +110,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                         alt="Character"
                         className={`w-full h-full object-cover pointer-events-none select-none transition-transform duration-75 ${isDragging ? 'cursor-grabbing' : ''}`}
                         style={{
-                            transform: `translate(${currentOffset.x}px, ${currentOffset.y}px) scale(${currentOffset.scale})`
+                            transform: `translate(${finalOffset.x}px, ${finalOffset.y}px) scale(${finalOffset.scale})`
                         }}
                     />
 
