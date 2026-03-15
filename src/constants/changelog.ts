@@ -16,26 +16,15 @@ export const CHANGELOG: ChangelogEntry[] = [
             ko: [
                 '다국어 지원 추가 (한국어, 영어, 일본어)',
                 '서버 선택 UI 통합 및 데이터센터별 분류 적용',
-                '새싹/멘토 상태를 위한 아이콘 전용 토글 배지 도입',
-                '포인트 컬러 커스텀 기능 추가 및 테마 연동',
-                '전체적인 UI/UX 디자인 고도화 (Apple 스타일)',
-                '이미지 크로핑 기능 개선'
+
             ],
             en: [
                 'Added multi-language support (KO, EN, JA)',
                 'Unified server selection UI with data center groups',
-                'Icon-only toggle badges for Sprout/Mentor status',
-                'Point color customization and theme integration',
-                'UI/UX design refinement (Apple style)',
-                'Improved image cropping functionality'
             ],
             ja: [
                 '多言語対応の追加 (韓国語、英語、日本語)',
                 'ワールド選択UIの統合とデータセンター別分類の適用',
-                '若葉/メンター状態のためのアイコン専用トッジを追加',
-                'ポイントカラーカスタム機能の追加とテーマ連動',
-                '全体的なUI/UXデザインの高度化 (Appleスタイル)',
-                '画像クロップ機能の改善'
             ]
         }
     },
