@@ -11,7 +11,7 @@ export interface ChangelogEntry {
 export const CHANGELOG: ChangelogEntry[] = [
     {
         version: 'v1.2.0',
-        date: '2024-03-15',
+        date: '2026-03-15',
         items: {
             ko: [
                 '다국어 지원 추가 (한국어, 영어, 일본어)',
@@ -30,7 +30,7 @@ export const CHANGELOG: ChangelogEntry[] = [
     },
     {
         version: 'v1.1.0',
-        date: '2024-02-28',
+        date: '2026-02-28',
         items: {
             ko: [
                 '캐릭터 카드 레이아웃 2종(가로형, 세로형) 지원',
