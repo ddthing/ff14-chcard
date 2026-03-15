@@ -153,7 +153,7 @@ export const i18n = {
             layoutPortrait: '縦型',
             basicInfo: '基本情報',
             nickname: 'キャラクター名',
-            diffIngame: '게임내과 다름',
+            diffIngame: 'ゲーム内と異なる',
             selectServer: 'ワールド選択',
             job: 'クラス / ジョブ',
             battle: '戦闘職',
