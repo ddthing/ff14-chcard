@@ -154,7 +154,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                     </div>
                     {activeTime && (
                         <div className="text-right">
-                           <p className="text-[10px] font-bold text-neutral-400 dark:text-[#86868b] uppercase tracking-[0.2em] mb-0.5">{t.activeTime}</p>
+                           <p className="text-[10px] font-bold text-neutral-400 dark:text-[#86868b] uppercase tracking-[0.2em] mb-0.5" style={{ fontFamily: 'inherit' }}>{t.activeTime}</p>
                            <span className="text-xs text-neutral-400 dark:text-[#86868b] font-medium whitespace-nowrap">
                                {activeTimeTranslate(activeTime, lang)}
                            </span>
@@ -176,7 +176,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                             <div>
                                 <div className="text-xs font-semibold uppercase tracking-wider whitespace-nowrap" style={{ color: playerInfo.pointColor }}>{t.mainJob}</div>
                                 <div className="text-xl font-bold leading-tight text-slate-900 dark:text-slate-100 whitespace-nowrap">{localizedJobName}</div>
-                                <div className="text-xs text-slate-500 dark:text-slate-400 whitespace-nowrap">{mJob.nameEn} · Lv.{jobLevels[mainJob] || '?'}</div>
+                                <div className="text-xs whitespace-nowrap opacity-70" style={{ color: playerInfo.pointColor }}>{mJob.nameEn} · Lv.{jobLevels[mainJob] || '?'}</div>
                             </div>
                         </div>
                     );
@@ -219,7 +219,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
 
                 {/* Footer */}
                 <div className="pt-3 border-t border-neutral-100 dark:border-[#3a3a3c] flex justify-between items-center">
-                    <span className="text-[10px] text-neutral-300 dark:text-[#6e6e73] font-bold tracking-[0.25em]">{t.footerTitle}</span>
+                    <span className="text-[10px] text-neutral-300 dark:text-[#6e6e73] font-bold tracking-[0.25em]" style={{ fontFamily: 'inherit' }}>{t.footerTitle}</span>
                     <span className="text-[10px] text-neutral-300 dark:text-[#6e6e73]">
                         Made by <a href="https://x.com/reconeur" target="_blank" rel="noopener noreferrer" className="hover:text-neutral-500 dark:hover:text-[#a1a1a6] transition-colors underline decoration-neutral-200 dark:decoration-[#3a3a3c] underline-offset-2">@reconeur</a> · {new Date().getFullYear()}
                     </span>

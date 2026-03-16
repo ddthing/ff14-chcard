@@ -40,7 +40,7 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
         const calculateScale = () => {
             if (containerRef.current) {
                 const containerWidth = containerRef.current.offsetWidth;
-                const isMobile = window.innerWidth < 1024;
+                const isMobile = window.innerWidth < 768;
 
                 if (isMobile) {
                     // Mobile scaling logic: fill the width while maintaining a small margin
@@ -77,10 +77,10 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
             </header>
 
             {/* Main Application Area */}
-            <main className="flex flex-col lg:flex-row flex-1 min-h-0">
+            <main className="flex flex-col md:flex-row flex-1 min-h-0">
 
                 {/* Sidebar Panel: Form components for character customization */}
-                <div className="w-full lg:w-[420px] xl:w-[460px] bg-white dark:bg-[#1d1d1f] flex flex-col lg:h-[calc(100vh-44px)] border-r border-[#d2d2d7]/40 dark:border-[#424245]/40 z-20 transition-colors duration-300 lg:sticky lg:top-11 order-2 lg:order-1">
+                <div className="w-full md:w-[420px] xl:w-[460px] bg-white dark:bg-[#1d1d1f] flex flex-col md:h-[calc(100vh-44px)] border-r border-[#d2d2d7]/40 dark:border-[#424245]/40 z-20 transition-colors duration-300 md:sticky md:top-11 order-2 md:order-1">
                     <div className="p-6 border-b border-[#d2d2d7]/30 dark:border-[#424245]/30 shrink-0">
                         <h1 className="font-semibold text-xl tracking-tight text-[#1d1d1f] dark:text-[#f5f5f7]">
                             {t.title}
@@ -96,9 +96,9 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
                 </div>
 
                 {/* Preview Panel: Real-time card visualization with responsive scaling */}
-                <div ref={containerRef} className="flex-1 bg-[#f5f5f7] dark:bg-black flex items-start justify-center overflow-hidden transition-colors duration-300 p-4 lg:p-8 order-1 lg:order-2">
+                <div ref={containerRef} className="flex-1 bg-[#f5f5f7] dark:bg-black flex items-start justify-center overflow-hidden transition-colors duration-300 p-4 md:p-8 order-1 md:order-2">
                     <div
-                        className="lg:sticky lg:top-16 origin-top"
+                        className="md:sticky md:top-16 origin-top"
                         style={{
                             transform: `scale(${scale})`,
                             width: layoutType === 'left-portrait' ? 800 : 700,

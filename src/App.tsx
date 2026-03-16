@@ -127,7 +127,7 @@ function App() {
               Sticky Action Bar: Pinned to the bottom for quick access. 
               On mobile, it uses fixed positioning to stay at the viewport edge.
             */}
-            <div className="fixed bottom-0 left-0 right-0 lg:sticky lg:bottom-0 bg-white/80 dark:bg-[#1d1d1f]/80 backdrop-blur-xl border-t border-neutral-200 dark:border-[#3a3a3c] p-4 mt-auto z-40">
+            <div className="fixed bottom-0 left-0 right-0 md:sticky md:bottom-0 bg-white/80 dark:bg-[#1d1d1f]/80 backdrop-blur-xl border-t border-neutral-200 dark:border-[#3a3a3c] p-4 mt-auto z-40">
               <button
                 onClick={handleDownload}
                 className="w-full bg-neutral-900 dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-100 text-white dark:text-black font-semibold text-sm py-3.5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-2xl lg:shadow-none"
