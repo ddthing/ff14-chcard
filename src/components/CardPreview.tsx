@@ -177,7 +177,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                                 <div className="text-xs font-semibold uppercase tracking-wider whitespace-nowrap" style={{ color: playerInfo.pointColor }}>{t.mainJob}</div>
                                 <div className="text-xl font-bold leading-tight text-slate-900 dark:text-slate-100 whitespace-nowrap">{localizedJobName}</div>
                                 <div className="text-xs whitespace-nowrap opacity-70" style={{ color: playerInfo.pointColor }}>
-                                    {lang === 'en' ? '' : `${localizedJobName} · `}Lv.{jobLevels[mainJob] || '?'}
+                                    Lv.{jobLevels[mainJob] || '?'}
                                 </div>
                             </div>
                         </div>
