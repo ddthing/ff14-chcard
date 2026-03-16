@@ -213,7 +213,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                 {comment && (
                     <div className="bg-neutral-50 dark:bg-[#2d2d2f] rounded-xl p-4">
                         <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">{t.comment}</div>
-                        <p className="text-sm text-neutral-700 dark:text-[#d1d1d6] whitespace-pre-wrap leading-relaxed italic">"{comment}"</p>
+                        <p className="text-sm text-neutral-700 dark:text-[#d1d1d6] whitespace-pre-wrap leading-relaxed italic">{comment}</p>
                     </div>
                 )}
 
