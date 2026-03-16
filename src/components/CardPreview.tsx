@@ -176,7 +176,9 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                             <div>
                                 <div className="text-xs font-semibold uppercase tracking-wider whitespace-nowrap" style={{ color: playerInfo.pointColor }}>{t.mainJob}</div>
                                 <div className="text-xl font-bold leading-tight text-slate-900 dark:text-slate-100 whitespace-nowrap">{localizedJobName}</div>
-                                <div className="text-xs whitespace-nowrap opacity-70" style={{ color: playerInfo.pointColor }}>{localizedJobName} · Lv.{jobLevels[mainJob] || '?'}</div>
+                                <div className="text-xs whitespace-nowrap opacity-70" style={{ color: playerInfo.pointColor }}>
+                                    {lang === 'en' ? '' : `${localizedJobName} · `}Lv.{jobLevels[mainJob] || '?'}
+                                </div>
                             </div>
                         </div>
                     );
@@ -213,7 +215,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                 {comment && (
                     <div className="bg-neutral-50 dark:bg-[#2d2d2f] rounded-xl p-4">
                         <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">{t.comment}</div>
-                        <p className="text-sm text-neutral-700 dark:text-[#d1d1d6] whitespace-pre-wrap leading-relaxed italic">{comment}</p>
+                        <p className="text-sm text-neutral-700 dark:text-[#d1d1d6] whitespace-pre-wrap leading-relaxed not-italic">{comment}</p>
                     </div>
                 )}
 
