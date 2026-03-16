@@ -58,10 +58,10 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
     const craftingJobs = sortedJobs.filter(j => j.role === 'Crafting');
     const gatheringJobs = sortedJobs.filter(j => j.role === 'Gathering');
 
-    const getJobName = (job: typeof JOBS[0]) => {
+    const getJobName = (job: typeof JOBS[0], useFullName = false) => {
         if (lang === 'ko') return job.nameKr;
         if (lang === 'ja') return job.nameJa;
-        return job.nameEn;
+        return useFullName ? job.name : job.nameEn;
     };
 
     return (
@@ -166,7 +166,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                 {mainJob && (() => {
                     const mJob = JOBS.find(j => j.id === mainJob);
                     if (!mJob) return null;
-                    const localizedJobName = getJobName(mJob);
+                    const localizedJobName = getJobName(mJob, true); // Use full name for Main Job
                     return (
                         <div 
                             className="flex items-center gap-4 rounded-xl p-4 border"
@@ -176,7 +176,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ playe
                             <div>
                                 <div className="text-xs font-semibold uppercase tracking-wider whitespace-nowrap" style={{ color: playerInfo.pointColor }}>{t.mainJob}</div>
                                 <div className="text-xl font-bold leading-tight text-slate-900 dark:text-slate-100 whitespace-nowrap">{localizedJobName}</div>
-                                <div className="text-xs whitespace-nowrap opacity-70" style={{ color: playerInfo.pointColor }}>{mJob.nameEn} · Lv.{jobLevels[mainJob] || '?'}</div>
+                                <div className="text-xs whitespace-nowrap opacity-70" style={{ color: playerInfo.pointColor }}>{localizedJobName} · Lv.{jobLevels[mainJob] || '?'}</div>
                             </div>
                         </div>
                     );

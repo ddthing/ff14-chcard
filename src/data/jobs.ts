@@ -15,7 +15,7 @@ export const JOBS: Job[] = [
     { id: 'WHM', name: 'White Mage', nameKr: '백마도사', nameEn: 'WHM', nameJa: '白魔道士', role: 'Healer', iconUrl: '/icons/WHM.svg' },
     { id: 'SCH', name: 'Scholar', nameKr: '학자', nameEn: 'SCH', nameJa: '学者', role: 'Healer', iconUrl: '/icons/SCH.svg' },
     { id: 'AST', name: 'Astrologian', nameKr: '점성술사', nameEn: 'AST', nameJa: '占星術師', role: 'Healer', iconUrl: '/icons/AST.svg' },
-    { id: 'SGE', name: 'Sage', nameKr: '현자', nameEn: 'SGE', nameJa: '賢자', role: 'Healer', iconUrl: '/icons/SGE.svg' },
+    { id: 'SGE', name: 'Sage', nameKr: '현자', nameEn: 'SGE', nameJa: '賢者', role: 'Healer', iconUrl: '/icons/SGE.svg' },
 
     // ========== MELEE DPS ==========
     { id: 'MNK', name: 'Monk', nameKr: '몽크', nameEn: 'MNK', nameJa: 'モンク', role: 'Melee', iconUrl: '/icons/MNK.svg' },
