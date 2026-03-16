@@ -244,21 +244,21 @@ export const getActiveTimes = (lang: Language) => {
 export const PLAYSTYLES_KO = [
     '초보/새싹', '복귀 유저', '하드코어/레이드', '절 레이드',
     '라이트/즐겜', '스샷/룩덕', '하우징', '제작/채집',
-    'RP(롤플레잉)', 'PVP', '업적작', '지도/보물고',
+    'RP(롤플레잉)', 'PVP', '업적작', '마작', '골드소서', '지도/보물고',
     '디스코드 가능', '트위터 교류', '인게임 위주'
 ];
 
 export const PLAYSTYLES_EN = [
     'Sprout / Beginner', 'Returner', 'Hardcore / Raid', 'Ultimate Raids',
     'Casual / Social', 'Gpose / Glamour', 'Housing', 'Crafter / Gatherer',
-    'Roleplay (RP)', 'PvP', 'Achievement Hunter', 'Treasure Hunt',
+    'Roleplay (RP)', 'PvP', 'Achievement Hunter', 'Mahjong', 'Gold Saucer', 'Treasure Hunt',
     'Discord Available', 'Twitter (X) Active', 'In-game Focused'
 ];
 
 export const PLAYSTYLES_JA = [
     '初心者/若葉', '復帰勢', '固定・レイド', '絶レイド',
     'ライト勢・エンジョイ', 'SS・ミラプリ', 'ハウジング', 'クラギャザ',
-    'RP(ロールプレイ)', 'PvP', 'ア치ーブメント', '地図・宝물庫',
+    'RP(ロールプレイ)', 'PvP', 'ア치ーブメント', '麻雀', 'ゴールドソーサー', '地図・宝물庫',
     'Discord可能', 'Twitter(X)交流有', 'ログイン多め'
 ];
 
