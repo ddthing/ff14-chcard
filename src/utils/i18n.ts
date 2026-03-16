@@ -195,7 +195,7 @@ export const i18n = {
             dragToMove: 'ドラッグで移動 / スライダーで拡大',
             uploadPlease: '画像をアップロードしてください',
             homeWorld: 'HOME WORLD',
-            activeTime: 'ACTIVE TIME',
+            activeTime: '活動時間',
             footerTitle: 'FF14 Character Card',
             adjustImageArea: '画像範囲の設定',
             cancel: 'キャンセル',
@@ -256,9 +256,9 @@ export const PLAYSTYLES_EN = [
 ];
 
 export const PLAYSTYLES_JA = [
-    '初心者/若葉', '復帰勢', '固定・レイド', '絶レイド',
-    'ライト勢・エンジョイ', 'SS・ミラプリ', 'ハウジング', 'クラギャザ',
-    'RP(ロールプレイ)', 'PvP', 'ア치ーブメント', '麻雀', 'ゴールドソーサー', '地図・宝물庫',
+    '初心者/若葉', '復帰勢', 'レイド/高難易度', '絶レイド',
+    'ライト勢/エンジョイ', 'SS/ミラプリ', 'ハウジング', 'クラギャザ',
+    'RP(ロールプレイ)', 'PvP', 'アチーブメント', '麻雀', 'ゴールドソーサー', '地図/宝物庫',
     'Discord可能', 'Twitter(X)交流有', 'ログイン多め'
 ];
 
