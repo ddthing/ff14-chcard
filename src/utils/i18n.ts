@@ -257,7 +257,7 @@ export const PLAYSTYLES_EN = [
 
 export const PLAYSTYLES_JA = [
     '初心者/若葉', '復帰勢', 'レイド/高難易度', '絶レイド',
-    'ライト勢/エンジョイ', 'SS/ミラプリ', 'ハウジング', 'クラギャザ',
+    'ライト勢/エンジョイ', 'SS/ミラプリ', 'ハウジング', 'ギャザクラ',
     'RP(ロールプレイ)', 'PvP', 'アチーブメント', '麻雀', 'ゴールドソーサー', '地図/宝物庫',
     'Discord可能', 'Twitter(X)交流有', 'ログイン多め'
 ];
@@ -282,11 +282,11 @@ export const playstyleTranslate = (tag: string, toLang: Language) => {
  */
 export const activeTimeTranslate = (time: string, toLang: Language) => {
     if (toLang === 'ko') return time;
-    
+
     // Find index in Korean list
     const index = ACTIVE_TIMES_KO.indexOf(time);
     if (index === -1) return time; // Return as-is for custom strings
-    
+
     const activeTimes = getActiveTimes(toLang);
     return activeTimes[index];
 };

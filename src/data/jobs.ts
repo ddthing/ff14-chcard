@@ -9,7 +9,7 @@ export const JOBS: Job[] = [
     { id: 'PLD', name: 'Paladin', nameKr: '나이트', nameEn: 'PLD', nameJa: 'ナイト', role: 'Tank', iconUrl: '/icons/PLD.svg' },
     { id: 'WAR', name: 'Warrior', nameKr: '전사', nameEn: 'WAR', nameJa: '戦士', role: 'Tank', iconUrl: '/icons/WAR.svg' },
     { id: 'DRK', name: 'Dark Knight', nameKr: '암흑기사', nameEn: 'DRK', nameJa: '暗黒騎士', role: 'Tank', iconUrl: '/icons/DRK.svg' },
-    { id: 'GNB', name: 'Gunbreaker', nameKr: '건브레이커', nameEn: 'GNB', nameJa: 'ガンブ레이カー', role: 'Tank', iconUrl: '/icons/GNB.svg' },
+    { id: 'GNB', name: 'Gunbreaker', nameKr: '건브레이커', nameEn: 'GNB', nameJa: 'ガンブレイカー', role: 'Tank', iconUrl: '/icons/GNB.svg' },
 
     // ========== HEALERS ==========
     { id: 'WHM', name: 'White Mage', nameKr: '백마도사', nameEn: 'WHM', nameJa: '白魔道士', role: 'Healer', iconUrl: '/icons/WHM.svg' },
@@ -23,7 +23,7 @@ export const JOBS: Job[] = [
     { id: 'NIN', name: 'Ninja', nameKr: '닌자', nameEn: 'NIN', nameJa: '忍者', role: 'Melee', iconUrl: '/icons/NIN.svg' },
     { id: 'SAM', name: 'Samurai', nameKr: '사무라이', nameEn: 'SAM', nameJa: '侍', role: 'Melee', iconUrl: '/icons/SAM.svg' },
     { id: 'RPR', name: 'Reaper', nameKr: '리퍼', nameEn: 'RPR', nameJa: 'リーパー', role: 'Melee', iconUrl: '/icons/RPR.svg' },
-    { id: 'VPR', name: 'Viper', nameKr: '바이퍼', nameEn: 'VPR', nameJa: 'ヴァイ퍼', role: 'Melee', iconUrl: '/icons/VPR.svg' },
+    { id: 'VPR', name: 'Viper', nameKr: '바이퍼', nameEn: 'VPR', nameJa: 'ヴァイパー', role: 'Melee', iconUrl: '/icons/VPR.svg' },
 
     // ========== PHYSICAL RANGED DPS ==========
     { id: 'BRD', name: 'Bard', nameKr: '음유시인', nameEn: 'BRD', nameJa: '吟遊詩人', role: 'Physical Ranged', iconUrl: '/icons/BRD.svg' },
