@@ -1,4 +1,3 @@
 User-agent: *
 Allow: /
-
-Sitemap: https://ff14-chcard.vercel.app/sitemap.xml
+Sitemap: https://ff14-chcard.pages.dev/sitemap.xml
