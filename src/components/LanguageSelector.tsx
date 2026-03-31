@@ -24,7 +24,7 @@ export function LanguageSelector({ currentLang, onLanguageChange }: LanguageSele
                         onClick={() => onLanguageChange(lang.id)}
                         className={`px-3 py-1 text-[11px] font-bold rounded-full transition-all duration-300 ${
                             currentLang === lang.id 
-                                ? 'bg-white dark:bg-[#48484a] text-[#0071e3] shadow-sm' 
+                                ? 'bg-white dark:bg-[#48484a] text-[#1d1d1f] dark:text-[#f5f5f7] shadow-sm' 
                                 : 'text-[#86868b] hover:text-[#1d1d1f] dark:hover:text-[#f5f5f7]'
                         }`}
                     >

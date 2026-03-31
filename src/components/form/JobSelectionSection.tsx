@@ -1,23 +1,33 @@
-import { useState, useRef, useEffect, type Dispatch, type SetStateAction } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Swords, Hammer, Leaf, ChevronDown, Check } from 'lucide-react';
-import type { PlayerInfo, Language } from '../../types';
 import { JOBS } from '../../data/jobs';
 import { i18n } from '../../utils/i18n';
+import { inputClass } from '../../utils/styles';
+import { usePlayer } from '../../contexts/PlayerContext';
 
-interface JobSelectionSectionProps {
-    playerInfo: PlayerInfo;
-    setPlayerInfo: Dispatch<SetStateAction<PlayerInfo>>;
-    handleChange: <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => void;
-    lang: Language;
-}
-
-export function JobSelectionSection({ playerInfo, setPlayerInfo, handleChange, lang }: JobSelectionSectionProps) {
+export function JobSelectionSection() {
+    const { playerInfo, setPlayerInfo, updatePlayerField: handleChange } = usePlayer();
+    const lang = playerInfo.language;
     const mainJobRef = useRef<HTMLDivElement>(null);
     const [isMainJobOpen, setIsMainJobOpen] = useState(false);
     const [jobTab, setJobTab] = useState<'Battle' | 'Crafting' | 'Gathering'>('Battle');
 
+    const getRoleColor = (role: string) => {
+        switch (role) {
+            case 'Tank': return '#0071e3'; // Modern blue
+            case 'Healer': return '#34c759'; // Apple green
+            case 'Melee':
+            case 'Physical Ranged':
+            case 'Magical Ranged': return '#ff3b30'; // Modern red
+            case 'Limited': return '#1d1d1f';
+            case 'Crafting': return '#a2845e'; // Muted wood
+            case 'Gathering': return '#30d158'; // Modern leaf
+            default: return '#86868b';
+        }
+    };
+
     const t = i18n[lang].form;
-    const inputClass = "w-full bg-[#f5f5f7] dark:bg-[#2d2d2f] border border-[#d2d2d7] dark:border-[#424245] px-3 py-2.5 rounded-xl text-sm text-[#1d1d1f] dark:text-[#f5f5f7] placeholder-[#86868b] focus:outline-none focus:ring-2 focus:ring-[#0071e3]/30 transition-all";
+    // inputClass is shared from utils/styles — do not redefine locally.
 
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -76,8 +86,13 @@ export function JobSelectionSection({ playerInfo, setPlayerInfo, handleChange, l
             setPlayerInfo(prev => ({ ...prev, jobs: next, jobLevels: newLevels }));
         } else {
             const next = [...current, jobId];
-            if (next.length === 1) handleChange('mainJob', jobId);
-            setPlayerInfo(prev => ({ ...prev, jobs: next, jobLevels: { ...prev.jobLevels, [jobId]: jobId === 'BLU' ? 80 : 100 } }));
+            const isMain = next.length === 1;
+            setPlayerInfo(prev => ({ 
+                ...prev, 
+                jobs: next, 
+                mainJob: isMain ? jobId : prev.mainJob,
+                jobLevels: { ...prev.jobLevels, [jobId]: jobId === 'BLU' ? 80 : 100 } 
+            }));
         }
     };
 
@@ -203,31 +218,51 @@ export function JobSelectionSection({ playerInfo, setPlayerInfo, handleChange, l
                     const isSelected = playerInfo.jobs.includes(job.id);
                     const isMain = playerInfo.mainJob === job.id;
                     const jobName = getJobDisplayName(job);
+                    const roleColor = getRoleColor(job.role);
                     return (
                         <div
                             key={job.id}
-                            className={`flex flex-col items-center p-2 rounded-xl border transition-all ${
+                            className={`flex flex-col items-center p-2 rounded-xl border relative transition-all duration-300 group ${
                                 isSelected 
-                                    ? 'bg-neutral-100 dark:bg-neutral-800 border-neutral-300 dark:border-neutral-600 shadow-sm' 
-                                    : 'border-transparent hover:bg-neutral-50 dark:hover:bg-neutral-800/50'
-                            } ${isMain ? 'ring-2 ring-neutral-800 dark:ring-neutral-300 ring-offset-1 dark:ring-offset-neutral-900' : ''}`}
+                                    ? 'bg-white dark:bg-[#1d1d1f] shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)] z-10' 
+                                    : 'border-transparent hover:bg-neutral-50 dark:hover:bg-white/5 opacity-60 hover:opacity-100'
+                            }`}
+                            style={{ 
+                                borderColor: isSelected ? `${roleColor}80` : 'transparent',
+                                backgroundColor: isSelected ? `${roleColor}05` : undefined,
+                                boxShadow: isSelected ? `0 4px 12px -4px ${roleColor}30` : undefined,
+                            } as React.CSSProperties}
                         >
-                            <button type="button" onClick={() => toggleJob(job.id)} className="flex flex-col items-center w-full focus:outline-none overflow-hidden">
-                                <img src={job.iconUrl} alt={jobName} className={`w-8 h-8 dark-invert ${isSelected ? 'opacity-100' : 'opacity-25 grayscale'}`} />
-                                <span className={`text-[10px] mt-1 font-semibold ${isSelected ? 'text-neutral-900 dark:text-neutral-100' : 'text-[#86868b]'} text-center leading-tight truncate w-full px-0.5`}>{jobName}</span>
+                            <button type="button" onClick={() => toggleJob(job.id)} className="flex flex-col items-center w-full focus:outline-none overflow-visible pt-1.5 pb-1">
+                                <div className="relative">
+                                    <img 
+                                        src={job.iconUrl} 
+                                        alt={jobName} 
+                                        className={`w-8 h-8 transition-all duration-500 dark-invert ${isSelected ? 'scale-110 drop-shadow-sm' : 'opacity-40 grayscale group-hover:grayscale-0 group-hover:opacity-80'}`} 
+                                    />
+                                    {isMain && (
+                                        <div 
+                                            className="absolute -top-1.5 -right-1.5 bg-white dark:bg-[#1d1d1f] rounded-full p-0.5 shadow-sm border border-yellow-400"
+                                            title="Main Job"
+                                        >
+                                            <Check size={8} className="text-yellow-500 fill-yellow-500" strokeWidth={4} />
+                                        </div>
+                                    )}
+                                </div>
+                                <span className={`text-[10px] mt-1.5 font-bold ${isSelected ? 'text-neutral-900 dark:text-neutral-100' : 'text-[#86868b]'} text-center leading-tight truncate w-full px-0.5`}>{jobName}</span>
                             </button>
                             
                             {/* 레벨 입력 필드 */}
                             {isSelected && (
-                                <div className="mt-2 w-full pt-2 border-t border-neutral-200 dark:border-neutral-700 flex items-center justify-center gap-1">
-                                    <span className="text-[10px] font-bold text-[#86868b]">Lv.</span>
+                                <div className="mt-1 w-full pt-1.5 border-t border-neutral-100 dark:border-white/10 flex items-center justify-center gap-1">
+                                    <span className="text-[9px] font-extrabold opacity-40">LV</span>
                                     <input
                                         type="number"
                                         min={1}
                                         max={job.id === 'BLU' ? 80 : 100}
-                                        value={playerInfo.jobLevels[job.id] || 90}
+                                        value={playerInfo.jobLevels[job.id] || 100}
                                         onChange={e => handleLevelChange(job.id, parseInt(e.target.value) || 1)}
-                                        className="w-10 text-center text-xs font-bold bg-white dark:bg-[#1d1d1f] border border-[#d2d2d7] dark:border-[#424245] rounded block py-0.5 text-[#1d1d1f] dark:text-[#f5f5f7] focus:outline-none focus:ring-1 focus:ring-neutral-400 dark:focus:ring-neutral-500"
+                                        className="w-10 text-center text-xs font-black bg-transparent border-none rounded p-0 text-[#1d1d1f] dark:text-[#f5f5f7] focus:outline-none"
                                     />
                                 </div>
                             )}

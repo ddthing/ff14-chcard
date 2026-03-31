@@ -45,6 +45,17 @@ export const i18n = {
             pointColor: '포인트 컬러',
             newbie: '새싹',
             mentor: '멘토',
+            tabBasic: '기본',
+            tabJob: '직업',
+            tabStyle: '스타일',
+            tabDesign: '꾸미기',
+            stickers: '스티커',
+            addSticker: '스티커 추가',
+            stickerX: '가로 위치',
+            stickerY: '세로 위치',
+            stickerSize: '크기',
+            stickerRotate: '회전',
+            advancedSticker: '세부 위치 조정',
         },
         preview: {
             sprout: '새싹',
@@ -82,8 +93,8 @@ export const i18n = {
         },
         form: {
             layout: 'Layout',
-            layoutHeader: 'Horizontal',
-            layoutPortrait: 'Vertical',
+            layoutHeader: 'Vertical',
+            layoutPortrait: 'Horizontal',
             basicInfo: 'Basic Info',
             nickname: 'Character Name',
             diffIngame: 'Diff. IGN',
@@ -112,6 +123,17 @@ export const i18n = {
             pointColor: 'Point Color',
             newbie: 'Sprout',
             mentor: 'Mentor',
+            tabBasic: 'Basic',
+            tabJob: 'Jobs',
+            tabStyle: 'Style',
+            tabDesign: 'Design',
+            stickers: 'Stickers',
+            addSticker: 'Add Sticker',
+            stickerX: 'Pos X',
+            stickerY: 'Pos Y',
+            stickerSize: 'Size',
+            stickerRotate: 'Rotate',
+            advancedSticker: 'Advanced Position',
         },
         preview: {
             sprout: 'Sprout',
@@ -149,8 +171,8 @@ export const i18n = {
         },
         form: {
             layout: 'レイアウト',
-            layoutHeader: '横型',
-            layoutPortrait: '縦型',
+            layoutHeader: '縦型',
+            layoutPortrait: '横型',
             basicInfo: '基本情報',
             nickname: 'キャラクター名',
             diffIngame: 'ゲーム内と異なる',
@@ -179,6 +201,17 @@ export const i18n = {
             pointColor: 'ポイントカラー',
             newbie: '若葉',
             mentor: 'メンター',
+            tabBasic: '基本',
+            tabJob: 'ジョブ',
+            tabStyle: 'スタイル',
+            tabDesign: 'デザイン',
+            stickers: 'ステッカー',
+            addSticker: 'ステッカー追加',
+            stickerX: '横位置',
+            stickerY: '縦位置',
+            stickerSize: 'サイズ',
+            stickerRotate: '回転',
+            advancedSticker: '詳細位置の調整',
         },
         preview: {
             sprout: '若葉',
@@ -243,21 +276,21 @@ export const getActiveTimes = (lang: Language) => {
 
 export const PLAYSTYLES_KO = [
     '초보/새싹', '복귀 유저', '하드코어/레이드', '절 레이드',
-    '라이트/즐겜', '스샷/룩덕', '하우징', '제작/채집',
+    '라이트/즐겜', '스샷/룩덕', '하우징', '제작/채집', '터주',
     'RP(롤플레잉)', 'PVP', '업적작', '마작', '골드소서', '지도/보물고',
     '디스코드 가능', '트위터 교류', '인게임 위주'
 ];
 
 export const PLAYSTYLES_EN = [
     'Sprout / Beginner', 'Returner', 'Hardcore / Raid', 'Ultimate Raids',
-    'Casual / Social', 'Gpose / Glamour', 'Housing', 'Crafter / Gatherer',
+    'Casual / Social', 'Gpose / Glamour', 'Housing', 'Crafter / Gatherer', 'Big Fish',
     'Roleplay (RP)', 'PvP', 'Achievement Hunter', 'Mahjong', 'Gold Saucer', 'Treasure Hunt',
     'Discord Available', 'Twitter (X) Active', 'In-game Focused'
 ];
 
 export const PLAYSTYLES_JA = [
     '初心者/若葉', '復帰勢', 'レイド/高難易度', '絶レイド',
-    'ライト勢/エンジョイ', 'SS/ミラプリ', 'ハウジング', 'ギャザクラ',
+    'ライト勢/エンジョイ', 'SS/ミラプリ', 'ハウジング', 'ギャザクラ', 'ヌシ釣り',
     'RP(ロールプレイ)', 'PvP', 'アチーブメント', '麻雀', 'ゴールドソーサー', '地図/宝物庫',
     'Discord可能', 'Twitter(X)交流有', 'ログイン多め'
 ];
@@ -293,47 +326,53 @@ export const activeTimeTranslate = (time: string, toLang: Language) => {
 
 export const FONTS_KO = [
     { id: 'font-pretendard', name: '프리텐다드' },
-    { id: 'font-paperozi', name: '페이퍼로지' },
-    { id: 'font-a2z', name: '에이투지체' },
-    { id: 'font-tmoney', name: '티머니 둥근바람' },
-    { id: 'font-cookie', name: '쿠키런체' },
-    { id: 'font-police', name: '경찰공평체' },
+    { id: 'font-mona', name: '모나12' },
+    { id: 'font-gmarket', name: 'G마켓 산스' },
+    { id: 'font-police', name: '그리운 경찰공평체' },
     { id: 'font-myungjo', name: '부크크 명조' },
-    { id: 'font-stardust', name: 'PF스타더스트' },
-    { id: 'font-gangwon', name: '강원교육모두체' },
-    { id: 'font-galmuri', name: '갈무리11' },
-    { id: 'font-tangba', name: '탕바체' },
-    { id: 'font-puradak', name: '푸라닭 젠틀고딕' },
+    { id: 'font-seabreeze', name: '온글잎 바닷바람' },
+    { id: 'font-schoolsafe', name: '학교안심 나드르이' },
+    { id: 'font-hancom', name: '한컴 말랑말랑' },
+    { id: 'font-cafe24', name: '카페24 슈퍼매직' },
+    { id: 'font-gangwon', name: '강원교육모두' },
+    { id: 'font-cookierun', name: '쿠키런' },
+    { id: 'font-galmuri9', name: '갈무리9' },
+    { id: 'font-seogung', name: '서궁' },
+    { id: 'font-cloudsanscode', name: '구름 산스 코드' }
 ];
 
 export const FONTS_EN = [
     { id: 'font-pretendard', name: 'Pretendard' },
-    { id: 'font-paperozi', name: 'Paperlogy' },
-    { id: 'font-a2z', name: 'A2Z' },
-    { id: 'font-tmoney', name: 'TMoney RoundWind' },
-    { id: 'font-cookie', name: 'CookieRun' },
-    { id: 'font-police', name: 'Police Fairness' },
+    { id: 'font-mona', name: 'Mona12' },
+    { id: 'font-gmarket', name: 'GMarket Sans' },
+    { id: 'font-police', name: 'Nostalgic Police Fairness' },
     { id: 'font-myungjo', name: 'Bookk Myungjo' },
-    { id: 'font-stardust', name: 'PF Stardust' },
-    { id: 'font-gangwon', name: 'Gangwon Edu Modu' },
-    { id: 'font-galmuri', name: 'Galmuri 11' },
-    { id: 'font-tangba', name: 'Tangba' },
-    { id: 'font-puradak', name: 'Puradak Gentle Gothic' },
+    { id: 'font-seabreeze', name: 'OngleIp Sea Breeze' },
+    { id: 'font-schoolsafe', name: 'School Safe Outing' },
+    { id: 'font-hancom', name: 'Hancom Malrangmalrang' },
+    { id: 'font-cafe24', name: 'Cafe24 Super Magic' },
+    { id: 'font-gangwon', name: 'Gangwon Education Modu' },
+    { id: 'font-cookierun', name: 'CookieRun' },
+    { id: 'font-galmuri9', name: 'Galmuri9' },
+    { id: 'font-seogung', name: 'Seogung' },
+    { id: 'font-cloudsanscode', name: 'Cloud Sans Code' }
 ];
 
 export const FONTS_JA = [
     { id: 'font-pretendard', name: 'Pretendard' },
-    { id: 'font-paperozi', name: 'Paperlogy' },
-    { id: 'font-a2z', name: 'A2Z' },
-    { id: 'font-tmoney', name: 'TMoney RoundWind' },
-    { id: 'font-cookie', name: 'CookieRun' },
-    { id: 'font-police', name: 'Police Fairness' },
-    { id: 'font-myungjo', name: 'Bookk Myungjo' },
-    { id: 'font-stardust', name: 'PF Stardust' },
-    { id: 'font-gangwon', name: 'Gangwon Edu Modu' },
-    { id: 'font-galmuri', name: 'ガルムリ11' },
-    { id: 'font-tangba', name: 'Tangba' },
-    { id: 'font-puradak', name: 'Puradak Gentle Gothic' },
+    { id: 'font-mona', name: 'モナ12' },
+    { id: 'font-gmarket', name: 'Gマーケットサンズ' },
+    { id: 'font-police', name: '恋しい警察公平体' },
+    { id: 'font-myungjo', name: 'ブクク明朝' },
+    { id: 'font-seabreeze', name: 'オンリーフ潮風' },
+    { id: 'font-schoolsafe', name: '学校安心ナドゥルイ' },
+    { id: 'font-hancom', name: 'ハンコムふわふわ' },
+    { id: 'font-cafe24', name: 'Cafe24スーパーマジック' },
+    { id: 'font-gangwon', name: '江原教育モドゥ' },
+    { id: 'font-cookierun', name: 'クッキーラン' },
+    { id: 'font-galmuri9', name: 'ガルムリ9' },
+    { id: 'font-seogung', name: '西宮' },
+    { id: 'font-cloudsanscode', name: 'クルムSansコード' }
 ];
 
 export const getFonts = (lang: Language) => {

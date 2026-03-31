@@ -11,6 +11,15 @@ export interface Job {
     iconUrl: string;
 }
 
+export interface Sticker {
+    id: string;
+    url: string; // Base64 or Object URL
+    x: number; // 0-100 (percentage)
+    y: number; // 0-100 (percentage)
+    scale: number; // 0.1 to 3.0
+    rotation: number; // 0 to 360
+}
+
 export interface PlayerInfo {
     name: string;
     region: Region;
@@ -31,4 +40,5 @@ export interface PlayerInfo {
     layout?: 'header' | 'left-portrait';
     language: Language;
     pointColor: string;
+    stickers?: Sticker[];
 }

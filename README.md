@@ -1,10 +1,10 @@
 # 🎮 FF14 캐릭터 카드 생성기 (FF14 Character Card Generator)
 
-![FF14 Character Card Generator](https://ff14-chcard.vercel.app/og-image.png)
+![FF14 Character Card Generator](https://ff14-chcard.pages.dev/og-image.png)
 
 파이널 판타지 14(Final Fantasy XIV) 플레이어를 위한 고퀄리티 캐릭터 프로필 카드 생성기입니다. 클릭 몇 번으로 나만의 예쁜 캐릭터 카드를 만들고 이미지로 저장해 보세요!
 
-[👉 지금 바로 만들기](https://ff14-chcard.vercel.app/)
+[👉 지금 바로 만들기](https://ff14-chcard.pages.dev/)
 
 ---
 
@@ -33,7 +33,7 @@
 
 - **Frontend**: React (TypeScript), Vite
 - **Styling**: Tailwind CSS, Framer Motion (Animations)
-- **Deployment**: Vercel
+- **Deployment**: Cloudflare Pages
 - **SEO/AdSense**: Optimized for Google search with JSON-LD and robots.txt
 
 ---

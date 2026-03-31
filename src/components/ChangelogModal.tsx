@@ -6,12 +6,21 @@ import type { Language } from '../types';
 
 interface ChangelogModalProps {
     lang: Language;
+    /**
+     * External open trigger — set to true to force-open the modal from a
+     * parent component (e.g. the floating Changelog badge). The internal
+     * localStorage check continues to fire independently on mount.
+     */
+    forceOpen?: boolean;
+    /** Called when the user dismisses the modal via the badge's trigger. */
+    onForceClose?: () => void;
 }
 
-export function ChangelogModal({ lang }: ChangelogModalProps) {
+export function ChangelogModal({ lang, forceOpen, onForceClose }: ChangelogModalProps) {
     const [isOpen, setIsOpen] = useState(false);
     const t = i18n[lang].changelog;
 
+    // Auto-open on first visit after a new release.
     useEffect(() => {
         const lastSeenVersion = localStorage.getItem('lastSeenVersion');
         if (lastSeenVersion !== APP_VERSION) {
@@ -19,9 +28,15 @@ export function ChangelogModal({ lang }: ChangelogModalProps) {
         }
     }, []);
 
+    // Respond to external open triggers (e.g. badge click).
+    useEffect(() => {
+        if (forceOpen) setIsOpen(true);
+    }, [forceOpen]);
+
     const handleClose = () => {
         localStorage.setItem('lastSeenVersion', APP_VERSION);
         setIsOpen(false);
+        onForceClose?.();
     };
 
     if (!isOpen) return null;
@@ -33,8 +48,8 @@ export function ChangelogModal({ lang }: ChangelogModalProps) {
                 {/* Header */}
                 <div className="p-6 pb-2 flex justify-between items-start">
                     <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 text-[#0071e3] font-bold text-xs uppercase tracking-wider">
-                            <Sparkles size={14} />
+                        <div className="flex items-center gap-2 text-[#86868b] font-semibold text-xs uppercase tracking-wider">
+                            <Sparkles size={13} />
                             {APP_VERSION} Update
                         </div>
                         <h2 className="text-2xl font-bold text-[#1d1d1f] dark:text-[#f5f5f7] tracking-tight">
@@ -65,7 +80,7 @@ export function ChangelogModal({ lang }: ChangelogModalProps) {
                                 <ul className="space-y-3">
                                     {entry.items[lang].map((item, i) => (
                                         <li key={i} className="flex items-start gap-2.5 text-[13px] leading-relaxed text-[#424245] dark:text-[#a1a1a6]">
-                                            <ChevronRight size={14} className="shrink-0 mt-0.5 text-[#0071e3]" />
+                                            <ChevronRight size={14} className="shrink-0 mt-0.5 text-[#86868b]" />
                                             <span>{item}</span>
                                         </li>
                                     ))}
@@ -79,7 +94,7 @@ export function ChangelogModal({ lang }: ChangelogModalProps) {
                 <div className="p-6 pt-2">
                     <button
                         onClick={handleClose}
-                        className="w-full py-3.5 bg-[#0071e3] text-white rounded-xl font-semibold text-sm hover:bg-[#0077ED] transition-colors shadow-sm"
+                        className="w-full py-3.5 bg-[#1d1d1f] dark:bg-[#f5f5f7] text-white dark:text-[#1d1d1f] rounded-xl font-semibold text-sm hover:bg-[#3a3a3c] dark:hover:bg-[#e8e8ed] active:scale-[0.98] transition-all"
                     >
                         {t.close}
                     </button>

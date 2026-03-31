@@ -28,39 +28,19 @@ npm run preview
 
 ## 배포 방법
 
-### 옵션 1: Vercel (추천 — 가장 간단)
+### Cloudflare Pages 배포 (현재 사용 환경)
 
-1. [vercel.com](https://vercel.com) 가입 후 GitHub 연동
-2. 프로젝트를 GitHub에 push
-3. Vercel에서 "Import Project" → 레포지토리 선택
-4. Framework Preset: **Vite** 자동 감지됨
-5. "Deploy" 클릭 → 완료!
+현재 이 프로젝트는 `https://ff14-chcard.pages.dev/` 로 배포되어 있습니다. Cloudflare Pages를 통해 GitHub 레포지토리 자동 배포를 이용하시면 됩니다.
 
-> 커스텀 도메인 연결도 Vercel 대시보드에서 바로 가능합니다.
+1. [Cloudflare 대시보드](https://dash.cloudflare.com/) 로그인 후 "Pages" 이동
+2. "Connect to Git" → GitHub 레포지토리 연동
+3. 빌드 설정:
+   - Framework preset: `Vite`
+   - Build command: `npm run build`
+   - Build output directory: `dist`
+4. Deploy!
 
-### 옵션 2: Netlify
-
-1. [netlify.com](https://netlify.com) 가입
-2. "Sites" → "Add new site" → "Import an existing project"
-3. Build command: `npm run build`
-4. Publish directory: `dist`
-5. Deploy!
-
-### 옵션 3: GitHub Pages
-
-1. `vite.config.ts`에 `base` 추가:
-```ts
-export default defineConfig({
-  base: '/레포지토리-이름/',
-  plugins: [react(), tailwindcss()],
-})
-```
-
-2. 빌드 후 `dist` 폴더를 `gh-pages` 브랜치에 push:
-```bash
-npm run build
-npx gh-pages -d dist
-```
+> **참고**: SPA(Single Page Application) 라우팅을 위해 `public/_redirects` 파일이 배포 시 자동으로 처리됩니다.
 
 ---
 

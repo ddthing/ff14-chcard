@@ -133,82 +133,110 @@
   font-display: swap;
 }
 
-/* 3. 쿠키런체 */
+/* 3. 모나12 */
 @font-face {
-  font-family: 'CookieRun';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Regular.woff') format('woff');
-  font-weight: normal;
-  font-display: swap;
+    font-family: 'Mona12';
+    src: url('https://cdn.jsdelivr.net/gh/MonadABXY/mona-font/web/Mona12.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
 }
 
 @font-face {
-  font-family: 'CookieRun';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/CookieRunOTF-Bold00.woff') format('woff');
-  font-weight: 700;
-  font-display: swap;
+    font-family: 'Mona12';
+    src: url('https://cdn.jsdelivr.net/gh/MonadABXY/mona-font/web/Mona12-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
+/* 4. 갈무리9 */
+@font-face {
+    font-family: 'Galmuri9';
+    src: url('https://cdn.jsdelivr.net/npm/galmuri@latest/dist/Galmuri9.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
+/* 4. G마켓 산스 */
+@font-face {
+    font-family: 'GMarketSans';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansLight.woff') format('woff');
+    font-weight: 300;
+    font-display: swap;
 }
 
 @font-face {
-  font-family: 'CookieRun';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/CookieRunOTF-Black00.woff') format('woff');
-  font-weight: 900;
-  font-display: swap;
-}
-
-/* 4. 그리운 경찰공평체 */
-@font-face {
-  font-family: 'NostalgicPoliceFairness';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/Griun_PolFairness-Rg.woff2') format('woff2');
-  font-weight: normal;
-  font-display: swap;
-}
-
-/* 5. 부크크 명조 */
-@font-face {
-  font-family: 'BookkMyungjo';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkMyungjo-Lt.woff2') format('woff2');
-  font-weight: 400;
-  font-display: swap;
+    font-family: 'GMarketSans';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansMedium.woff') format('woff');
+    font-weight: 500;
+    font-display: swap;
 }
 
 @font-face {
-  font-family: 'BookkMyungjo';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkMyungjo-Bd.woff2') format('woff2');
-  font-weight: 700;
-  font-display: swap;
+    font-family: 'GMarketSans';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/GmarketSansBold.woff') format('woff');
+    font-weight: 700;
+    font-display: swap;
 }
 
-/* 6. PF 스타더스트 3.0체 */
+/* 5. 그리운 경찰공평체 */
 @font-face {
-  font-family: 'PfStardust';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/PFStardust.woff') format('woff');
-  font-weight: normal;
-  font-display: swap;
+    font-family: 'NostalgicPoliceFairness';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/Griun_PolFairness-Rg.woff2') format('woff2');
+    font-weight: normal;
+    font-display: swap;
 }
 
-/* 7. 강원교육모두체 */
+/* 6. 부크크 명조 */
 @font-face {
-  font-family: 'GangwonEducationModuche';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.woff') format('woff');
-  font-weight: 300;
-  font-display: swap;
+    font-family: 'BookkMyungjo';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkMyungjo-Lt.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
 }
 
 @font-face {
-  font-family: 'GangwonEducationModuche';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff') format('woff');
-  font-weight: 700;
-  font-display: swap;
+    font-family: 'BookkMyungjo';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2302@1.0/BookkMyungjo-Bd.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
 }
 
-/* 8. 갈무리11체 */
-@import url('https://cdn.jsdelivr.net/npm/galmuri@latest/dist/galmuri.css');
+/* 7. 온글잎 바닷바람 */
+@font-face {
+    font-family: 'OngleIpSeaBreeze';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2510-1@1.0/Ownglyph_the_sea_breeze-Rg.woff2') format('woff2');
+    font-weight: normal;
+    font-display: swap;
+}
+
+/* 8. 학교안심 나드르이 */
+@font-face {
+    font-family: 'SchoolSafeOuting';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimNadeuriTTF-L.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
 
 @font-face {
-  font-family: 'Galmuri11';
-  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2506-1@1.0/Galmuri11-Bold.woff2') format('woff2');
-  font-weight: 700;
-  font-display: swap;
+    font-family: 'SchoolSafeOuting';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimNadeuriTTF-B.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
+/* 9. 한컴 말랑말랑 */
+@font-face {
+    font-family: 'HancomMalrangmalrang';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2406-1@1.0/HancomMalangMalang-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'HancomMalrangmalrang';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2406-1@1.0/HancomMalangMalang-Bold.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
 }
 
 /* 9. 탕바체 */
@@ -306,68 +334,123 @@
   font-display: swap;
 }
 
+/* 13. 카페24 슈퍼매직 */
+@font-face {
+    font-family: 'Cafe24SuperMagic';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/Cafe24Supermagic-Regular-v1.0.woff2') format('woff2');
+    font-weight: 400;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Cafe24SuperMagic';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/Cafe24Supermagic-Bold-v1.0.woff2') format('woff2');
+    font-weight: 700;
+    font-display: swap;
+}
+
+/* 14. 강원교육모두 */
+@font-face {
+    font-family: 'GangwonEducationModuche';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFLightA.woff') format('woff');
+    font-weight: 300;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'GangwonEducationModuche';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2201-2@1.0/GangwonEdu_OTFBoldA.woff') format('woff');
+    font-weight: 700;
+    font-display: swap;
+}
+
+/* 15. 쿠키런 */
+@font-face {
+    font-family: 'CookieRun';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2001@1.1/CookieRun-Regular.woff') format('woff');
+    font-weight: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'CookieRun';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/CookieRunOTF-Bold00.woff') format('woff');
+    font-weight: 700;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'CookieRun';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_twelve@1.0/CookieRunOTF-Black00.woff') format('woff');
+    font-weight: 900;
+    font-display: swap;
+}
+
+/* 16. 서궁 */
+@font-face {
+    font-family: 'Seogung';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-4@1.1/Suhgung12.woff2') format('woff2');
+    font-weight: normal;
+    font-display: swap;
+}
+
+/* 17. 구름 산스 코드 */
+@font-face {
+    font-family: 'CloudSansCode';
+    src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408@1.0/goorm-sans-code.woff2') format('woff2');
+    font-weight: normal;
+    font-display: swap;
+}
+
 
 /* ===== Base ===== */
 * {
   box-sizing: border-box;
 }
 
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
+  @apply bg-[#f5f5f7] dark:bg-black transition-colors duration-300;
   font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 /* ===== Card Font Classes ===== */
-.font-a2z {
-  font-family: 'A2z', sans-serif !important;
-}
-
-.font-pretendard {
-  font-family: 'Pretendard', sans-serif !important;
-}
-
-.font-cookie {
-  font-family: 'CookieRun', sans-serif !important;
-}
-
-.font-police {
-  font-family: 'NostalgicPoliceFairness', sans-serif !important;
-}
-
-.font-myungjo {
-  font-family: 'BookkMyungjo', serif !important;
-}
-
-.font-stardust {
-  font-family: 'PfStardust', sans-serif !important;
-}
-
-.font-gangwon {
-  font-family: 'GangwonEducationModuche', sans-serif !important;
-}
-
-.font-galmuri {
-  font-family: 'Galmuri11', sans-serif !important;
-}
-
-.font-tangba {
-  font-family: 'Tangba', sans-serif !important;
-}
-
-.font-puradak {
-  font-family: 'PuradakGentleGothic', sans-serif !important;
-}
-
-.font-paperozi {
-  font-family: 'Paperozi', sans-serif !important;
-}
-
-.font-tmoney {
-  font-family: 'TMoneyDungunbaram', sans-serif !important;
-}
+.font-a2z { font-family: 'A2z', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-pretendard { font-family: 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-mona { font-family: 'Mona12', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-gmarket { font-family: 'GMarketSans', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-police { font-family: 'NostalgicPoliceFairness', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-myungjo { font-family: 'BookkMyungjo', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', serif !important; }
+.font-seabreeze { font-family: 'OngleIpSeaBreeze', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-schoolsafe { font-family: 'SchoolSafeOuting', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-hancom { font-family: 'HancomMalrangmalrang', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-cafe24 { font-family: 'Cafe24SuperMagic', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-gangwon { font-family: 'GangwonEducationModuche', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-cookierun { font-family: 'CookieRun', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-galmuri9 { font-family: 'Galmuri9', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-seogung { font-family: 'Seogung', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
+.font-cloudsanscode { font-family: 'CloudSansCode', 'Pretendard', 'Meiryo', 'Hiragino Kaku Gothic ProN', sans-serif !important; }
 
 /* ===== Utilities ===== */
+
+/* Glassmorphism Effect */
+.glass {
+  @apply backdrop-blur-md bg-white/70 dark:bg-[#1d1d1f]/70 border border-white/20 dark:border-white/10 shadow-sm ring-1 ring-black/5;
+}
+
+.glass-dark {
+  @apply backdrop-blur-lg bg-black/40 border border-white/10 shadow-xl;
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -377,18 +460,109 @@ body {
   display: none;
 }
 
-
 /* 아이콘 색상 반전 (라이트모드: 검정배경→흰아이콘) */
-.icon-invert {
-  filter: invert(1);
-}
+.icon-invert { filter: invert(1); }
 
 /* 다크모드: 흰배경→검정아이콘이므로 반전 해제 */
-:where(.dark, .dark *) .icon-invert {
-  filter: invert(0);
-}
+:where(.dark, .dark *) .icon-invert { filter: invert(0); }
 
 /* 다크모드에서만 아이콘 색상 반전 (검정 아이콘 → 흰 아이콘) */
-.dark .dark-invert {
-  filter: invert(1) !important;
+.dark .dark-invert { filter: invert(1) !important; }
+
+
+/* ===== AdSense Banner ===== */
+
+.ad-banner-wrapper {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #f5f5f7;
+  border: 1px solid rgba(210, 210, 215, 0.5);
+  padding: 10px;
+  transition: background 0.3s;
 }
+
+:where(.dark, .dark *) .ad-banner-wrapper {
+  background: #1c1c1e;
+  border-color: rgba(66, 66, 69, 0.5);
+}
+
+.ad-sidebar { width: 100%; min-height: 280px; }
+.ad-wide { width: 100%; min-height: 100px; }
+
+.ad-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #aeaeb2;
+  letter-spacing: 0.04em;
+  text-align: center;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+}
+
+:where(.dark, .dark *) .ad-label { color: #636366; }
+
+.ad-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  border-radius: 10px;
+  border: 2px dashed rgba(210, 210, 215, 0.7);
+  background: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(210, 210, 215, 0.15) 6px, rgba(210, 210, 215, 0.15) 12px);
+}
+
+:where(.dark, .dark *) .ad-placeholder {
+  border-color: rgba(66, 66, 69, 0.7);
+  background: repeating-linear-gradient(45deg, transparent, transparent 6px, rgba(66, 66, 69, 0.2) 6px, rgba(66, 66, 69, 0.2) 12px);
+}
+
+.ad-placeholder-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #c7c7cc;
+  letter-spacing: 0.05em;
+}
+
+:where(.dark, .dark *) .ad-placeholder-text { color: #48484a; }
+
+/* ===== Tab Animation ===== */
+@keyframes tabIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-tab-in {
+  animation: tabIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* ===== Canvas Background ===== */
+.canvas-pattern {
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.04) 1.2px, transparent 1.2px);
+  background-size: 20px 20px;
+}
+:where(.dark, .dark *) .canvas-pattern {
+  background-image: radial-gradient(circle, rgba(255, 255, 255, 0.04) 1.2px, transparent 1.2px);
+}
+
+/* ===== Custom Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+}
+:where(.dark, .dark *) ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+::-webkit-scrollbar-thumb:hover { background-color: rgba(0, 0, 0, 0.25); }
+:where(.dark, .dark *) ::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, 0.25); }
+::-webkit-scrollbar-corner { background: transparent; }

@@ -1,86 +1,32 @@
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useRef, useCallback, useState } from 'react';
 import { MainLayout } from './components/MainLayout';
 import { CardForm } from './components/CardForm';
 import { CardPreview } from './components/CardPreview';
 import { ChangelogModal } from './components/ChangelogModal';
-import type { PlayerInfo, Language } from './types';
-import { toBlob } from 'html-to-image';
+import { ChangelogBadge } from './components/ChangelogBadge';
+import { toPng } from 'html-to-image';
 import { Download } from 'lucide-react';
 import { i18n } from './utils/i18n';
+import { PlayerProvider, usePlayer } from './contexts/PlayerContext';
 
-/**
- * FF14 Character Card Application
- * 
- * The main entry point for the application. Manages character state, 
- * handles local persistence, and coordinates image generation/download.
- */
-const STORAGE_KEY = 'ff14-playerInfo';
-
-const defaultPlayerInfo: PlayerInfo = {
-  name: '',
-  region: 'KR',
-  dataCenter: 'Korea',
-  server: '',
-  jobs: [],
-  playstyles: [],
-  activeTime: '',
-  comment: '',
-  font: 'font-pretendard',
-  mainJob: undefined,
-  isNicknameChanged: false,
-  isSprout: false,
-  isMentor: false,
-  jobLevels: {},
-  imagePosition: { x: 0, y: 0, scale: 1 },
-  layout: 'header',
-  language: 'ko',
-  pointColor: '#e44c21',
-};
-
-function loadPlayerInfo(): PlayerInfo {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return defaultPlayerInfo;
-    const parsed = JSON.parse(raw);
-    // Merge with defaults to handle missing fields from older saves
-    return { ...defaultPlayerInfo, ...parsed };
-  } catch {
-    return defaultPlayerInfo;
-  }
-}
-
-function App() {
-  const [playerInfo, setPlayerInfo] = useState<PlayerInfo>(loadPlayerInfo);
-
+function AppContent() {
+  const { playerInfo, updateImage, updateLanguage } = usePlayer();
   const previewRef = useRef<HTMLDivElement>(null);
 
-  // Auto-save to localStorage (debounced by React batching)
-  useEffect(() => {
-    try {
-      // Save without image to avoid localStorage quota issues
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { image: _image, ...rest } = playerInfo;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
-    } catch {
-      // Silently fail if quota exceeded
-    }
-  }, [playerInfo]);
-
-  const handleImageChange = useCallback((image: string | undefined) => {
-    setPlayerInfo(prev => ({ ...prev, image }));
-  }, []);
-
-  const handleLanguageChange = useCallback((language: Language) => {
-    setPlayerInfo(prev => ({ ...prev, language }));
-  }, []);
+  // ─── Changelog modal state ─────────────────────────────────────────────────
+  // Tracks whether the modal was explicitly opened via the floating badge.
+  // The modal manages its own auto-open logic internally via localStorage.
+  const [isChangelogOpen, setIsChangelogOpen] = useState(false);
 
   const handleDownload = useCallback(() => {
     if (previewRef.current === null) return;
 
+    // Reset transform for accurate capture
     const originalTransform = previewRef.current.style.transform;
     previewRef.current.style.transform = 'none';
 
-    toBlob(previewRef.current, {
+    // toPng is generally more stable for font embedding
+    toPng(previewRef.current, {
       cacheBust: true,
       pixelRatio: 2,
       style: {
@@ -88,46 +34,63 @@ function App() {
         transform: 'none',
       },
     })
-      .then((blob) => {
+      .then((dataUrl: string) => {
         if (previewRef.current) previewRef.current.style.transform = originalTransform;
-        if (!blob) throw new Error('Blob generation failed');
+        if (!dataUrl) throw new Error('Image generation failed');
 
-        const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.download = `ff14-${playerInfo.name || 'sheet'}.png`;
-        link.href = url;
+        link.href = dataUrl;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-
-        // Cleanup after a short delay
-        setTimeout(() => window.URL.revokeObjectURL(url), 10000);
       })
-      .catch((err) => {
+      .catch((err: unknown) => {
         if (previewRef.current) previewRef.current.style.transform = originalTransform;
         console.error('Failed to generate image:', err);
         const errorMessage = err instanceof Error ? err.message : 'Unknown error';
-        alert(`${i18n[playerInfo.language].layout.saveError}\n\nDetails: ${errorMessage}`);
+        
+        let detailedMessage = i18n[playerInfo.language].layout.saveError;
+        if (errorMessage.includes('cssRules')) {
+          detailedMessage += '\n\nCORS Error: External fonts (Google Fonts) blocked. Please try again or check your internet connection.';
+        } else {
+          detailedMessage += `\n\nDetails: ${errorMessage}`;
+        }
+        alert(detailedMessage);
       });
-  }, [playerInfo.name, playerInfo.language]);
+  }, [playerInfo.name, playerInfo.language, playerInfo.pointColor]);
 
   return (
     <>
+      {/* Changelog modal — receives external trigger from the floating badge */}
+      <ChangelogModal
+        lang={playerInfo.language}
+        forceOpen={isChangelogOpen}
+        onForceClose={() => setIsChangelogOpen(false)}
+      />
       <MainLayout
         lang={playerInfo.language}
         layoutType={playerInfo.layout || 'header'}
-        onLanguageChange={handleLanguageChange}
+        onLanguageChange={updateLanguage}
+        changelogBadge={
+          <ChangelogBadge
+            lang={playerInfo.language}
+            onClick={() => setIsChangelogOpen(true)}
+          />
+        }
         form={
           <div className="flex flex-col h-full relative">
-            <div className="flex-1 p-6 pb-24">
-              <CardForm playerInfo={playerInfo} setPlayerInfo={setPlayerInfo} />
+            <div className="flex-1 min-h-0">
+              <CardForm />
             </div>
-
-            {/* 
-              Sticky Action Bar: Pinned to the bottom for quick access. 
-              On mobile, it uses fixed positioning to stay at the viewport edge.
-            */}
-            <div className="fixed bottom-0 left-0 right-0 md:sticky md:bottom-0 bg-white/80 dark:bg-[#1d1d1f]/80 backdrop-blur-xl border-t border-neutral-200 dark:border-[#3a3a3c] p-4 mt-auto z-40">
+            {/*
+             * Save Button Bar
+             *
+             * Fixed to the viewport bottom on mobile; absolute within the sidebar on desktop.
+             * Opacity is set to 95% (not 100%) to preserve the blur effect while preventing
+             * the hatched ad-placeholder behind it from bleeding through on short content.
+             */}
+            <div className="fixed bottom-0 left-0 right-0 md:absolute md:bottom-0 md:w-full bg-white/95 dark:bg-[#1d1d1f]/95 backdrop-blur-xl border-t border-[#d2d2d7]/60 dark:border-[#424245]/60 p-4 shrink-0 z-40">
               <button
                 onClick={handleDownload}
                 className="w-full bg-neutral-900 dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-100 text-white dark:text-black font-semibold text-sm py-3.5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-2xl lg:shadow-none"
@@ -141,14 +104,20 @@ function App() {
         preview={
           <CardPreview
             ref={previewRef}
-            playerInfo={playerInfo}
-            onImageChange={handleImageChange}
+            onImageChange={updateImage}
             id="card-preview"
           />
         }
       />
-      <ChangelogModal lang={playerInfo.language} />
     </>
+  );
+}
+
+function App() {
+  return (
+    <PlayerProvider>
+      <AppContent />
+    </PlayerProvider>
   );
 }
 
