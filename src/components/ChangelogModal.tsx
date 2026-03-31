@@ -67,18 +67,18 @@ export function ChangelogModal({ lang, forceOpen, onForceClose }: ChangelogModal
                 {/* Content */}
                 <div className="flex-1 overflow-y-auto px-6 py-4 scrollbar-hide">
                     <div className="space-y-8">
-                        {CHANGELOG.map((entry, idx) => (
-                            <div key={entry.version} className={idx !== 0 ? 'opacity-60 pt-4 border-t border-[#d2d2d7]/50 dark:border-[#424245]/50' : ''}>
+                        {CHANGELOG.length > 0 && (
+                            <div key={CHANGELOG[0].version}>
                                 <div className="flex items-baseline justify-between mb-3">
                                     <span className="text-sm font-bold text-[#1d1d1f] dark:text-[#f5f5f7]">
-                                        {entry.version}
+                                        {CHANGELOG[0].version}
                                     </span>
                                     <span className="text-[11px] font-medium text-[#86868b]">
-                                        {entry.date}
+                                        {CHANGELOG[0].date}
                                     </span>
                                 </div>
                                 <ul className="space-y-3">
-                                    {entry.items[lang].map((item, i) => (
+                                    {CHANGELOG[0].items[lang].map((item, i) => (
                                         <li key={i} className="flex items-start gap-2.5 text-[13px] leading-relaxed text-[#424245] dark:text-[#a1a1a6]">
                                             <ChevronRight size={14} className="shrink-0 mt-0.5 text-[#86868b]" />
                                             <span>{item}</span>
@@ -86,7 +86,7 @@ export function ChangelogModal({ lang, forceOpen, onForceClose }: ChangelogModal
                                     ))}
                                 </ul>
                             </div>
-                        ))}
+                        )}
                     </div>
                 </div>
 

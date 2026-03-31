@@ -97,12 +97,23 @@ export function StickerSection() {
                                     {/* Scale + Rotation sliders */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         {/* Scale */}
-                                        <div className="space-y-1.5">
-                                            <div className="flex justify-between items-center px-1">
-                                                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                                        <div className="space-y-1.5 p-2 bg-neutral-50 dark:bg-[#2d2d2f] rounded-xl border border-neutral-200 dark:border-[#424245]">
+                                            <div className="flex justify-between items-center px-1 mb-1">
+                                                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5 font-pretendard">
                                                     <Maximize size={12} /> {t.stickerSize}
                                                 </label>
-                                                <span className="text-[10px] font-mono text-neutral-500">{sticker.scale.toFixed(1)}x</span>
+                                                <div className="flex items-center gap-0.5">
+                                                    <input
+                                                        type="number"
+                                                        min="0.1"
+                                                        max="3"
+                                                        step="0.1"
+                                                        value={sticker.scale}
+                                                        onChange={(e) => updateSticker(sticker.id, { scale: Number(e.target.value) })}
+                                                        className="w-10 bg-transparent text-right text-[11px] font-mono font-bold text-[#1d1d1f] dark:text-[#f5f5f7] outline-none"
+                                                    />
+                                                    <span className="text-[10px] font-mono text-neutral-400">x</span>
+                                                </div>
                                             </div>
                                             <input
                                                 type="range"
@@ -116,12 +127,22 @@ export function StickerSection() {
                                         </div>
 
                                         {/* Rotation */}
-                                        <div className="space-y-1.5">
-                                            <div className="flex justify-between items-center px-1">
-                                                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5">
+                                        <div className="space-y-1.5 p-2 bg-neutral-50 dark:bg-[#2d2d2f] rounded-xl border border-neutral-200 dark:border-[#424245]">
+                                            <div className="flex justify-between items-center px-1 mb-1">
+                                                <label className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-1.5 font-pretendard">
                                                     <RotateCw size={12} /> {t.stickerRotate}
                                                 </label>
-                                                <span className="text-[10px] font-mono text-neutral-500">{sticker.rotation}°</span>
+                                                <div className="flex items-center gap-0.5">
+                                                    <input
+                                                        type="number"
+                                                        min="0"
+                                                        max="360"
+                                                        value={sticker.rotation}
+                                                        onChange={(e) => updateSticker(sticker.id, { rotation: Number(e.target.value) })}
+                                                        className="w-10 bg-transparent text-right text-[11px] font-mono font-bold text-[#1d1d1f] dark:text-[#f5f5f7] outline-none"
+                                                    />
+                                                    <span className="text-[10px] font-mono text-neutral-400">°</span>
+                                                </div>
                                             </div>
                                             <input
                                                 type="range"

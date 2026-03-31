@@ -9,7 +9,7 @@
  * "caption cap" style — 11px, semibold, #86868b, uppercase — mirroring
  * the treatment used in iOS Settings and macOS System Settings.
  */
-export function Section({ title, children }: { title: string; children: React.ReactNode }) {
+export function Section({ title, children }: { title: React.ReactNode; children: React.ReactNode }) {
     return (
         <section className="space-y-3">
             {/* Section label — intentionally small and subdued to maintain hierarchy */}

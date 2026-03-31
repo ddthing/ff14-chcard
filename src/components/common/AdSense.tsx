@@ -21,7 +21,14 @@ const AdSense: React.FC<AdSenseProps> = ({
   style = { display: 'block' },
 }) => {
   useEffect(() => {
+    // 1. 개발 환경(localhost)에서는 광고를 로드하지 않아 콘솔 오류(403)를 방지합니다.
+    if (import.meta.env.DEV) {
+      console.log('AdSense is disabled in development mode to prevent 403 errors.');
+      return;
+    }
+
     try {
+      // 2. React Strict Mode 등에서 useEffect가 두 번 실행되는 경우 중복 push({}) 방지
       // @ts-ignore
       (window.adsbygoogle = window.adsbygoogle || []).push({});
     } catch (e) {

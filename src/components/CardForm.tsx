@@ -119,7 +119,7 @@ export function CardForm() {
             </div>
 
             {/* ───── Tab Content ────────────────────────────────────────────── */}
-            <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col p-4 pb-24">
+            <div className="flex-1 overflow-y-auto scrollbar-hide flex flex-col p-4 pb-10">
 
                 {/* ── Tab 1: Basic ── */}
                 {activeTab === 'basic' && (

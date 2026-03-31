@@ -1,3 +1,4 @@
+import { RotateCcw } from 'lucide-react';
 import { i18n, PLAYSTYLES_KO, getPlaystyles } from '../../utils/i18n';
 import { Section } from './Section';
 
@@ -18,8 +19,26 @@ export function PlaystyleSection() {
         handleChange('playstyles', next);
     };
 
+    const handleReset = () => {
+        handleChange('playstyles', []);
+    };
+
     return (
-        <Section title={t.playstyle}>
+        <Section 
+            title={
+                <div className="flex items-center justify-between w-full">
+                    <span>{t.playstyle}</span>
+                    <button
+                        type="button"
+                        onClick={handleReset}
+                        className="flex items-center gap-1 text-[10px] font-bold text-neutral-400 hover:text-[#0071e3] transition-colors"
+                    >
+                        <RotateCcw size={12} />
+                        {lang === 'ko' ? '초기화' : 'Reset'}
+                    </button>
+                </div>
+            }
+        >
             {/* 플레이스타일 태그 목록 그리드 */}
             <div className="grid grid-cols-2 gap-x-2 gap-y-1.5">
                 {playstylesKo.map((tagKo, idx) => {
