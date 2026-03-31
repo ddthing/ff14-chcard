@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Swords, Hammer, Leaf, ChevronDown, Check } from 'lucide-react';
+import { Swords, Hammer, Leaf, ChevronDown, Check, RotateCcw } from 'lucide-react';
 import { JOBS } from '../../data/jobs';
 import { i18n } from '../../utils/i18n';
 import { inputClass } from '../../utils/styles';
@@ -113,13 +113,23 @@ export function JobSelectionSection() {
     return (
         <section className="space-y-4">
             {/* 상단 제목 및 일괄 선택 버튼 그룹 */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
                 <h3 className="text-[11px] font-semibold text-[#86868b] uppercase tracking-widest">{t.job}</h3>
-                <div className="flex flex-wrap items-center gap-1.5 opacity-90 hover:opacity-100 transition-opacity justify-end">
-                    <button onClick={() => handleBulkSelect('battle', 100)} className="px-2 py-1 text-[10px] font-bold text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded transition-colors whitespace-nowrap">{t.battleMax}</button>
-                    <button onClick={() => handleBulkSelect('life', 100)} className="px-2 py-1 text-[10px] font-bold text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded transition-colors whitespace-nowrap">{t.lifeMax}</button>
-                    <button onClick={() => handleBulkSelect('all', 100)} className="px-2 py-1 text-[10px] font-bold text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-neutral-100 bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600 rounded transition-colors whitespace-nowrap">{t.allMax}</button>
-                    <button onClick={() => handleBulkSelect('clear', 0)} className="px-2 py-1 text-[10px] font-bold text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded transition-colors whitespace-nowrap">{t.reset}</button>
+                <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5 opacity-90 hover:opacity-100 transition-opacity">
+                        <button onClick={() => handleBulkSelect('battle', 100)} className="px-2 py-1 text-[10px] font-bold text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded transition-colors whitespace-nowrap">{t.battleMax}</button>
+                        <button onClick={() => handleBulkSelect('life', 100)} className="px-2 py-1 text-[10px] font-bold text-neutral-500 hover:text-neutral-800 dark:text-neutral-400 dark:hover:text-neutral-200 bg-neutral-100 hover:bg-neutral-200 dark:bg-neutral-800 dark:hover:bg-neutral-700 rounded transition-colors whitespace-nowrap">{t.lifeMax}</button>
+                        <button onClick={() => handleBulkSelect('all', 100)} className="px-2 py-1 text-[10px] font-bold text-neutral-700 hover:text-neutral-900 dark:text-neutral-300 dark:hover:text-neutral-100 bg-neutral-200 hover:bg-neutral-300 dark:bg-neutral-700 dark:hover:bg-neutral-600 rounded transition-colors whitespace-nowrap">{t.allMax}</button>
+                    </div>
+                    <div className="w-px h-3 bg-neutral-200 dark:bg-neutral-800" />
+                    <button
+                        type="button"
+                        onClick={() => handleBulkSelect('clear', 0)}
+                        className="flex items-center gap-1 text-[10px] font-bold text-neutral-400 hover:text-red-500 transition-colors"
+                    >
+                        <RotateCcw size={12} />
+                        {lang === 'ko' ? '초기화' : 'Reset'}
+                    </button>
                 </div>
             </div>
 

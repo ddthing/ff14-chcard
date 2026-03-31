@@ -31,7 +31,7 @@ export function PlaystyleSection() {
                     <button
                         type="button"
                         onClick={handleReset}
-                        className="flex items-center gap-1 text-[10px] font-bold text-neutral-400 hover:text-[#0071e3] transition-colors"
+                        className="flex items-center gap-1 text-[10px] font-bold text-neutral-400 hover:text-red-500 transition-colors"
                     >
                         <RotateCcw size={12} />
                         {lang === 'ko' ? '초기화' : 'Reset'}
