@@ -1,4 +1,5 @@
 import { forwardRef, useRef, useState, type ChangeEvent } from 'react';
+import { motion } from 'framer-motion';
 import { JOBS } from '../data/jobs';
 import { Sprout, Crown, ImagePlus, X, Maximize2 } from 'lucide-react';
 import { i18n, playstyleTranslate, activeTimeTranslate } from '../utils/i18n';
@@ -73,8 +74,10 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
     const localizedMainJobName = mJob ? getJobName(mJob, true) : '';
 
     return (
-        <div
-            className={`max-w-none bg-white dark:bg-[#1d1d1f] text-neutral-900 dark:text-[#f5f5f7] shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.8)] overflow-hidden relative rounded-2xl flex ${playerInfo.layout === 'left-portrait' ? 'w-[800px] flex-row min-h-[720px]' : 'w-[700px] flex-col'} ${font}`}
+        <motion.div
+            layout
+            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+            className={`max-w-none bg-white dark:bg-[#1d1d1f] text-neutral-900 dark:text-[#f5f5f7] shadow-[0_12px_40px_-12px_rgba(0,0,0,0.15)] dark:shadow-[0_12px_40px_-12px_rgba(0,0,0,0.8)] overflow-hidden relative rounded-2xl flex origin-top ${playerInfo.layout === 'left-portrait' ? 'w-[800px] flex-row min-h-[720px]' : 'w-[700px] flex-col'} ${font}`}
             ref={ref}
             id={id}
         >
@@ -98,7 +101,8 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
 
             {/* Image Section */}
             {image ? (
-                <div
+                <motion.div
+                    layout
                     className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px] border-r border-[#d2d2d7] dark:border-[#3a3a3c]' : 'w-full h-[280px]'} relative overflow-hidden group cursor-pointer shrink-0`}
                     onClick={() => fileInputRef.current?.click()}
                     title={t.clickToEdit}
@@ -113,9 +117,10 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                             <ImagePlus size={16} /> {t.clickToEdit}
                         </span>
                     </div>
-                </div>
+                </motion.div>
             ) : (
-                <div
+                <motion.div
+                    layout
                     className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px] border-r border-neutral-200 dark:border-[#3a3a3c]' : 'w-full h-[280px] border-b border-neutral-200 dark:border-[#3a3a3c]'} bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-[#2a2a2c] dark:to-[#323234] flex flex-col items-center justify-center gap-4 cursor-pointer hover:from-neutral-100 hover:to-neutral-200 dark:hover:from-[#323234] dark:hover:to-[#3a3a3c] transition-colors group shrink-0 relative`}
                     onClick={() => fileInputRef.current?.click()}
                 >
@@ -124,11 +129,11 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                         <ImagePlus size={32} className="text-neutral-400 dark:text-[#86868b]" />
                     </div>
                     <span className="text-neutral-500 dark:text-[#98989d] text-sm font-semibold text-center px-4 z-10 tracking-wide">{t.uploadPlease}</span>
-                </div>
+                </motion.div>
             )}
 
             {/* Content */}
-            <div className={`p-8 space-y-6 flex-1 relative`}>
+            <motion.div layout className={`p-8 space-y-6 flex-1 relative`}>
                 
                 {/* Name / Server / Status */}
                 <div className="flex items-end justify-between border-b border-neutral-100 dark:border-[#3a3a3c] pb-5">
@@ -236,7 +241,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                         Made by <a href="https://x.com/reconeur" target="_blank" rel="noopener noreferrer" className="hover:text-neutral-500 dark:hover:text-[#a1a1a6] transition-colors underline decoration-neutral-200 dark:decoration-[#3a3a3c] underline-offset-2">@reconeur</a> · {new Date().getFullYear()}
                     </span>
                 </div>
-            </div>
+            </motion.div>
 
             {/* Sticker Layer */}
             <div 
@@ -381,7 +386,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                     </div>
                 )})}
             </div>
-        </div>
+        </motion.div>
     );
 });
 

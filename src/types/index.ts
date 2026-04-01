@@ -41,4 +41,5 @@ export interface PlayerInfo {
     language: Language;
     pointColor: string;
     stickers?: Sticker[];
+    version?: string; // App version to track data compatibility
 }

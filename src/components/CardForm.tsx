@@ -239,7 +239,7 @@ export function CardForm() {
 
                         {/* Point Color ──────────────────────────────────────── */}
                         <Section title={t.pointColor}>
-                            <div className="flex items-center gap-3 px-3 bg-[#f5f5f7] dark:bg-[#2d2d2f] border border-[#d2d2d7] dark:border-[#424245] rounded-xl h-[42px]">
+                            <div className="flex items-center gap-2 md:gap-3 px-3 bg-[#f5f5f7] dark:bg-[#2d2d2f] border border-[#d2d2d7] dark:border-[#424245] rounded-xl h-[42px] min-w-0 overflow-hidden">
                                 <input
                                     type="color"
                                     value={playerInfo.pointColor}
@@ -256,12 +256,12 @@ export function CardForm() {
                                             handleChange('pointColor', val.toLowerCase());
                                         }
                                     }}
-                                    className="flex-1 bg-transparent text-sm font-mono text-[#1d1d1f] dark:text-[#f5f5f7] outline-none border-none p-0 uppercase font-bold"
+                                    className="flex-1 min-w-0 bg-transparent text-sm font-mono text-[#1d1d1f] dark:text-[#f5f5f7] outline-none border-none p-0 uppercase font-bold"
                                     placeholder="#HEX"
                                     maxLength={7}
                                 />
                                 {/* Quick-access preset swatches */}
-                                <div className="flex gap-1.5 shrink-0">
+                                <div className="flex gap-1 md:gap-1.5 shrink-0 ml-auto">
                                     {['#e44c21', '#0071e3', '#30d158', '#ff375f', '#bf5af2', '#ffd60a'].map(color => (
                                         <button
                                             key={color}

@@ -11,6 +11,8 @@ interface PlayerContextType {
     setSelectedStickerId: (id: string | null) => void;
 }
 
+import { APP_VERSION } from '../constants/changelog';
+
 const STORAGE_KEY = 'ff14-playerInfo';
 
 const defaultPlayerInfo: PlayerInfo = {
@@ -33,13 +35,43 @@ const defaultPlayerInfo: PlayerInfo = {
     language: 'ko',
     pointColor: '#e44c21',
     stickers: [],
+    version: APP_VERSION,
 };
 
 function loadPlayerInfo(): PlayerInfo {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) return defaultPlayerInfo;
+        
         const parsed = JSON.parse(raw);
+        
+        // Hybrid Reset Logic
+        // If the stored data has an older version (or no version) it might need a reset.
+        if (parsed.version !== APP_VERSION) {
+            return {
+                ...defaultPlayerInfo,
+                // Keep the user's specific text/content data
+                name: parsed.name || '',
+                server: parsed.server || '',
+                region: parsed.region || 'KR',
+                dataCenter: parsed.dataCenter || 'Korea',
+                jobs: parsed.jobs || [],
+                jobLevels: parsed.jobLevels || {},
+                playstyles: parsed.playstyles || [],
+                activeTime: parsed.activeTime || '',
+                comment: parsed.comment || '',
+                image: parsed.image,
+                mainJob: parsed.mainJob,
+                isNicknameChanged: parsed.isNicknameChanged || false,
+                isSprout: parsed.isSprout || false,
+                isMentor: parsed.isMentor || false,
+                imagePosition: parsed.imagePosition || { x: 0, y: 0, scale: 1 },
+                stickers: parsed.stickers || [],
+                // Force reset specific design elements to defaults:
+                // font, layout, language, pointColor are not copied from `parsed`
+            };
+        }
+
         return { ...defaultPlayerInfo, ...parsed };
     } catch {
         return defaultPlayerInfo;
