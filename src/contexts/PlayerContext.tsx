@@ -7,12 +7,14 @@ interface PlayerContextType {
     updatePlayerField: <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => void;
     updateLanguage: (lang: Language) => void;
     updateImage: (image: string | undefined) => void;
+    selectedStickerId: string | null;
+    setSelectedStickerId: (id: string | null) => void;
 }
 
 const STORAGE_KEY = 'ff14-playerInfo';
 
 const defaultPlayerInfo: PlayerInfo = {
-    name: '요시다 나오키',
+    name: '',
     region: 'KR',
     dataCenter: 'Korea',
     server: '',
@@ -48,6 +50,7 @@ const PlayerContext = createContext<PlayerContextType | undefined>(undefined);
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
     const [playerInfo, setPlayerInfo] = useState<PlayerInfo>(loadPlayerInfo);
+    const [selectedStickerId, setSelectedStickerId] = useState<string | null>(null);
 
     // Auto-save to localStorage
     useEffect(() => {
@@ -80,6 +83,8 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             updatePlayerField,
             updateLanguage,
             updateImage,
+            selectedStickerId,
+            setSelectedStickerId,
         }}>
             {children}
         </PlayerContext.Provider>

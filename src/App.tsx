@@ -19,8 +19,19 @@ function AppContent() {
   // The modal manages its own auto-open logic internally via localStorage.
   const [isChangelogOpen, setIsChangelogOpen] = useState(false);
 
-  const handleDownload = useCallback(() => {
+  const handleDownload = useCallback(async () => {
     if (previewRef.current === null) return;
+
+    // 브라우저 호환성(특히 Firefox/Safari)을 위한 렌더링 최적화 대기
+    try {
+      if (document.fonts) {
+        await document.fonts.ready; // 등록된 모든 웹폰트 로딩 대기
+      }
+      // DOM 렌더 트리 업데이트 및 backdrop-filter 반사 시간 확보 (안정성 증가)
+      await new Promise(resolve => setTimeout(resolve, 150));
+    } catch (e) {
+      console.warn('Font loading wait failed', e);
+    }
 
     // Reset transform for accurate capture
     const originalTransform = previewRef.current.style.transform;
@@ -35,7 +46,8 @@ function AppContent() {
         const classList = (node as HTMLElement).classList;
         if (classList) {
           return !classList.contains('adsense-container') && 
-                 !classList.contains('changelog-badge');
+                 !classList.contains('changelog-badge') &&
+                 !classList.contains('export-ignore');
         }
         return true;
       },
@@ -101,13 +113,14 @@ function AppContent() {
             {/*
              * Save Button Bar
              *
-             * Fixed to the viewport bottom on mobile; relative footer within the flex sidebar on desktop.
-             * This ensures the button is always at the bottom and doesn't "jump" or overlap content.
+             * Pinned to the bottom of the sidebar area. Using sticky on mobile
+             * ensures it stays at the bottom of the viewport while the user
+             * is interacting with the form tabs.
              */}
-            <div className="shrink-0 bg-white/95 dark:bg-[#1d1d1f]/95 backdrop-blur-xl border-t border-[#d2d2d7]/60 dark:border-[#424245]/60 p-4 z-40">
+            <div className="sticky bottom-0 md:relative shrink-0 bg-white/95 dark:bg-[#1d1d1f]/95 backdrop-blur-xl border-t border-[#d2d2d7]/60 dark:border-[#424245]/60 p-4 z-40 shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.1)] dark:shadow-[0_-10px_20px_-10px_rgba(0,0,0,0.3)]">
               <button
                 onClick={handleDownload}
-                className="w-full bg-neutral-900 dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-100 text-white dark:text-black font-semibold text-sm py-3.5 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-2xl lg:shadow-none"
+                className="w-full bg-neutral-900 dark:bg-white hover:bg-neutral-800 dark:hover:bg-neutral-100 text-white dark:text-black font-extrabold text-sm py-4 rounded-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2 shadow-xl md:shadow-none"
               >
                 <Download size={18} />
                 {i18n[playerInfo.language].layout.saveImage}

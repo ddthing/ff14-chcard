@@ -7,7 +7,8 @@ export const i18n = {
             tutorial: '정보를 입력하면 실시간으로 미리보기 가능합니다.',
             headerTitle: 'FF14 캐릭터 카드',
             saveImage: '이미지 저장',
-            saveError: '이미지 생성에 실패했습니다.'
+            saveError: '이미지 생성에 실패했습니다.',
+            reset: '초기화'
         },
         changelog: {
             title: '새로운 소식',
@@ -76,7 +77,8 @@ export const i18n = {
             footerTitle: 'FF14 캐릭터 카드',
             adjustImageArea: '이미지 영역 설정',
             cancel: '취소',
-            apply: '적용하기'
+            apply: '적용하기',
+            emptyName: '닉네임을 입력해 주세요'
         }
     },
     en: {
@@ -85,7 +87,8 @@ export const i18n = {
             tutorial: 'The preview will instantly update as you type.',
             headerTitle: 'FF14 Character Card',
             saveImage: 'Save Image',
-            saveError: 'Failed to generate image.'
+            saveError: 'Failed to generate image.',
+            reset: 'Reset'
         },
         changelog: {
             title: "What's New",
@@ -154,7 +157,8 @@ export const i18n = {
             footerTitle: 'FF14 Character Card',
             adjustImageArea: 'Adjust Image Area',
             cancel: 'Cancel',
-            apply: 'Apply'
+            apply: 'Apply',
+            emptyName: 'Please enter nickname'
         }
     },
     ja: {
@@ -163,7 +167,8 @@ export const i18n = {
             tutorial: '情報を入力するとリアルタイムでプレビューできます。',
             headerTitle: 'FF14 キャラクターカード',
             saveImage: '画像を保存',
-            saveError: '画像の生成に失敗しました。'
+            saveError: '画像の生成に失敗しました。',
+            reset: 'リセット'
         },
         changelog: {
             title: 'アップデートのお知らせ',
@@ -232,7 +237,8 @@ export const i18n = {
             footerTitle: 'FF14 Character Card',
             adjustImageArea: '画像範囲の設定',
             cancel: 'キャンセル',
-            apply: '適用'
+            apply: '適用',
+            emptyName: '名前を入力してください'
         }
     }
 };

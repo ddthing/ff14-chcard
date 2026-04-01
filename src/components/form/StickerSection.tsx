@@ -1,12 +1,12 @@
 import { useRef, type ChangeEvent } from 'react';
-import { Plus, X, Move, Maximize, RotateCw, Settings2 } from 'lucide-react';
+import { Plus, X, Move, Maximize, RotateCw, Settings2, ChevronUp, ChevronDown } from 'lucide-react';
 import { usePlayer } from '../../contexts/PlayerContext';
 import { i18n } from '../../utils/i18n';
 import { Section } from './Section';
 import type { Sticker } from '../../types';
 
 export function StickerSection() {
-    const { playerInfo, updatePlayerField } = usePlayer();
+    const { playerInfo, updatePlayerField, selectedStickerId, setSelectedStickerId } = usePlayer();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const lang = playerInfo.language;
     const t = i18n[lang].form;
@@ -41,6 +41,19 @@ export function StickerSection() {
     const removeSticker = (id: string) => {
         const newStickers = stickers.filter(s => s.id !== id);
         updatePlayerField('stickers', newStickers);
+        if (selectedStickerId === id) setSelectedStickerId(null);
+    };
+
+    const moveSticker = (index: number, direction: 'forward' | 'backward') => {
+        if (direction === 'backward' && index > 0) {
+            const newStickers = [...stickers];
+            [newStickers[index - 1], newStickers[index]] = [newStickers[index], newStickers[index - 1]];
+            updatePlayerField('stickers', newStickers);
+        } else if (direction === 'forward' && index < stickers.length - 1) {
+            const newStickers = [...stickers];
+            [newStickers[index], newStickers[index + 1]] = [newStickers[index + 1], newStickers[index]];
+            updatePlayerField('stickers', newStickers);
+        }
     };
 
     const sliderClass = "w-full h-1.5 bg-neutral-200 dark:bg-[#3a3a3c] rounded-lg appearance-none cursor-pointer accent-[#0071e3]";
@@ -65,25 +78,60 @@ export function StickerSection() {
                     onChange={handleAddSticker}
                 />
 
-                {/* Sticker List */}
                 <div className="space-y-3">
-                    {stickers.map((sticker, index) => (
-                        <div key={sticker.id} className="bg-white dark:bg-[#1d1d1f] border border-[#d2d2d7] dark:border-[#424245] rounded-xl p-4 shadow-sm">
-                            {/* Header: Thumbnail + Number + Delete */}
+                    {stickers.map((sticker, index) => {
+                        const isSelected = selectedStickerId === sticker.id;
+                        return (
+                        <div 
+                            key={sticker.id} 
+                            className={`bg-white dark:bg-[#1d1d1f] border rounded-xl p-4 shadow-sm transition-all cursor-pointer ${
+                                isSelected 
+                                    ? 'border-[#0071e3] ring-1 ring-[#0071e3]/50' 
+                                    : 'border-[#d2d2d7] dark:border-[#424245]'
+                            }`}
+                            onClick={(e) => {
+                                // Prevent detail toggle or input interactions from bubbling to select
+                                if ((e.target as HTMLElement).tagName !== 'INPUT' && (e.target as HTMLElement).tagName !== 'SUMMARY') {
+                                    setSelectedStickerId(sticker.id);
+                                }
+                            }}
+                        >
+                            {/* Header: Thumbnail + Number + Controls */}
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-lg overflow-hidden border border-neutral-100 dark:border-[#3a3a3c] bg-neutral-50 dark:bg-black/20 flex-shrink-0">
+                                    <div className={`w-10 h-10 rounded-lg overflow-hidden border ${isSelected ? 'border-[#0071e3]/30 bg-[#0071e3]/5' : 'border-neutral-100 dark:border-[#3a3a3c] bg-neutral-50 dark:bg-black/20'} flex-shrink-0 transition-colors`}>
                                         <img src={sticker.url} alt="sticker" className="w-full h-full object-contain" />
                                     </div>
-                                    <span className="text-xs font-bold text-neutral-400">#{index + 1}</span>
+                                    <span className={`text-xs font-bold ${isSelected ? 'text-[#0071e3]' : 'text-neutral-400'}`}>#{index + 1}</span>
                                 </div>
-                                <button
-                                    type="button"
-                                    onClick={() => removeSticker(sticker.id)}
-                                    className="p-1.5 text-neutral-400 hover:text-red-500 transition-colors"
-                                >
-                                    <X size={16} />
-                                </button>
+                                <div className="flex items-center gap-0.5">
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); moveSticker(index, 'forward'); }}
+                                        disabled={index === stickers.length - 1}
+                                        className="p-1.5 text-neutral-400 hover:text-[#1d1d1f] dark:hover:text-white disabled:opacity-30 transition-colors"
+                                        title="가장 위로 이동 (Move Forward)"
+                                    >
+                                        <ChevronUp size={14} />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); moveSticker(index, 'backward'); }}
+                                        disabled={index === 0}
+                                        className="p-1.5 text-neutral-400 hover:text-[#1d1d1f] dark:hover:text-white disabled:opacity-30 transition-colors"
+                                        title="가장 뒤로 이동 (Move Backward)"
+                                    >
+                                        <ChevronDown size={14} />
+                                    </button>
+                                    <div className="w-px h-3.5 bg-neutral-200 dark:bg-[#424245] mx-1"></div>
+                                    <button
+                                        type="button"
+                                        onClick={(e) => { e.stopPropagation(); removeSticker(sticker.id); }}
+                                        className="p-1 text-neutral-400 hover:text-red-500 transition-colors"
+                                    >
+                                        <X size={16} />
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Advanced Settings Toggle — all controls inside */}
@@ -196,7 +244,7 @@ export function StickerSection() {
                                 </div>
                             </details>
                         </div>
-                    ))}
+                    )})}
                 </div>
             </div>
         </Section>

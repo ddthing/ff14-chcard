@@ -1,7 +1,8 @@
 import { forwardRef, useRef, useState, type ChangeEvent } from 'react';
 import { JOBS } from '../data/jobs';
-import { Sprout, Crown, ImagePlus } from 'lucide-react';
+import { Sprout, Crown, ImagePlus, X, Maximize2 } from 'lucide-react';
 import { i18n, playstyleTranslate, activeTimeTranslate } from '../utils/i18n';
+import { getContrastColor } from '../utils/styles';
 import { ImageCropperModal } from './ImageCropperModal';
 import { JobList } from './preview/JobList';
 import { usePlayer } from '../contexts/PlayerContext';
@@ -18,7 +19,7 @@ interface CardPreviewProps {
 }
 
 export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, onImageChange }, ref) => {
-    const { playerInfo, updatePlayerField } = usePlayer();
+    const { playerInfo, updatePlayerField, selectedStickerId, setSelectedStickerId } = usePlayer();
     const { name, server, region, jobs, playstyles, activeTime, comment, image, font, mainJob, isSprout, isMentor, jobLevels, isNicknameChanged } = playerInfo;
 
     const lang = playerInfo.language;
@@ -28,6 +29,8 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
     const constraintsRef = useRef<HTMLDivElement>(null);
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
     const [draggingId, setDraggingId] = useState<string | null>(null);
+    const [transformingId, setTransformingId] = useState<string | null>(null);
+    const [transformStart, setTransformStart] = useState<{ scale: number; rot: number; dist: number; angle: number } | null>(null);
 
     const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -131,8 +134,8 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 <div className="flex items-end justify-between border-b border-neutral-100 dark:border-[#3a3a3c] pb-5">
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1 className="text-3xl font-bold tracking-tight leading-none whitespace-nowrap">
-                                {name || '요시다 나오키'}
+                            <h1 className={`text-3xl font-bold tracking-tight leading-none whitespace-nowrap ${!name ? 'opacity-30' : ''}`}>
+                                {name || t.emptyName}
                             </h1>
                             {isSprout && (
                                 <span style={{ color: playerInfo.pointColor }} title={t.sprout}>
@@ -146,8 +149,8 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                             )}
                             {isNicknameChanged && (
                                 <span 
-                                    className="text-[10px] px-1.5 py-0.5 rounded-full font-semibold whitespace-nowrap"
-                                    style={{ backgroundColor: `${playerInfo.pointColor}20`, color: playerInfo.pointColor }}
+                                    className="text-[10px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap shadow-sm"
+                                    style={{ backgroundColor: playerInfo.pointColor, color: getContrastColor(playerInfo.pointColor) }}
                                 >
                                     {t.diffIngame}
                                 </span>
@@ -182,9 +185,9 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                         
                         <img src={mJob.iconUrl} alt={localizedMainJobName} className="w-12 h-12 dark-invert group-hover/mainjob:scale-110 transition-transform duration-300" />
                         <div className="relative z-10">
-                            <div className="text-xs font-bold uppercase tracking-[0.1em] mb-0.5 opacity-80" style={{ color: playerInfo.pointColor }}>{t.mainJob}</div>
-                            <div className="text-xl font-extrabold leading-tight text-slate-900 dark:text-slate-100 whitespace-nowrap">{localizedMainJobName}</div>
-                            <div className="text-xs font-bold whitespace-nowrap mt-1" style={{ color: playerInfo.pointColor }}>
+                            <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] mb-1 opacity-90" style={{ color: playerInfo.pointColor }}>{t.mainJob}</div>
+                            <div className="text-2xl font-black tracking-tight leading-none text-slate-900 dark:text-slate-100 whitespace-nowrap drop-shadow-sm">{localizedMainJobName}</div>
+                            <div className="inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap shadow-sm" style={{ backgroundColor: playerInfo.pointColor, color: getContrastColor(playerInfo.pointColor) }}>
                                 Lv.{mainJob && (jobLevels[mainJob] || '?')}
                             </div>
                         </div>
@@ -240,51 +243,143 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 className="absolute inset-0 pointer-events-none overflow-hidden rounded-2xl z-50"
                 ref={constraintsRef}
             >
-                {/* Drag Tracker Layer */}
-                {draggingId && (
+                {/* Drag / Transform Tracker Layer */}
+                {(draggingId || transformingId) && (
                     <div 
                         className="absolute inset-0 pointer-events-auto z-[60]"
                         onPointerMove={(e) => {
-                            if (!draggingId || !constraintsRef.current) return;
+                            if (!constraintsRef.current) return;
                             const rect = constraintsRef.current.getBoundingClientRect();
-                            const xPx = Math.max(0, Math.min(e.clientX - rect.left, rect.width));
-                            const yPx = Math.max(0, Math.min(e.clientY - rect.top, rect.height));
-                            const newX = Number(((xPx / rect.width) * 100).toFixed(1));
-                            const newY = Number(((yPx / rect.height) * 100).toFixed(1));
-                            
-                            updatePlayerField('stickers', playerInfo.stickers?.map((s: any) => 
-                                s.id === draggingId ? { ...s, x: newX, y: newY } : s
-                            ) || []);
+                            const px = e.clientX - rect.left;
+                            const py = e.clientY - rect.top;
+
+                            if (draggingId) {
+                                const xPx = Math.max(0, Math.min(px, rect.width));
+                                const yPx = Math.max(0, Math.min(py, rect.height));
+                                const newX = Number(((xPx / rect.width) * 100).toFixed(1));
+                                const newY = Number(((yPx / rect.height) * 100).toFixed(1));
+                                
+                                updatePlayerField('stickers', playerInfo.stickers?.map((s: any) => 
+                                    s.id === draggingId ? { ...s, x: newX, y: newY } : s
+                                ) || []);
+                            } else if (transformingId && transformStart) {
+                                const sticker = playerInfo.stickers?.find(s => s.id === transformingId);
+                                if (!sticker) return;
+                                
+                                const cx = (sticker.x / 100) * rect.width;
+                                const cy = (sticker.y / 100) * rect.height;
+
+                                const currentDist = Math.hypot(px - cx, py - cy);
+                                const currentAngle = Math.atan2(py - cy, px - cx);
+
+                                // 스케일 조절 (원점으로부터의 거리 비율)
+                                const scaleMultiplier = currentDist / transformStart.dist;
+                                let newScale = transformStart.scale * scaleMultiplier;
+                                newScale = Math.max(0.1, Math.min(3, newScale));
+
+                                // 회전 조절 (원점 기준 상대 각도)
+                                const angleDiff = currentAngle - transformStart.angle;
+                                let newRot = (transformStart.rot + angleDiff * (180 / Math.PI)) % 360;
+                                if (newRot < 0) newRot += 360;
+
+                                updatePlayerField('stickers', playerInfo.stickers?.map((s: any) => 
+                                    s.id === transformingId ? { ...s, scale: Number(newScale.toFixed(2)), rotation: Math.round(newRot) } : s
+                                ) || []);
+                            }
                         }}
-                        onPointerUp={() => setDraggingId(null)}
-                        onPointerLeave={() => setDraggingId(null)}
+                        onPointerUp={() => {
+                            setDraggingId(null);
+                            setTransformingId(null);
+                        }}
+                        onPointerLeave={() => {
+                            setDraggingId(null);
+                            setTransformingId(null);
+                        }}
                     />
                 )}
-                {playerInfo.stickers?.map((sticker) => (
+                
+                {/* 배경 클릭 시 스티커 선택 해제 */}
+                <div 
+                    className={`absolute inset-0 z-40 ${selectedStickerId ? 'pointer-events-auto' : 'pointer-events-none'}`}
+                    onPointerDown={() => setSelectedStickerId(null)}
+                />
+
+                {playerInfo.stickers?.map((sticker) => {
+                    const isSelected = selectedStickerId === sticker.id;
+                    return (
                     <div
                         key={sticker.id}
-                        className="absolute pointer-events-auto cursor-move select-none"
+                        className="absolute pointer-events-auto select-none group/sticker"
                         style={{
                             left: `${sticker.x}%`,
                             top: `${sticker.y}%`,
                             transform: `translate(-50%, -50%) scale(${sticker.scale}) rotate(${sticker.rotation}deg)`,
-                            touchAction: 'none',
-                            zIndex: draggingId === sticker.id ? 51 : 50
+                            zIndex: (draggingId === sticker.id || transformingId === sticker.id) ? 55 : (isSelected ? 52 : 51)
                         }}
                         onPointerDown={(e) => {
-                            e.preventDefault();
-                            setDraggingId(sticker.id);
+                            e.stopPropagation();
+                            setSelectedStickerId(sticker.id);
+                            // Only allow drag if we aren't clicking a UI button
+                            if (!(e.target as HTMLElement).closest('.transform-control')) {
+                                setDraggingId(sticker.id);
+                            }
                         }}
                     >
-                        <img
-                            src={sticker.url}
-                            alt="sticker"
-                            draggable={false}
-                            className="max-w-none drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)] pointer-events-none"
-                            style={{ width: 'auto', height: 'auto' }}
-                        />
+                        {/* 스티커 이미지 박스 (선택 시 테두리 표시) */}
+                        <div className={`relative ${isSelected ? 'ring-2 ring-[#0071e3] ring-offset-2 ring-offset-white dark:ring-offset-[#1d1d1f] rounded export-ignore' : ''}`}>
+                            <img
+                                src={sticker.url}
+                                alt="sticker"
+                                draggable={false}
+                                className="max-w-none drop-shadow-[0_8px_16px_rgba(0,0,0,0.25)] pointer-events-none cursor-move"
+                                style={{ width: 'auto', height: 'auto' }}
+                            />
+                            
+                            {/* 선택 시 조작 UI: 삭제(X) 및 트랜스폼(핸들) */}
+                            {isSelected && (
+                                <div className="absolute inset-0 pointer-events-none export-ignore">
+                                    {/* 삭제 버튼 (우상단) */}
+                                    <button
+                                        type="button"
+                                        className="transform-control pointer-events-auto absolute -top-4 -right-4 w-6 h-6 bg-red-500 rounded-full flex items-center justify-center text-white shadow-md hover:bg-red-600 transition-colors cursor-pointer"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            updatePlayerField('stickers', playerInfo.stickers?.filter(s => s.id !== sticker.id) || []);
+                                            setSelectedStickerId(null);
+                                        }}
+                                    >
+                                        <X size={12} strokeWidth={3} />
+                                    </button>
+
+                                    {/* 조절 핸들 (우하단) */}
+                                    <div 
+                                        className="transform-control pointer-events-auto absolute -bottom-4 -right-4 w-7 h-7 bg-white border border-[#d2d2d7] rounded-full flex items-center justify-center text-[#1d1d1f] shadow-md hover:bg-[#f5f5f7] transition-colors cursor-se-resize touch-none"
+                                        onPointerDown={(e) => {
+                                            e.stopPropagation();
+                                            e.preventDefault();
+                                            if (!constraintsRef.current) return;
+                                            const rect = constraintsRef.current.getBoundingClientRect();
+                                            const cx = (sticker.x / 100) * rect.width;
+                                            const cy = (sticker.y / 100) * rect.height;
+                                            const px = e.clientX - rect.left;
+                                            const py = e.clientY - rect.top;
+                                            
+                                            setTransformingId(sticker.id);
+                                            setTransformStart({
+                                                scale: sticker.scale,
+                                                rot: sticker.rotation,
+                                                dist: Math.hypot(px - cx, py - cy),
+                                                angle: Math.atan2(py - cy, px - cx),
+                                            });
+                                        }}
+                                    >
+                                        <Maximize2 size={12} strokeWidth={2.5} className="rotate-90" />
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                ))}
+                )})}
             </div>
         </div>
     );

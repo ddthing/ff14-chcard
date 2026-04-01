@@ -34,7 +34,7 @@ export function PlaystyleSection() {
                         className="flex items-center gap-1 text-[10px] font-bold text-neutral-400 hover:text-red-500 transition-colors"
                     >
                         <RotateCcw size={12} />
-                        {lang === 'ko' ? '초기화' : 'Reset'}
+                        {i18n[lang].layout.reset}
                     </button>
                 </div>
             }
@@ -48,15 +48,15 @@ export function PlaystyleSection() {
                         <button
                             key={tagKo}
                             onClick={() => togglePlaystyle(tagKo)}
-                            className={`px-2 py-1.5 text-[11px] font-bold rounded-xl border transition-all duration-300 text-center truncate ${
+                            className={`px-2 py-2 text-[10px] font-extrabold rounded-xl border transition-all duration-300 text-center flex items-center justify-center min-h-[44px] leading-tight ${
                                 isSelected 
                                     ? 'shadow-sm border-transparent' 
-                                    : 'bg-[#f5f5f7] dark:bg-[#2d2d2f] border-[#d2d2d7] dark:border-[#424245] text-[#86868b] hover:bg-[#e8e8ed] dark:hover:bg-[#3a3a3c]'
+                                    : 'bg-neutral-50 dark:bg-[#2d2d2f] border-[#d2d2d7]/50 dark:border-[#424245]/50 text-[#86868b] hover:bg-neutral-100 dark:hover:bg-[#3a3a3c]'
                             }`}
                             style={isSelected ? { 
-                                backgroundColor: `${playerInfo.pointColor}15`, 
+                                backgroundColor: `${playerInfo.pointColor}10`, 
                                 color: playerInfo.pointColor,
-                                border: `1px solid ${playerInfo.pointColor}40`
+                                border: `1px solid ${playerInfo.pointColor}30`
                             } : {}}
                             title={displayTag}
                         >

@@ -128,7 +128,7 @@ export function JobSelectionSection() {
                         className="flex items-center gap-1 text-[10px] font-bold text-neutral-400 hover:text-red-500 transition-colors"
                     >
                         <RotateCcw size={12} />
-                        {lang === 'ko' ? '초기화' : 'Reset'}
+                        {i18n[lang].layout.reset}
                     </button>
                 </div>
             </div>
@@ -223,7 +223,7 @@ export function JobSelectionSection() {
             )}
 
             {/* 직업 선택 그리드 및 레벨 입력 */}
-            <div className="grid grid-cols-4 gap-2">
+            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
                 {filteredJobs.map(job => {
                     const isSelected = playerInfo.jobs.includes(job.id);
                     const isMain = playerInfo.mainJob === job.id;
@@ -232,7 +232,7 @@ export function JobSelectionSection() {
                     return (
                         <div
                             key={job.id}
-                            className={`flex flex-col items-center p-2 rounded-xl border relative transition-all duration-300 group ${
+                            className={`flex flex-col items-center p-2 rounded-xl border relative transition-all duration-300 group min-h-[110px] justify-between ${
                                 isSelected 
                                     ? 'bg-white dark:bg-[#1d1d1f] shadow-[0_4px_12px_-2px_rgba(0,0,0,0.08)] z-10' 
                                     : 'border-transparent hover:bg-neutral-50 dark:hover:bg-white/5 opacity-60 hover:opacity-100'
@@ -243,7 +243,7 @@ export function JobSelectionSection() {
                                 boxShadow: isSelected ? `0 4px 12px -4px ${roleColor}30` : undefined,
                             } as React.CSSProperties}
                         >
-                            <button type="button" onClick={() => toggleJob(job.id)} className="flex flex-col items-center w-full focus:outline-none overflow-visible pt-1.5 pb-1">
+                            <button type="button" onClick={() => toggleJob(job.id)} className="flex flex-col items-center w-full focus:outline-none overflow-visible pt-1 px-0.5">
                                 <div className="relative">
                                     <img 
                                         src={job.iconUrl} 
@@ -259,23 +259,27 @@ export function JobSelectionSection() {
                                         </div>
                                     )}
                                 </div>
-                                <span className={`text-[10px] mt-1.5 font-bold ${isSelected ? 'text-neutral-900 dark:text-neutral-100' : 'text-[#86868b]'} text-center leading-tight truncate w-full px-0.5`}>{jobName}</span>
+                                <span className={`text-[10px] mt-1.5 font-bold ${isSelected ? 'text-neutral-900 dark:text-neutral-100' : 'text-[#86868b]'} text-center leading-tight w-full px-0.5 break-keep`}>{jobName}</span>
                             </button>
                             
                             {/* 레벨 입력 필드 */}
-                            {isSelected && (
-                                <div className="mt-1 w-full pt-1.5 border-t border-neutral-100 dark:border-white/10 flex items-center justify-center gap-1">
-                                    <span className="text-[9px] font-extrabold opacity-40">LV</span>
-                                    <input
-                                        type="number"
-                                        min={1}
-                                        max={job.id === 'BLU' ? 80 : 100}
-                                        value={playerInfo.jobLevels[job.id] || 100}
-                                        onChange={e => handleLevelChange(job.id, parseInt(e.target.value) || 1)}
-                                        className="w-10 text-center text-xs font-black bg-transparent border-none rounded p-0 text-[#1d1d1f] dark:text-[#f5f5f7] focus:outline-none"
-                                    />
-                                </div>
-                            )}
+                            <div className="w-full mt-auto">
+                                {isSelected ? (
+                                    <div className="w-full pt-1.5 border-t border-neutral-100 dark:border-white/10 flex items-center justify-center gap-1">
+                                        <span className="text-[9px] font-extrabold opacity-40">LV</span>
+                                        <input
+                                            type="number"
+                                            min={1}
+                                            max={job.id === 'BLU' ? 80 : 100}
+                                            value={playerInfo.jobLevels[job.id] || 100}
+                                            onChange={e => handleLevelChange(job.id, parseInt(e.target.value) || 1)}
+                                            className="w-10 text-center text-xs font-black bg-transparent border-none rounded p-0 text-[#1d1d1f] dark:text-[#f5f5f7] focus:outline-none"
+                                        />
+                                    </div>
+                                ) : (
+                                    <div className="h-[21px]" /> /* 선택되지 않았을 때도 공간 유지 */
+                                )}
+                            </div>
                         </div>
                     );
                 })}

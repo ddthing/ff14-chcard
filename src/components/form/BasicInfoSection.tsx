@@ -22,7 +22,7 @@ export function BasicInfoSection() {
     // inputClass is shared from utils/styles — do not redefine locally.
 
     const getToggleClass = (isActive: boolean) => `
-        h-[42px] flex items-center justify-center gap-1.5 px-3 rounded-xl border transition-all duration-200 text-xs font-semibold whitespace-nowrap
+        h-[46px] flex items-center justify-center gap-1.5 px-4 rounded-xl border transition-all duration-200 text-xs font-semibold whitespace-nowrap
         ${isActive
             ? 'shadow-sm'
             : 'bg-white dark:bg-transparent border-[#d2d2d7] dark:border-[#424245] text-[#86868b] hover:bg-[#f5f5f7] dark:hover:bg-[#2d2d2f]'}
@@ -49,7 +49,7 @@ export function BasicInfoSection() {
                     <button
                         type="button"
                         onClick={() => handleChange('isNicknameChanged', !playerInfo.isNicknameChanged)}
-                        className={`flex items-center justify-center px-4 rounded-xl border transition-all text-xs font-semibold whitespace-nowrap ${
+                        className={`flex items-center justify-center px-4 h-[46px] rounded-xl border transition-all text-xs font-semibold whitespace-nowrap ${
                             playerInfo.isNicknameChanged
                                 ? 'bg-orange-50 border-orange-200 text-orange-600 dark:bg-orange-500/10 dark:border-orange-500/30 dark:text-orange-400'
                                 : 'bg-white dark:bg-transparent border-[#d2d2d7] dark:border-[#424245] text-[#86868b] hover:bg-[#f5f5f7] dark:hover:bg-[#2d2d2f]'
@@ -79,7 +79,7 @@ export function BasicInfoSection() {
                                 handleChange('server', '');
                             }
                         }}
-                        className={`${inputClass} flex-1 w-full sm:w-auto sm:min-w-[140px] h-[42px]`}
+                        className={`${inputClass} flex-1 w-full sm:w-auto sm:min-w-[140px] h-[46px]`}
                     >
                         <option value="">{t.selectServer}</option>
                         {worldsGrouped.flatMap(reg =>
