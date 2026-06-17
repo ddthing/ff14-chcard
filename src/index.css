@@ -1,0 +1,349 @@
+@import "tailwindcss";
+
+/* Tailwind v4 dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ===================================================
+   DESIGN SYSTEM — Cursor Warm Minimalism
+   Primary Font: Pretendard (UI global)
+   Card Fonts:   User-selectable, scoped to .card-preview
+   =================================================== */
+
+/* ─── Design Tokens ──────────────────────────────── */
+:root {
+  /* Surface scale (warm cream) */
+  --surface-50:  #ffffff;
+  --surface-100: #f7f7f4;
+  --surface-200: #f2f1ed;   /* page bg */
+  --surface-300: #ebeae5;   /* button bg */
+  --surface-400: #e6e5e0;   /* card bg */
+  --surface-500: #e1e0db;
+
+  /* Text (warm near-black) */
+  --text-primary:   #26251e;
+  --text-secondary: rgba(38, 37, 30, 0.55);
+  --text-muted:     rgba(38, 37, 30, 0.35);
+
+  /* Accent */
+  --accent:   #f54e00;   /* cursor orange */
+  --error:    #cf2d56;   /* warm crimson */
+  --success:  #1f8a65;
+
+  /* Borders — oklab perceptually uniform warm brown */
+  --border-subtle:  rgba(38, 37, 30, 0.08);
+  --border-default: rgba(38, 37, 30, 0.12);
+  --border-medium:  rgba(38, 37, 30, 0.20);
+  --border-strong:  rgba(38, 37, 30, 0.55);
+
+  /* Shadows - Minimalist Flat Approach */
+  --shadow-ambient: none;
+  --shadow-card:    none;
+  --shadow-elevated: rgba(0,0,0,0.05) 0px 4px 12px;
+
+  /* Radius scale */
+  --radius-sm:   4px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-pill: 9999px;
+
+  /* Spacing (8pt grid + micro) */
+  --sp-1:  4px;
+  --sp-2:  8px;
+  --sp-3:  12px;
+  --sp-4:  16px;
+  --sp-6:  24px;
+  --sp-8:  32px;
+  --sp-12: 48px;
+  --sp-16: 64px;
+}
+
+/* Dark mode token overrides */
+:where(.dark, .dark *) {
+  --surface-50:  #111110;
+  --surface-100: #161614;
+  --surface-200: #1a1a18;
+  --surface-300: #222220;
+  --surface-400: #2a2a27;
+  --surface-500: #323230;
+
+  --text-primary:   #f0efe8;
+  --text-secondary: rgba(240, 239, 232, 0.55);
+  --text-muted:     rgba(240, 239, 232, 0.30);
+
+  --border-subtle:  rgba(240, 239, 232, 0.06);
+  --border-default: rgba(240, 239, 232, 0.10);
+  --border-medium:  rgba(240, 239, 232, 0.16);
+  --border-strong:  rgba(240, 239, 232, 0.40);
+
+  --shadow-card:    none;
+  --shadow-elevated: rgba(0,0,0,0.15) 0px 4px 12px;
+}
+
+/* ===== Web Fonts ===== */
+
+/* 2. 프리텐다드 (Global UI Font) */
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Thin.woff2') format('woff2');
+  font-weight: 100;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-ExtraLight.woff2') format('woff2');
+  font-weight: 200;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Light.woff2') format('woff2');
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-SemiBold.woff2') format('woff2');
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Bold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-ExtraBold.woff2') format('woff2');
+  font-weight: 800;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Black.woff2') format('woff2');
+  font-weight: 900;
+  font-display: swap;
+}
+
+
+
+/* ===== Base ===== */
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/*
+ * GLOBAL UI FONT: Pretendard
+ * This is the single source of truth for all UI typography.
+ * Do NOT override this on any UI element.
+ * Custom fonts are ONLY permitted inside .card-preview (see Card Font section below).
+ */
+body {
+  background-color: var(--surface-200);
+  color: var(--text-primary);
+  font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  padding-bottom: env(safe-area-inset-bottom);
+  overscroll-behavior-y: none;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Safari-specific backdrop-filter fallback */
+@supports not (backdrop-filter: blur(20px)) {
+  .backdrop-blur-xl {
+    background-color: var(--surface-50) !important;
+    opacity: 0.97;
+  }
+}
+
+/* ===== Card Font Classes =====
+ * SCOPE: These classes are ONLY valid on the .card-preview root element.
+ * They override the global Pretendard font for the card render area only.
+ * The UI (sidebar, buttons, modals) always uses Pretendard — never apply these there.
+ *
+ * Each rule targets BOTH the container itself AND all descendants (via *)
+ * so h1, span, p, etc. properly inherit the selected font.
+ * ========================= */
+.card-preview.font-a2z, .card-preview.font-a2z *                   { font-family: 'A2z', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-pretendard, .card-preview.font-pretendard *     { font-family: 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-mona, .card-preview.font-mona *                 { font-family: 'Mona12', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-gmarket, .card-preview.font-gmarket *           { font-family: 'GMarketSans', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-police, .card-preview.font-police *             { font-family: 'NostalgicPoliceFairness', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-myungjo, .card-preview.font-myungjo *           { font-family: 'BookkMyungjo', 'Pretendard', 'Meiryo', serif !important; }
+.card-preview.font-seabreeze, .card-preview.font-seabreeze *       { font-family: 'OngleIpSeaBreeze', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-schoolsafe, .card-preview.font-schoolsafe *     { font-family: 'SchoolSafeOuting', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-hancom, .card-preview.font-hancom *             { font-family: 'HancomMalrangmalrang', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-cafe24, .card-preview.font-cafe24 *             { font-family: 'Cafe24SuperMagic', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-gangwon, .card-preview.font-gangwon *           { font-family: 'GangwonEducationModuche', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-cookierun, .card-preview.font-cookierun *       { font-family: 'CookieRun', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-galmuri9, .card-preview.font-galmuri9 *         { font-family: 'Galmuri9', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-seogung, .card-preview.font-seogung *           { font-family: 'Seogung', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-cloudsanscode, .card-preview.font-cloudsanscode * { font-family: 'CloudSansCode', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-tangba, .card-preview.font-tangba *             { font-family: 'Tangba', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-puradak, .card-preview.font-puradak *           { font-family: 'PuradakGentleGothic', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-paperozi, .card-preview.font-paperozi *         { font-family: 'Paperozi', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-tmoney, .card-preview.font-tmoney *             { font-family: 'TMoneyDungunbaram', 'Pretendard', 'Meiryo', sans-serif !important; }
+
+/* ===== Utilities ===== */
+
+/* Sidebar/header surface with warm minimalism */
+.surface {
+  background-color: var(--surface-100);
+  border: 1px solid var(--border-default);
+}
+
+.surface-elevated {
+  background-color: var(--surface-100);
+  border: 1px solid var(--border-medium);
+  box-shadow: var(--shadow-elevated);
+}
+
+/* Glassmorphism — use sparingly, only for overlays */
+.glass {
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background-color: rgba(242, 241, 237, 0.85);
+  border: 1px solid var(--border-subtle);
+}
+
+:where(.dark, .dark *) .glass {
+  background-color: rgba(26, 26, 24, 0.85);
+}
+
+.glass-dark {
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  background-color: rgba(17, 17, 16, 0.7);
+  border: 1px solid var(--border-subtle);
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* 아이콘 색상 반전 (라이트모드: 검정배경→흰아이콘) */
+.icon-invert { filter: invert(1); }
+
+/* 다크모드: 흰배경→검정아이콘이므로 반전 해제 */
+:where(.dark, .dark *) .icon-invert { filter: invert(0); }
+
+/* 다크모드에서만 아이콘 색상 반전 (검정 아이콘 → 흰 아이콘) */
+.dark .dark-invert { filter: invert(1) !important; }
+
+
+/* ===== AdSense Banner ===== */
+
+.ad-banner-wrapper {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background-color: var(--surface-300);
+  border: 1px solid var(--border-subtle);
+  padding: 10px;
+  transition: background-color 0.2s ease;
+}
+
+.ad-sidebar { width: 100%; min-height: 280px; }
+.ad-wide    { width: 100%; min-height: 100px; }
+
+.ad-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  text-align: center;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+}
+
+.ad-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
+  border-radius: var(--radius-md);
+  border: 2px dashed var(--border-default);
+  background: repeating-linear-gradient(
+    45deg,
+    transparent, transparent 6px,
+    var(--border-subtle) 6px, var(--border-subtle) 12px
+  );
+}
+
+.ad-placeholder-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.05em;
+}
+
+/* ===== Tab Animation ===== */
+@keyframes tabIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-tab-in {
+  animation: tabIn 0.25s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+
+
+/* ===== Custom Scrollbar ===== */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+}
+:where(.dark, .dark *) ::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+::-webkit-scrollbar-thumb:hover { background-color: rgba(0, 0, 0, 0.25); }
+:where(.dark, .dark *) ::-webkit-scrollbar-thumb:hover { background-color: rgba(255, 255, 255, 0.25); }
+::-webkit-scrollbar-corner { background: transparent; }

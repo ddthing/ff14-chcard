@@ -1,0 +1,8 @@
+/*
+  Cache-Control: s-maxage=0, no-cache, no-store, must-revalidate
+
+/(index.html|sw.js|service-worker.js)
+  Cache-Control: s-maxage=0, no-cache, no-store, must-revalidate
+
+/*.(js|css|png|jpg|jpeg|gif|svg|webp|woff|woff2)
+  Cache-Control: public, max-age=31536000, immutable

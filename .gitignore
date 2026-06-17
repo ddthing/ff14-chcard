@@ -1,0 +1,9 @@
+node_modules/
+dist/
+dist-ssr/
+.env*
+.agent/
+.cline/
+tsconfig.tsbuildinfo
+.vscode/
+.DS_Store

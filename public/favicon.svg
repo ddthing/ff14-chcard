@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
+  <!--
+    FF14 Character Card Generator — New Favicon (Crystal Card)
+    Style: Warm Minimalism
+    Concept: A minimalist card with a diamond crystal profile.
+  -->
+
+  <!-- Background Surface (Warm Cream) -->
+  <rect width="32" height="32" rx="8" fill="#FAF9F6"/>
+
+  <!-- Card Body -->
+  <rect x="6" y="8" width="20" height="16" rx="3" fill="#26251E"/>
+  
+  <!-- Crystal Profile (Diamond Shape) -->
+  <path d="M11 12 L14 16 L11 20 L8 16 Z" fill="#FAF9F6" opacity="0.9"/>
+  
+  <!-- Content Lines (Minimalist text representation) -->
+  <rect x="16" y="14" width="6" height="1.2" rx="0.6" fill="#FAF9F6" opacity="0.6"/>
+  <rect x="16" y="17" width="4" height="1.2" rx="0.6" fill="#FAF9F6" opacity="0.4"/>
+  
+  <!-- Subtle outer stroke for definition -->
+  <rect x="6" y="8" width="20" height="16" rx="3" stroke="#26251E" stroke-width="0.5" opacity="0.1"/>
+</svg>

@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "skills": {
+    "audit-website": {
+      "source": "squirrelscan/skills",
+      "sourceType": "github",
+      "computedHash": "82588484b29316f3106185374cc6aedf409c38a0698d49f7034c9b5ec07a1aa7"
+    },
+    "bolder": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "639f5368be13c18a246661758ab1df4ffae9cd9123f6dd4bd50209f20ebdce16"
+    },
+    "brainstorming": {
+      "source": "C:\\Users\\zzzec\\.agents\\skills\\brainstorming",
+      "sourceType": "local",
+      "computedHash": "f483c304fcde060211ffae00f49bb728536e7e7613c99db45b5b924d9fc17243"
+    },
+    "caveman": {
+      "source": "C:\\Users\\zzzec\\.agents\\skills\\caveman",
+      "sourceType": "local",
+      "computedHash": "536908fcfcb232600a5875aa85f1fd50fd13305e9d67379bcd95f07c8c916f3f"
+    },
+    "diagnose": {
+      "source": "C:\\Users\\zzzec\\.agents\\skills\\diagnose",
+      "sourceType": "local",
+      "computedHash": "1c3c85517ac42116fe5f2bfb5150f7b3e38ad23808e40b33fbb01f1afb611983"
+    },
+    "dispatching-parallel-agents": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "e21044ae7496fc285f1df9ff3fb518a3a20bea6f5216c1f59f4987e12c769a0a"
+    },
+    "executing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "2f709d1a2c7564f8ce6a9bb707e7f5451117ba80f8e8e2302662c29bc61246a6"
+    },
+    "find-skills": {
+      "source": "C:\\Users\\zzzec\\.agents\\skills\\find-skills",
+      "sourceType": "local",
+      "computedHash": "25872a21881a950edc3db1f3329664d60405d539660ce05b3265db2de06a7dfd"
+    },
+    "finishing-a-development-branch": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "9edba9a38684c060fdc38290f640e1dc0c37de286723ac9be73bacacf7cd6f3d"
+    },
+    "frontend-design": {
+      "source": "C:\\Users\\zzzec\\.agents\\skills\\frontend-design",
+      "sourceType": "local",
+      "computedHash": "516bd2154eb843a8240e43d5b285229129853114ad7075a5e141e1c08e408c84"
+    },
+    "impeccable": {
+      "source": "pbakaus/impeccable",
+      "sourceType": "github",
+      "computedHash": "b0e7591172750104fd9df64913b513e942bf78bd45814f2eeeb25c2aa47bd970"
+    },
+    "interface-design": {
+      "source": "dammyjay93/interface-design",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/interface-design/SKILL.md",
+      "computedHash": "4d5fe1dacfebc0c1b3837b061405150ed2e4971c096543afc46c23161c5a4f7a"
+    },
+    "next-best-practices": {
+      "source": "vercel-labs/next-skills",
+      "sourceType": "github",
+      "computedHash": "db85045827ebeb83ac8dbc992b69188755eeb74dcf01cbf5e694d58aa494a106"
+    },
+    "receiving-code-review": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "2760c85d4f4117b0006e7ba755f4bbd61f8f4c185f347999763c97f507274e30"
+    },
+    "requesting-code-review": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "246e65cd72a7e360987d94e6c61564ce6d71c6361d1784d529d70e4cbbe8522d"
+    },
+    "subagent-driven-development": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "a197f8e5fba5ea59013e1adbaa90dd42db35de8f074feca200c8038de584a83b"
+    },
+    "systematic-debugging": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "72e9ab72627e4fd8ed26a582e82309a98ecdc4f6e1c99418430ac05682c9e91d"
+    },
+    "test-driven-development": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "126f1ebf6ccd414f42544f6e83d8cc5adb089e1108eaffb7c400701e37eecd9f"
+    },
+    "using-git-worktrees": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "52bbb4b6e80918e83e92a1514f3b3757712154c2a8a42de24919e48a794c54fc"
+    },
+    "using-superpowers": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "e0eced9fbb205c212f420aded0c6f2bf5d5f059254679a8459b4fe72390160be"
+    },
+    "vercel-react-best-practices": {
+      "source": "C:\\Users\\zzzec\\.agents\\skills\\vercel-react-best-practices",
+      "sourceType": "local",
+      "computedHash": "c791557c34b478ef1e615ed6af527445fd1625216e37a1d1752f6baf3fc2d7d9"
+    },
+    "verification-before-completion": {
+      "source": "C:\\Users\\zzzec\\.agents\\skills\\verification-before-completion",
+      "sourceType": "local",
+      "computedHash": "9b446f0c7fe1cfb560b1d34439523b1a76d5f177290007b2c053a1c749a4a8ba"
+    },
+    "web-design-guidelines": {
+      "source": "C:\\Users\\zzzec\\.agents\\skills\\web-design-guidelines",
+      "sourceType": "local",
+      "computedHash": "d8e7d3afe37dcc8a97b99ffb5afdb4d0919ae0092ea8b68f44eb201f035e33ac"
+    },
+    "writing-plans": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "bfaed11054ad8021c66860244e2d2e0d1eca483ae9f5fbfcb956e99c61f5c3d7"
+    },
+    "writing-skills": {
+      "source": "obra/superpowers",
+      "sourceType": "github",
+      "computedHash": "b0e3065034610df41b9119445b5fd052042752bb3e598ca66aea2403a7c7685e"
+    }
+  }
+}
