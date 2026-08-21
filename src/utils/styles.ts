@@ -15,13 +15,14 @@
 // Applied to: text inputs, selects, dropdowns, and inline-editable triggers.
 export const inputClass =
     'w-full px-3.5 py-2.5 rounded-[8px] text-[13px] font-medium ' +
-    'outline-none transition-all duration-150 ' +
+    'outline-none transition-[color,background-color,border-color,box-shadow] duration-150 ' +
     '[background-color:var(--surface-300)] ' +
     '[color:var(--text-primary)] ' +
     '[border:1px_solid_var(--border-default)] ' +
     'placeholder:[color:var(--text-muted)] ' +
-    'focus:[border-color:var(--border-medium)] ' +
-    'focus:[box-shadow:0_0_0_3px_rgba(38,37,30,0.06)]';
+    'focus-visible:[border-color:var(--border-medium)] ' +
+    'focus-visible:[box-shadow:var(--shadow-focus)] ' +
+    'focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]';
 
 /**
  * Returns a contrast color (black or white) based on the input hex color.

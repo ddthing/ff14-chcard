@@ -61,6 +61,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
     };
 
     const t = i18n[lang].preview;
+    const form = i18n[lang].form;
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -98,14 +99,14 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                 <div className="p-6 space-y-6 shrink-0" style={{ backgroundColor: 'var(--surface-100)' }}>
                     {/* Zoom Slider */}
                     <div className="flex items-center gap-4">
-                        <ZoomIn size={20} style={{ color: 'var(--text-muted)' }} />
+                        <ZoomIn size={20} aria-hidden="true" style={{ color: 'var(--text-muted)' }} />
                         <input
                             type="range"
                             value={zoom}
                             min={1}
                             max={3}
                             step={0.01}
-                            aria-labelledby="Zoom"
+                            aria-label={form.zoom}
                             onChange={(e) => setZoom(Number(e.target.value))}
                             className="w-full h-1.5 rounded-lg appearance-none cursor-pointer"
                             style={{ backgroundColor: 'var(--surface-300)', accentColor: 'var(--text-primary)' }}
@@ -130,8 +131,8 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                             onMouseEnter={e => (e.currentTarget.style.backgroundColor = 'var(--surface-400)')}
                             onMouseLeave={e => (e.currentTarget.style.backgroundColor = 'var(--surface-300)')}
                         >
-                            <Maximize size={16} />
-                            {lang === 'ko' ? '자동 채우기' : lang === 'ja' ? '自動で合わせる' : 'Auto Fill'}
+                            <Maximize size={16} aria-hidden="true" />
+                            {form.autoFill}
                         </button>
                         
                         <div className="flex gap-3">

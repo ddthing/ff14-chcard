@@ -1,18 +1,19 @@
 import { PageLayout } from '../components/PageLayout';
-import { usePlayer } from '../contexts/PlayerContext';
+import { usePlayerSelector } from '../contexts/PlayerContext';
 import { i18n } from '../utils/i18n';
 import { Helmet } from 'react-helmet-async';
+import { pageMeta } from '../utils/pageMeta';
 
 export function Privacy() {
-    const { playerInfo } = usePlayer();
-    const lang = playerInfo.language;
+    const lang = usePlayerSelector(snapshot => snapshot.playerInfo.language);
     const t = i18n[lang].privacy;
+    const meta = pageMeta[lang].privacy;
 
     return (
         <>
             <Helmet>
-                <title>개인정보처리방침 - FF14 캐릭터 카드 생성기</title>
-                <meta name="description" content="파이널 판타지 14 캐릭터 카드 생성기의 개인정보처리방침을 안내합니다." />
+                <title>{meta.title}</title>
+                <meta name="description" content={meta.description} />
                 <link rel="canonical" href="https://ff14-chcard.pages.dev/privacy" />
             </Helmet>
             <PageLayout title={t.title}>

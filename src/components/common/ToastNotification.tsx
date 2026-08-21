@@ -1,5 +1,7 @@
 import { X, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 import type { ToastState } from '../../hooks/useToast';
+import { usePlayerSelector } from '../../contexts/PlayerContext';
+import { i18n } from '../../utils/i18n';
 
 interface ToastNotificationProps {
     toast: ToastState;
@@ -14,15 +16,15 @@ const ICON_MAP = {
 
 const COLOR_MAP = {
     error: {
-        bg: 'rgba(207, 45, 86, 0.08)',
-        border: 'rgba(207, 45, 86, 0.25)',
-        icon: '#cf2d56',
+        bg: 'color-mix(in oklab, var(--destructive) 8%, transparent)',
+        border: 'color-mix(in oklab, var(--destructive) 25%, transparent)',
+        icon: 'var(--destructive)',
         text: 'var(--text-primary)',
     },
     success: {
-        bg: 'rgba(31, 138, 101, 0.08)',
-        border: 'rgba(31, 138, 101, 0.25)',
-        icon: '#1f8a65',
+        bg: 'color-mix(in oklab, var(--success) 8%, transparent)',
+        border: 'color-mix(in oklab, var(--success) 25%, transparent)',
+        icon: 'var(--success)',
         text: 'var(--text-primary)',
     },
     info: {
@@ -40,10 +42,13 @@ const COLOR_MAP = {
  * Renders as a fixed-position banner at the top of the viewport.
  */
 export function ToastNotification({ toast, onDismiss }: ToastNotificationProps) {
+    const language = usePlayerSelector(snapshot => snapshot.playerInfo.language);
+
     if (!toast.visible) return null;
 
     const colors = COLOR_MAP[toast.type];
     const Icon = ICON_MAP[toast.type];
+    const closeLabel = i18n[language].layout.close;
 
     return (
         <div
@@ -56,7 +61,7 @@ export function ToastNotification({ toast, onDismiss }: ToastNotificationProps) 
                     border: `1px solid ${colors.border}`,
                     backdropFilter: 'blur(12px)',
                     WebkitBackdropFilter: 'blur(12px)',
-                    boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+                    boxShadow: 'var(--shadow-elevated)',
                 }}
             >
                 <Icon
@@ -74,7 +79,7 @@ export function ToastNotification({ toast, onDismiss }: ToastNotificationProps) 
                     onClick={onDismiss}
                     className="shrink-0 p-1 rounded-md transition-opacity hover:opacity-60"
                     style={{ color: 'var(--text-muted)' }}
-                    aria-label="닫기"
+                    aria-label={closeLabel}
                 >
                     <X size={14} />
                 </button>

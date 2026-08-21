@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 
 /**
@@ -10,13 +10,16 @@ import { ChevronDown } from 'lucide-react';
  */
 export function Section({ title, children, defaultOpen = true }: { title: React.ReactNode; children: React.ReactNode; defaultOpen?: boolean }) {
     const [isOpen, setIsOpen] = useState(defaultOpen);
+    const contentId = `section-${useId().replaceAll(':', '')}`;
 
     return (
         <section className="space-y-2.5 bg-transparent">
             <button 
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
-                className="w-full flex items-center justify-between group outline-none cursor-pointer"
+                aria-expanded={isOpen}
+                aria-controls={contentId}
+                className="group flex w-full cursor-pointer items-center justify-between rounded-[6px] outline-none transition-[color,background-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-100)]"
             >
                 <h3
                     className="text-[10px] font-bold uppercase tracking-[0.1em] group-hover:text-neutral-500 transition-colors"
@@ -32,7 +35,7 @@ export function Section({ title, children, defaultOpen = true }: { title: React.
             </button>
             
             {isOpen && (
-                <div className="animate-in fade-in slide-in-from-top-1 duration-200">
+                <div id={contentId} className="animate-in fade-in slide-in-from-top-1 duration-200">
                     {children}
                 </div>
             )}

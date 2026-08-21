@@ -1,7 +1,9 @@
-import { type ReactNode, useEffect, useRef, useState, useMemo } from 'react';
+import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { type Language } from '../types';
 import { useWindowScale } from '../hooks/useWindowScale';
 import { GlobalHeader } from './GlobalHeader';
+import { Footer } from './Footer';
+import { i18n } from '../utils/i18n';
 
 
 /**
@@ -12,70 +14,64 @@ interface MainLayoutProps {
     form: ReactNode;
     /** 카드 미리보기 콘텐츠 */
     preview: ReactNode;
-    /** 미리보기 패널 하단 광고 */
-    previewAd?: ReactNode;
-    /** Floating changelog badge */
-    changelogBadge?: ReactNode;
     /** 현재 언어 */
     lang: Language;
     /** 카드 레이아웃 타입 */
     layoutType: 'header' | 'left-portrait';
     /** 언어 변경 콜백 */
     onLanguageChange: (lang: Language) => void;
-    /** 위젯 아래 하단 콘텐츠 */
-    bottomContent?: ReactNode;
 }
 
-export function MainLayout({ form, preview, previewAd, changelogBadge, lang, layoutType, onLanguageChange, bottomContent }: MainLayoutProps) {
+export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }: MainLayoutProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const cardWrapperRef = useRef<HTMLDivElement>(null);
 
 
-    const targetWidth = useMemo(() => layoutType === 'left-portrait' ? 800 : 700, [layoutType]);
+    const targetWidth = layoutType === 'left-portrait' ? 800 : 700;
     const scale = useWindowScale(containerRef, targetWidth);
 
     const [cardHeight, setCardHeight] = useState(layoutType === 'left-portrait' ? 720 : 500);
 
     // Use ResizeObserver to track the actual height of the card
     useEffect(() => {
-        if (!cardWrapperRef.current) return;
-        
-        const observer = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                if (entry.contentBoxSize || entry.contentRect) {
-                    const minH = layoutType === 'left-portrait' ? 720 : 500;
-                    // Use offsetHeight which is immune to parent CSS transforms
-                    const unscaledHeight = (entry.target as HTMLElement).offsetHeight;
-                    const h = Math.max(minH, unscaledHeight);
-                    setCardHeight(h);
-                }
-            }
-        });
-        
-        setTimeout(() => {
-            if (cardWrapperRef.current?.firstElementChild) {
-                observer.observe(cardWrapperRef.current.firstElementChild);
-            }
-        }, 100);
+        const wrapper = cardWrapperRef.current;
+        if (!wrapper) return;
 
-        return () => observer.disconnect();
-    }, [layoutType, scale]);
+        const observer = new ResizeObserver((entries) => {
+            const entry = entries[0];
+            if (!entry) return;
+
+            const minH = layoutType === 'left-portrait' ? 720 : 500;
+            const nextHeight = Math.max(minH, Math.ceil(entry.contentRect.height));
+            setCardHeight(previousHeight => previousHeight === nextHeight ? previousHeight : nextHeight);
+        });
+
+        const frame = requestAnimationFrame(() => {
+            observer.observe(wrapper.firstElementChild ?? wrapper);
+        });
+
+        return () => {
+            cancelAnimationFrame(frame);
+            observer.disconnect();
+        };
+    }, [layoutType]);
 
     return (
         <div className="min-h-screen flex flex-col transition-colors duration-200" style={{ backgroundColor: 'var(--surface-200)', color: 'var(--text-primary)' }}>
-            
+            <a href="#main-content" className="skip-link">{i18n[lang].layout.skipToContent}</a>
+
             {/* ── Global Header ───────────────────────────────────────────── */}
-            <GlobalHeader lang={lang} onLanguageChange={onLanguageChange} showLogo={false} changelogBadge={changelogBadge} />
+            <GlobalHeader lang={lang} onLanguageChange={onLanguageChange} pageTitle={i18n[lang].layout.headerTitle} />
 
             {/* ── Floating App Widget Wrapper ─────────────────────────────── */}
             <div className="flex-1 w-full flex flex-col items-center justify-start py-6 md:py-12 px-4 transition-colors duration-200">
                 
                 <div 
-                    className="w-full max-w-[1300px] flex flex-col md:flex-row items-stretch rounded-xl md:rounded-2xl overflow-hidden relative transition-all duration-300"
+                    className="w-full max-w-[1300px] flex flex-col md:flex-row items-stretch rounded-xl md:rounded-2xl overflow-hidden relative transition-[background-color,border-color,box-shadow] duration-300"
                     style={{ 
                         backgroundColor: 'var(--surface-100)', 
                         border: '1px solid var(--border-subtle)',
-                        boxShadow: 'var(--shadow-elevated)'
+                        boxShadow: 'none'
                     }}
                 >
                     {/* ── Sidebar (Inside Widget) ───────────────────────────── */}
@@ -92,7 +88,7 @@ export function MainLayout({ form, preview, previewAd, changelogBadge, lang, lay
                     </aside>
 
                     {/* ── Right Content Area (Canvas + Footer) ──────────────── */}
-                    <main className="order-1 md:order-2 flex-1 flex flex-col min-w-0 relative items-center justify-center py-6 px-0 md:py-10 md:px-10" style={{ backgroundColor: 'var(--surface-100)' }}>
+                    <main id="main-content" className="order-1 md:order-2 flex-1 flex flex-col min-w-0 relative items-center justify-center py-6 px-0 md:py-10 md:px-10" style={{ backgroundColor: 'var(--surface-100)' }}>
                         
                         {/* Canvas Panel */}
                         <div
@@ -121,20 +117,9 @@ export function MainLayout({ form, preview, previewAd, changelogBadge, lang, lay
                     </main>
                 </div>
                 
-                {/* ── AdSense Banner Area (Outside Widget) ──── */}
-                {previewAd && (
-                    <div className="w-full max-w-[1300px] mt-10 flex justify-center">
-                        {previewAd}
-                    </div>
-                )}
-
-                {/* ── SeoContent area ──── */}
-                {bottomContent && (
-                    <div className="w-full max-w-[1300px] mt-10">
-                        {bottomContent}
-                    </div>
-                )}
             </div>
+
+            <Footer />
         </div>
     );
 }

@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
-import { PlayerProvider } from './contexts/PlayerContext';
+import { PlayerProvider, usePlayerSelector } from './contexts/PlayerContext';
 
 const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
 const Privacy = lazy(() => import('./pages/Privacy').then(module => ({ default: module.Privacy })));
@@ -11,11 +11,22 @@ const About = lazy(() => import('./pages/About').then(module => ({ default: modu
 const Contact = lazy(() => import('./pages/Contact').then(module => ({ default: module.Contact })));
 const Faq = lazy(() => import('./pages/Faq').then(module => ({ default: module.Faq })));
 
+function DocumentLanguage() {
+  const language = usePlayerSelector(snapshot => snapshot.playerInfo.language);
+
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
+
+  return null;
+}
+
 function App() {
   return (
     <HelmetProvider>
       <PlayerProvider>
         <BrowserRouter>
+          <DocumentLanguage />
           <Suspense fallback={
             <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--surface-200)' }}>
               <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--text-primary)', borderTopColor: 'transparent' }}></div>

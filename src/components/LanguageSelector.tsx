@@ -14,8 +14,8 @@ export function LanguageSelector({ currentLang, onLanguageChange }: LanguageSele
     ];
 
     return (
-        <div className="flex items-center gap-2">
-            <Globe size={14} style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
+        <div className="flex items-center gap-1.5" role="group" aria-label={currentLang === 'ko' ? '언어 선택' : currentLang === 'ja' ? '言語選択' : 'Language selection'}>
+            <Globe size={14} aria-hidden="true" style={{ color: 'var(--text-muted)', flexShrink: 0 }} />
             <div
                 className="flex rounded-full p-[3px]"
                 style={{
@@ -28,7 +28,9 @@ export function LanguageSelector({ currentLang, onLanguageChange }: LanguageSele
                         key={lang.id}
                         type="button"
                         onClick={() => onLanguageChange(lang.id)}
-                        className="px-2.5 py-0.5 text-[11px] font-semibold rounded-full transition-all duration-200"
+                        aria-label={currentLang === 'ko' ? `${lang.label} 언어` : currentLang === 'ja' ? `${lang.label} 言語` : `${lang.label} language`}
+                        aria-pressed={currentLang === lang.id}
+                        className="rounded-full px-2 py-1 text-[10px] font-semibold transition-[color,background-color,border-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                         style={
                             currentLang === lang.id
                                 ? {
