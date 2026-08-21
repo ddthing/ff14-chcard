@@ -7,6 +7,30 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#ffffff" />
 
+  <!--
+    Static hosts may serve 404.html before the SPA fallback rules are applied.
+    Restore the original route before React Router initializes.
+  -->
+  <script>
+    (() => {
+      const redirectKey = 'ff14-chcard:spa-redirect';
+
+      try {
+        const redirect = window.sessionStorage.getItem(redirectKey);
+        if (!redirect) return;
+
+        window.sessionStorage.removeItem(redirectKey);
+        const target = new URL(redirect, window.location.origin);
+
+        if (target.origin === window.location.origin) {
+          window.history.replaceState(null, '', `${target.pathname}${target.search}${target.hash}`);
+        }
+      } catch {
+        // Storage may be unavailable in privacy-restricted browser contexts.
+      }
+    })();
+  </script>
+
   <!-- SEO -->
   <title>FF14 캐릭터 카드 생성기 - 파판14 캐릭터 시트 만들기</title>
   <meta name="google-site-verification" content="-wDiKCJHQADA4Iyvw8lR16IkY6wftlOHLnzH3UKvUf4" />
