@@ -40,7 +40,7 @@ npm run preview
    - Build output directory: `dist`
 4. Deploy!
 
-> **참고**: SPA(Single Page Application) 라우팅을 위해 `public/_redirects` 파일이 배포 시 자동으로 처리됩니다.
+> **참고**: SPA(Single Page Application) 라우팅을 위해 `public/_redirects` 파일이 배포 시 자동으로 처리됩니다. 최상위 `404.html`은 두지 않습니다. Cloudflare Pages가 최상위 `404.html`이 없는 프로젝트를 SPA로 인식해 `/guide`, `/faq` 같은 직접 진입 경로도 앱으로 전달하기 때문입니다.
 
 ---
 
