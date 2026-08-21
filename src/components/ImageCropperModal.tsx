@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useId, useRef, type KeyboardEvent as ReactKeyboardEvent, type RefObject } from 'react';
 import Cropper from 'react-easy-crop';
 import getCroppedImg, { createImage } from '../utils/cropImage';
 import { ZoomIn, Maximize } from 'lucide-react';
@@ -11,12 +11,74 @@ interface ImageCropperModalProps {
     onCancel: () => void;
     lang: Language;
     aspectRatio?: number;
+    returnFocusRef?: RefObject<HTMLButtonElement | null>;
 }
 
-export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRatio = 700 / 280 }: ImageCropperModalProps) {
+export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRatio = 700 / 280, returnFocusRef }: ImageCropperModalProps) {
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
+    const dialogRef = useRef<HTMLDivElement>(null);
+    const closeButtonRef = useRef<HTMLButtonElement>(null);
+    const onCancelRef = useRef(onCancel);
+    const titleId = useId();
+    const descriptionId = useId();
+
+    useEffect(() => {
+        onCancelRef.current = onCancel;
+    }, [onCancel]);
+
+    useEffect(() => {
+        const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        const focusReturnTarget = returnFocusRef?.current;
+        closeButtonRef.current?.focus();
+
+        const handleKeyDown = (event: globalThis.KeyboardEvent) => {
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                onCancelRef.current();
+                return;
+            }
+
+            if (event.key !== 'Tab') return;
+
+            const dialog = dialogRef.current;
+            if (!dialog) return;
+
+            const focusableElements = Array.from(
+                dialog.querySelectorAll<HTMLElement>(
+                    'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+                )
+            );
+
+            if (focusableElements.length === 0) {
+                event.preventDefault();
+                return;
+            }
+
+            const firstElement = focusableElements[0];
+            const lastElement = focusableElements[focusableElements.length - 1];
+            const activeElement = document.activeElement;
+
+            if (event.shiftKey && activeElement === firstElement) {
+                event.preventDefault();
+                lastElement.focus();
+            } else if (!event.shiftKey && activeElement === lastElement) {
+                event.preventDefault();
+                firstElement.focus();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+
+        return () => {
+            document.removeEventListener('keydown', handleKeyDown);
+            const focusTarget = focusReturnTarget ?? previousFocus;
+            if (focusTarget instanceof HTMLElement && focusTarget.isConnected) {
+                focusTarget.focus();
+            }
+        };
+    }, [returnFocusRef]);
 
     const onCropComplete = useCallback((_croppedArea: unknown, croppedAreaPixels: { x: number; y: number; width: number; height: number }) => {
         setCroppedAreaPixels(croppedAreaPixels);
@@ -60,12 +122,39 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
         }
     };
 
+    const handleCropKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+        const step = event.shiftKey ? 10 : 2;
+        let x = 0;
+        let y = 0;
+
+        switch (event.key) {
+            case 'ArrowLeft':
+                x = -step;
+                break;
+            case 'ArrowRight':
+                x = step;
+                break;
+            case 'ArrowUp':
+                y = -step;
+                break;
+            case 'ArrowDown':
+                y = step;
+                break;
+            default:
+                return;
+        }
+
+        event.preventDefault();
+        setCrop((previousCrop) => ({ x: previousCrop.x + x, y: previousCrop.y + y }));
+    };
+
     const t = i18n[lang].preview;
     const form = i18n[lang].form;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId}>
             <div 
+                ref={dialogRef}
                 className="w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col h-[80vh] sm:h-[600px] animate-in zoom-in-[0.98] duration-300"
                 style={{ backgroundColor: 'var(--surface-100)', border: '1px solid var(--border-medium)' }}
             >
@@ -74,16 +163,16 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                     className="p-4 flex justify-between items-center"
                     style={{ borderBottom: '1px solid var(--border-subtle)' }}
                 >
-                    <h2 className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
+                    <h2 id={titleId} className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
                         {t.adjustImageArea}
                     </h2>
-                    <button onClick={onCancel} className="text-sm font-semibold transition-colors" style={{ color: 'var(--text-muted)' }}>
+                    <button ref={closeButtonRef} type="button" onClick={onCancel} className="text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2" style={{ color: 'var(--text-muted)' }}>
                         {t.cancel}
                     </button>
                 </div>
 
                 {/* Cropper Container */}
-                <div className="relative flex-1 overflow-hidden" style={{ backgroundColor: 'var(--surface-200)' }}>
+                <div className="relative flex-1 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]" style={{ backgroundColor: 'var(--surface-200)' }} tabIndex={0} aria-label={t.dragToMove} onKeyDown={handleCropKeyDown}>
                     <Cropper
                         image={imageSrc}
                         crop={crop}
@@ -114,7 +203,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                         <span className="text-sm font-medium w-8 text-right" style={{ color: 'var(--text-secondary)' }}>{zoom.toFixed(1)}x</span>
                     </div>
 
-                    <div className="text-xs text-center font-medium" style={{ color: 'var(--text-muted)' }}>
+                    <div id={descriptionId} className="text-xs text-center font-medium" style={{ color: 'var(--text-muted)' }}>
                         {t.dragToMove}
                     </div>
 
@@ -122,7 +211,8 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                     <div className="flex flex-col gap-3">
                         <button
                             onClick={handleAutoFill}
-                            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-colors"
+                            type="button"
+                            className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2"
                             style={{ 
                                 backgroundColor: 'var(--surface-300)', 
                                 border: '1px solid var(--border-medium)', 
@@ -138,7 +228,8 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                         <div className="flex gap-3">
                             <button
                                 onClick={onCancel}
-                                className="flex-1 py-3 rounded-xl font-semibold text-sm transition-colors"
+                                type="button"
+                                className="flex-1 py-3 rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2"
                                 style={{ 
                                     backgroundColor: 'transparent', 
                                     border: '1px solid var(--border-medium)', 
@@ -151,7 +242,8 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                             </button>
                             <button
                                 onClick={handleApply}
-                                className="flex-1 py-3 rounded-xl font-semibold text-sm transition-colors shadow-sm"
+                                type="button"
+                                className="flex-1 py-3 rounded-xl font-semibold text-sm transition-colors shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--text-primary)] focus-visible:ring-offset-2"
                                 style={{ 
                                     backgroundColor: 'var(--text-primary)', 
                                     color: 'var(--surface-200)' 

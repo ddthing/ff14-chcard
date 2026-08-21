@@ -76,7 +76,7 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
                 >
                     {/* ── Sidebar (Inside Widget) ───────────────────────────── */}
                     <aside
-                        className="order-2 md:order-1 w-full md:w-[400px] xl:w-[440px] z-30 flex-shrink-0 flex flex-col transition-colors duration-200 border-t md:border-t-0 md:border-r"
+                        className="order-1 md:order-1 w-full md:w-[400px] xl:w-[440px] z-30 flex-shrink-0 flex flex-col transition-colors duration-200 border-t md:border-t-0 md:border-r"
                         style={{ backgroundColor: 'var(--surface-50)', borderColor: 'var(--border-subtle)' }}
                     >
                         {/* Height constraint: Scrolling on desktop, natural flow on mobile */}
@@ -88,7 +88,7 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
                     </aside>
 
                     {/* ── Right Content Area (Canvas + Footer) ──────────────── */}
-                    <main id="main-content" className="order-1 md:order-2 flex-1 flex flex-col min-w-0 relative items-center justify-center py-6 px-0 md:py-10 md:px-10" style={{ backgroundColor: 'var(--surface-100)' }}>
+                    <main id="main-content" className="order-2 md:order-2 flex-1 flex flex-col min-w-0 relative items-center justify-center py-6 px-0 md:py-10 md:px-10" style={{ backgroundColor: 'var(--surface-100)' }}>
                         
                         {/* Canvas Panel */}
                         <div

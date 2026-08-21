@@ -175,16 +175,16 @@ export function StickerSection() {
                                         : '1px solid var(--border-subtle)',
                                     boxShadow: isSelected ? '0 0 0 2px color-mix(in oklab, var(--primary) 12%, transparent)' : 'none',
                                 }}
-                                onClick={e => {
-                                    if ((e.target as HTMLElement).tagName !== 'INPUT' &&
-                                        (e.target as HTMLElement).tagName !== 'SUMMARY') {
-                                        setSelectedStickerId(sticker.id);
-                                    }
-                                }}
                             >
                                 {/* Header row */}
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2.5">
+                                    <button
+                                        type="button"
+                                        aria-label={`${t.stickers} ${index + 1}`}
+                                        aria-pressed={isSelected}
+                                        className="flex items-center gap-2.5 rounded border-0 bg-transparent p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
+                                        onClick={() => setSelectedStickerId(sticker.id)}
+                                    >
                                         <div
                                             className="w-9 h-9 rounded-[6px] overflow-hidden flex-shrink-0 flex items-center justify-center"
                                             style={{
@@ -200,7 +200,7 @@ export function StickerSection() {
                                         >
                                             #{index + 1}
                                         </span>
-                                    </div>
+                                    </button>
                                     <div className="flex items-center gap-0.5">
                                         <button
                                             type="button"

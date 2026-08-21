@@ -25,14 +25,25 @@ export const inputClass =
     'focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]';
 
 /**
- * Returns a contrast color (black or white) based on the input hex color.
- * Uses the YIQ luminance formula for optimal accessibility.
+ * Returns the black or white text color with the stronger WCAG relative-luminance contrast.
  */
 export function getContrastColor(hexColor: string): '#000000' | '#ffffff' {
-    const hex = hexColor.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    const yiq = (r * 299 + g * 587 + b * 114) / 1000;
-    return yiq >= 128 ? '#000000' : '#ffffff';
+    const hex = hexColor.replace('#', '').trim();
+    if (!/^[0-9a-f]{6}$/i.test(hex)) return '#000000';
+
+    const toLinearChannel = (value: number) => {
+        const channel = value / 255;
+        return channel <= 0.03928
+            ? channel / 12.92
+            : ((channel + 0.055) / 1.055) ** 2.4;
+    };
+
+    const red = toLinearChannel(parseInt(hex.substring(0, 2), 16));
+    const green = toLinearChannel(parseInt(hex.substring(2, 4), 16));
+    const blue = toLinearChannel(parseInt(hex.substring(4, 6), 16));
+    const luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+    const contrastWithBlack = (luminance + 0.05) / 0.05;
+    const contrastWithWhite = 1.05 / (luminance + 0.05);
+
+    return contrastWithBlack >= contrastWithWhite ? '#000000' : '#ffffff';
 }

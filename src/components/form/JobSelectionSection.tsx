@@ -23,6 +23,8 @@ export function JobSelectionSection() {
     const { playerInfo, setPlayerInfo, updatePlayerField: handleChange } = usePlayer();
     const lang = playerInfo.language;
     const mainJobRef = useRef<HTMLDivElement>(null);
+    const mainJobTriggerRef = useRef<HTMLButtonElement>(null);
+    const mainJobOptionRefs = useRef<Array<HTMLButtonElement | null>>([]);
     const jobTabRefs = useRef<Partial<Record<JobTab, HTMLButtonElement | null>>>({});
     const [isMainJobOpen, setIsMainJobOpen] = useState(false);
     const [jobTab, setJobTab] = useState<JobTab>('Battle');
@@ -44,6 +46,66 @@ export function JobSelectionSection() {
         if (lang === 'ko') return job.nameKr;
         if (lang === 'ja') return job.nameJa;
         return job.nameEn;
+    };
+
+    const selectedMainJob = JOBS.find(job => job.id === playerInfo.mainJob);
+    const selectedMainJobName = selectedMainJob ? getJobDisplayName(selectedMainJob) : '';
+
+    const focusMainJobOption = (index: number) => {
+        requestAnimationFrame(() => {
+            mainJobOptionRefs.current[index]?.focus();
+        });
+    };
+
+    const toggleMainJobDropdown = () => {
+        const nextIsOpen = !isMainJobOpen;
+        setIsMainJobOpen(nextIsOpen);
+        if (nextIsOpen) {
+            const selectedIndex = Math.max(0, playerInfo.jobs.indexOf(playerInfo.mainJob ?? ''));
+            focusMainJobOption(selectedIndex);
+        }
+    };
+
+    const handleMainJobTriggerKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+        if (event.key === 'Escape') {
+            if (!isMainJobOpen) return;
+            event.preventDefault();
+            setIsMainJobOpen(false);
+            return;
+        }
+
+        if (!['Enter', ' ', 'ArrowDown', 'ArrowUp'].includes(event.key)) return;
+
+        event.preventDefault();
+        const selectedIndex = Math.max(0, playerInfo.jobs.indexOf(playerInfo.mainJob ?? ''));
+        const nextIndex = event.key === 'ArrowUp'
+            ? Math.max(0, selectedIndex - 1)
+            : event.key === 'ArrowDown'
+                ? Math.min(playerInfo.jobs.length - 1, selectedIndex + 1)
+                : selectedIndex;
+        setIsMainJobOpen(true);
+        focusMainJobOption(nextIndex);
+    };
+
+    const handleMainJobOptionKeyDown = (event: KeyboardEvent<HTMLButtonElement>, currentIndex: number) => {
+        const optionCount = playerInfo.jobs.length;
+
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            setIsMainJobOpen(false);
+            mainJobTriggerRef.current?.focus();
+            return;
+        }
+
+        if (!['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)) return;
+
+        event.preventDefault();
+        const nextIndex = event.key === 'Home'
+            ? 0
+            : event.key === 'End'
+                ? optionCount - 1
+                : (currentIndex + (event.key === 'ArrowDown' ? 1 : -1) + optionCount) % optionCount;
+        focusMainJobOption(nextIndex);
     };
 
     // ─── Bulk selection ───────────────────────────────────────────────────────
@@ -199,7 +261,7 @@ export function JobSelectionSection() {
                         id={`job-tab-${tab.key.toLowerCase()}`}
                         role="tab"
                         aria-selected={jobTab === tab.key}
-                        aria-controls={`job-panel-${tab.key.toLowerCase()}`}
+                        aria-controls={jobTab === tab.key ? `job-panel-${tab.key.toLowerCase()}` : undefined}
                         tabIndex={jobTab === tab.key ? 0 : -1}
                         onKeyDown={event => handleJobTabKeyDown(event, index)}
                         className="flex-1 truncate rounded-[6px] px-1 py-1.5 text-[11px] font-semibold flex items-center justify-center gap-1 transition-[color,background-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
@@ -234,20 +296,23 @@ export function JobSelectionSection() {
                     </span>
                     <div className="relative">
                         <button
+                            ref={mainJobTriggerRef}
                             type="button"
-                            onClick={() => setIsMainJobOpen(!isMainJobOpen)}
+                            role="combobox"
+                            onClick={toggleMainJobDropdown}
+                            onKeyDown={handleMainJobTriggerKeyDown}
                             aria-expanded={isMainJobOpen}
                             aria-haspopup="listbox"
-                            aria-label={t.mainJobSelect}
-                            className={`${inputClass} flex items-center justify-between cursor-pointer`}
+                            aria-controls={isMainJobOpen ? 'main-job-listbox' : undefined}
+                            aria-label={selectedMainJobName ? `${selectedMainJobName} · ${t.mainJobSelect}` : t.mainJobSelect}
+                            className={`${inputClass} flex items-center justify-between cursor-pointer focus-visible:outline-none`}
                         >
                             <div className="flex items-center gap-2">
-                                {playerInfo.mainJob ? (() => {
-                                    const job = JOBS.find(j => j.id === playerInfo.mainJob);
-                                    if (!job) return <span style={{ color: 'var(--text-muted)' }}>{t.pleaseSelect}</span>;
+                                {selectedMainJob ? (() => {
+                                    const job = selectedMainJob;
                                     return (
                                         <>
-                                            <img src={job.iconUrl} alt={getJobDisplayName(job)} className="w-5 h-5 dark-invert" />
+                                            <img src={job.iconUrl} alt="" aria-hidden="true" width={20} height={20} className="w-5 h-5 dark-invert" />
                                             <span className="font-semibold" style={{ color: 'var(--text-primary)' }}>
                                                 {getJobDisplayName(job)}
                                             </span>
@@ -268,6 +333,9 @@ export function JobSelectionSection() {
                         {/* Dropdown list */}
                         {isMainJobOpen && (
                             <div
+                                id="main-job-listbox"
+                                role="listbox"
+                                aria-label={t.mainJobSelect}
                                 className="absolute top-full left-0 right-0 mt-1.5 backdrop-blur-xl rounded-[10px] z-50 max-h-60 overflow-y-auto p-1"
                                 style={{
                                     backgroundColor: 'var(--surface-100)',
@@ -275,7 +343,7 @@ export function JobSelectionSection() {
                                     boxShadow: 'var(--shadow-elevated)',
                                 }}
                             >
-                                {playerInfo.jobs.map(jobId => {
+                                {playerInfo.jobs.map((jobId, index) => {
                                     const job = JOBS.find(j => j.id === jobId);
                                     if (!job) return null;
                                     const isSelected = playerInfo.mainJob === jobId;
@@ -284,8 +352,17 @@ export function JobSelectionSection() {
                                         <button
                                             key={jobId}
                                             type="button"
-                                            onClick={() => { handleChange('mainJob', jobId); setIsMainJobOpen(false); }}
-                                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-[7px] transition-colors duration-100"
+                                            role="option"
+                                            aria-selected={isSelected}
+                                            tabIndex={isSelected ? 0 : -1}
+                                            ref={element => { mainJobOptionRefs.current[index] = element; }}
+                                            onClick={() => {
+                                                handleChange('mainJob', jobId);
+                                                setIsMainJobOpen(false);
+                                                mainJobTriggerRef.current?.focus();
+                                            }}
+                                            onKeyDown={event => handleMainJobOptionKeyDown(event, index)}
+                                            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-[7px] transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]"
                                             style={{
                                                 backgroundColor: isSelected ? 'var(--surface-300)' : 'transparent',
                                                 color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
@@ -293,7 +370,7 @@ export function JobSelectionSection() {
                                             onMouseEnter={e => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--surface-200)'; }}
                                             onMouseLeave={e => { if (!isSelected) (e.currentTarget as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
                                         >
-                                            <img src={job.iconUrl} alt={jobName} className="w-5 h-5 dark-invert" />
+                                            <img src={job.iconUrl} alt="" aria-hidden="true" width={20} height={20} className="w-5 h-5 dark-invert" />
                                             <span className={`text-[13px] flex-1 text-left ${isSelected ? 'font-semibold' : 'font-medium'}`}>
                                                 {jobName}
                                             </span>
@@ -347,6 +424,8 @@ export function JobSelectionSection() {
                                     <img
                                         src={job.iconUrl}
                                         alt={jobName}
+                                        width={32}
+                                        height={32}
                                         className={`h-8 w-8 transition-[filter,transform,opacity] duration-300 dark-invert ${
                                             isSelected ? 'scale-105 drop-shadow-sm' : 'grayscale'
                                         }`}

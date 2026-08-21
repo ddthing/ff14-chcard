@@ -112,9 +112,9 @@ export function SEOContent() {
                 {/* Features Grid */}
                 <section className="grid md:grid-cols-3 gap-6 mb-24">
                     {[
-                        { icon: <Palette />, ...t.features[0] },
-                        { icon: <Globe />, ...t.features[1] },
-                        { icon: <Smartphone />, ...t.features[2] }
+                        { icon: <Palette aria-hidden="true" />, ...t.features[0] },
+                        { icon: <Globe aria-hidden="true" />, ...t.features[1] },
+                        { icon: <Smartphone aria-hidden="true" />, ...t.features[2] }
                     ].map((feature, idx) => (
                         <div key={idx} className="p-8 rounded-[24px] transition-transform hover:-translate-y-1" style={{ backgroundColor: 'var(--surface-50)', border: '1px solid var(--border-subtle)' }}>
                             <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6" style={{ backgroundColor: 'var(--surface-200)', color: 'var(--text-primary)' }}>
@@ -163,7 +163,7 @@ export function SEOContent() {
                         </ul>
                     </div>
                     <div className="shrink-0 w-full md:w-[300px] h-[300px] rounded-[24px] flex flex-col items-center justify-center border border-dashed" style={{ borderColor: 'var(--border-medium)', backgroundColor: 'var(--surface-50)' }}>
-                        <Download size={48} className="mb-4 opacity-20" style={{ color: 'var(--text-primary)' }} />
+                        <Download size={48} className="mb-4 opacity-20" aria-hidden="true" style={{ color: 'var(--text-primary)' }} />
                         <span className="font-bold text-sm opacity-50" style={{ color: 'var(--text-primary)' }}>{t.createBox}</span>
                     </div>
                 </section>

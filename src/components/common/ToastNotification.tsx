@@ -53,6 +53,9 @@ export function ToastNotification({ toast, onDismiss }: ToastNotificationProps) 
     return (
         <div
             className="fixed top-4 left-1/2 -translate-x-1/2 z-[300] w-[calc(100%-32px)] max-w-[480px] animate-in slide-in-from-top-2 fade-in duration-300"
+            role={toast.type === 'error' ? 'alert' : 'status'}
+            aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
+            aria-atomic="true"
         >
             <div
                 className="flex items-start gap-3 px-4 py-3.5 rounded-xl"
@@ -68,6 +71,7 @@ export function ToastNotification({ toast, onDismiss }: ToastNotificationProps) 
                     size={18}
                     className="shrink-0 mt-0.5"
                     style={{ color: colors.icon }}
+                    aria-hidden="true"
                 />
                 <p
                     className="flex-1 text-[13px] font-medium leading-relaxed whitespace-pre-wrap"
@@ -76,12 +80,13 @@ export function ToastNotification({ toast, onDismiss }: ToastNotificationProps) 
                     {toast.message}
                 </p>
                 <button
+                    type="button"
                     onClick={onDismiss}
-                    className="shrink-0 p-1 rounded-md transition-opacity hover:opacity-60"
+                    className="shrink-0 p-1 rounded-md transition-opacity hover:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                     style={{ color: 'var(--text-muted)' }}
                     aria-label={closeLabel}
                 >
-                    <X size={14} />
+                    <X size={14} aria-hidden="true" />
                 </button>
             </div>
         </div>
