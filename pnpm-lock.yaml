@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@ff14-glamour/design-system':
-        specifier: file:../ff14-glamour-maker/packages/design-system
-        version: file:../ff14-glamour-maker/packages/design-system(tailwindcss@4.3.3)
+        specifier: file:./packages/design-system
+        version: link:packages/design-system
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
@@ -93,6 +93,12 @@ importers:
       vite:
         specifier: ^7.3.1
         version: 7.3.6(@types/node@24.13.3)(jiti@2.7.0)(lightningcss@1.32.0)
+
+  packages/design-system:
+    dependencies:
+      tailwindcss:
+        specifier: ^4.0.0
+        version: 4.3.3
 
 packages:
 
@@ -372,11 +378,6 @@ packages:
   '@eslint/plugin-kit@0.4.1':
     resolution: {integrity: sha512-43/qtrDUokr7LJqoF2c3+RInu/t4zfrpYdoSDfYyhg52rwLV6TnOvdG4fXm7IkSB3wErkcmJS9iEhjVtOSEjjA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
-
-  '@ff14-glamour/design-system@file:../ff14-glamour-maker/packages/design-system':
-    resolution: {directory: ../ff14-glamour-maker/packages/design-system, type: directory}
-    peerDependencies:
-      tailwindcss: ^4.0.0
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -1714,10 +1715,6 @@ snapshots:
     dependencies:
       '@eslint/core': 0.17.0
       levn: 0.4.1
-
-  '@ff14-glamour/design-system@file:../ff14-glamour-maker/packages/design-system(tailwindcss@4.3.3)':
-    dependencies:
-      tailwindcss: 4.3.3
 
   '@humanfs/core@0.19.2':
     dependencies:
