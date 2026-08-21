@@ -6,24 +6,27 @@ export const i18n = {
             title: '프로필 작성',
             tutorial: '정보를 입력하면 실시간으로 미리보기 가능합니다.',
             headerTitle: 'FF14 캐릭터 카드 생성기',
+            skipToContent: '콘텐츠로 건너뛰기',
+            close: '닫기',
             saveImage: '이미지 저장',
             saveError: '이미지 생성에 실패했습니다.',
+            exportErrorCors: '저장 실패 — 브라우저 보안 정책 충돌.\nChrome 사용을 권장하며, 브라우저 확장 프로그램이 활성화된 경우 잠시 꺼보세요.',
+            exportErrorGeneric: '저장에 실패했습니다.',
+            errorDetails: '세부 정보',
             reset: '초기화',
-            renderingTitle: '고화질 카드를 렌더링 중입니다...',
+            renderingTitle: '고화질 카드를 렌더링 중입니다…',
             renderingDesc: '잠시만 기다려주세요'
         },
         footer: {
             home: "홈",
             guide: "가이드",
             about: "소개",
-            faq: "FAQ",
+            faq: "자주 묻는 질문",
             contact: "문의",
             privacy: "개인정보처리방침",
-            terms: "이용약관"
-        },
-        changelog: {
-            title: '새로운 소식',
-            close: '확인'
+            terms: "이용약관",
+            support: "후원",
+            projectNotice: "FF14 캐릭터 카드 생성기 © SQUARE ENIX. 팬 프로젝트"
         },
         form: {
             layout: '레이아웃',
@@ -45,6 +48,7 @@ export const i18n = {
             battleMax: '전투 만렙',
             lifeMax: '제작/채집 만렙',
             reset: '초기화',
+            resetConfirm: '선택한 항목을 모두 초기화하시겠습니까?',
             playstyle: '플레이 스타일',
             details: '상세 정보',
             selectTime: '접속 시간 선택',
@@ -55,19 +59,43 @@ export const i18n = {
             delete: '삭제',
             font: '폰트',
             pointColor: '포인트 컬러',
+            pointColorHint: '카드의 강조 색상입니다. HEX 코드를 입력하거나 추천 색상을 선택하세요.',
+            colorPresets: '추천 색상',
             newbie: '새싹',
             mentor: '멘토',
             tabBasic: '기본',
             tabJob: '직업',
             tabStyle: '스타일',
             tabDesign: '꾸미기',
+            tabSlot: '저장',
             stickers: '스티커',
             addSticker: '스티커 추가',
+            stickerHint: 'PNG, JPG, GIF 등 2MB 이하 이미지를 추가하세요. 카드에서 위치와 크기를 조절할 수 있습니다.',
+            stickerEmpty: '아직 추가된 스티커가 없습니다.',
+            stickerFileTooLarge: '스티커는 2MB 이하 이미지로 업로드해주세요.',
+            stickerUploadError: '스티커 이미지를 읽지 못했습니다. 다른 이미지를 선택해주세요.',
             stickerX: '가로 위치',
             stickerY: '세로 위치',
             stickerSize: '크기',
             stickerRotate: '회전',
             advancedSticker: '세부 위치 조정',
+            tabNavigation: '프로필 작성 단계',
+            autoFill: '자동 채우기',
+            saveCurrentProfile: '현재 프로필 저장',
+            slotName: '슬롯 이름',
+            slotNamePlaceholder: '슬롯 이름 (예: 본캐, 부캐)',
+            save: '저장',
+            savedSlots: '저장된 슬롯',
+            noSavedSlots: '저장된 슬롯이 없습니다.',
+            load: '불러오기',
+            loadConfirm: '현재 작업 중인 내용이 덮어씌워집니다. 불러오시겠습니까?',
+            deleteConfirm: '정말 삭제하시겠습니까?',
+            defaultCharacter: '캐릭터',
+            moveForward: '앞으로 이동',
+            moveBackward: '뒤로 이동',
+            value: '값',
+            position: '위치',
+            zoom: '확대/축소',
         },
         preview: {
             sprout: '새싹',
@@ -89,10 +117,12 @@ export const i18n = {
             adjustImageArea: '이미지 영역 설정',
             cancel: '취소',
             apply: '적용하기',
-            emptyName: '닉네임을 입력해 주세요',
             createOwn: '나만의 카드 만들기:',
             designedBy: '디자인 & 개발:',
-            defaultComment: '에오르제아에서 함께 모험하며 소중한 추억을 쌓을 인연을 기다리고 있어요. 부담 없이 다가와 주세요! ✨'
+            characterImage: '캐릭터 이미지',
+            deleteSticker: '스티커 삭제',
+            rotateSticker: '스티커 회전 조절',
+            scaleSticker: '스티커 크기 조절',
         },
         privacy: {
             title: "개인정보처리방침",
@@ -103,9 +133,9 @@ export const i18n = {
                     p: "본 서비스는 사용자가 업로드하는 캐릭터 이미지를 서버에 저장하거나 별도의 개인 식별 정보를 수집하지 않습니다. 모든 카드 생성 및 편집 작업은 사용자의 브라우저 로컬 환경(Client-side) 내에서만 처리됩니다."
                 },
                 {
-                    id: "ads",
-                    h: "2. 쿠키 및 광고 서비스 (AdSense)",
-                    p: "본 사이트는 Google AdSense 광고 서비스를 이용합니다. 구글은 사용자의 방문 기록을 바탕으로 최적화된 광고를 제공하기 위해 쿠키(Cookie)를 사용할 수 있습니다. 사용자는 브라우저 설정 또는 구글 광고 설정 페이지를 통해 쿠키 수집을 거부할 수 있습니다."
+                    id: "storage",
+                    h: "2. 쿠키 및 브라우저 저장소",
+                    p: "현재 본 서비스는 광고를 표시하지 않습니다. 카드 편집 상태와 일부 설정은 기능 제공을 위해 사용자의 브라우저 로컬 스토리지에 저장되며, 외부 서버로 전송되지 않습니다."
                 },
                 {
                     id: "rights",
@@ -173,24 +203,27 @@ export const i18n = {
             title: 'Create Profile',
             tutorial: 'The preview will instantly update as you type.',
             headerTitle: 'FF14 Character Card Generator',
+            skipToContent: 'Skip to content',
+            close: 'Close',
             saveImage: 'Save Image',
             saveError: 'Failed to generate image.',
+            exportErrorCors: 'Save failed — a browser security policy blocked the export.\nChrome is recommended. If browser extensions are active, try disabling them temporarily.',
+            exportErrorGeneric: 'Save failed.',
+            errorDetails: 'Details',
             reset: 'Reset',
-            renderingTitle: 'Rendering high-quality card...',
+            renderingTitle: 'Rendering high-quality card…',
             renderingDesc: 'Please wait a moment'
         },
         footer: {
             home: "Home",
             guide: "Guide",
             about: "About",
-            faq: "FAQ",
+            faq: "Frequently Asked Questions",
             contact: "Contact",
             privacy: "Privacy Policy",
-            terms: "Terms of Service"
-        },
-        changelog: {
-            title: "What's New",
-            close: 'Got it'
+            terms: "Terms of Service",
+            support: "Support",
+            projectNotice: "FF14 Character Card Generator © SQUARE ENIX · Fan Project"
         },
         form: {
             layout: 'Layout',
@@ -212,6 +245,7 @@ export const i18n = {
             battleMax: 'Combat 100',
             lifeMax: 'DoH/L 100',
             reset: 'Reset',
+            resetConfirm: 'Reset all selected items?',
             playstyle: 'Playstyle',
             details: 'Details',
             selectTime: 'Select Active Time',
@@ -222,19 +256,43 @@ export const i18n = {
             delete: 'Delete',
             font: 'Font',
             pointColor: 'Point Color',
+            pointColorHint: 'Accent color for the card. Enter a HEX code or choose a preset.',
+            colorPresets: 'Presets',
             newbie: 'Sprout',
             mentor: 'Mentor',
             tabBasic: 'Basic',
             tabJob: 'Jobs',
             tabStyle: 'Style',
             tabDesign: 'Design',
+            tabSlot: 'Save',
             stickers: 'Stickers',
             addSticker: 'Add Sticker',
+            stickerHint: 'Add a PNG, JPG, or GIF up to 2 MB. Adjust its position and size on the card.',
+            stickerEmpty: 'No stickers added yet.',
+            stickerFileTooLarge: 'Please upload a sticker image no larger than 2 MB.',
+            stickerUploadError: 'The sticker image could not be read. Please choose another image.',
             stickerX: 'Pos X',
             stickerY: 'Pos Y',
             stickerSize: 'Size',
             stickerRotate: 'Rotate',
             advancedSticker: 'Advanced Position',
+            tabNavigation: 'Profile creation steps',
+            autoFill: 'Auto Fill',
+            saveCurrentProfile: 'Save current profile',
+            slotName: 'Slot name',
+            slotNamePlaceholder: 'Slot name (e.g. Main, Alt)',
+            save: 'Save',
+            savedSlots: 'Saved slots',
+            noSavedSlots: 'No saved slots yet.',
+            load: 'Load',
+            loadConfirm: 'Your current work will be replaced. Load this profile?',
+            deleteConfirm: 'Delete this saved profile?',
+            defaultCharacter: 'Character',
+            moveForward: 'Move forward',
+            moveBackward: 'Move backward',
+            value: 'value',
+            position: 'position',
+            zoom: 'Zoom',
         },
         preview: {
             sprout: 'Sprout',
@@ -256,10 +314,12 @@ export const i18n = {
             adjustImageArea: 'Adjust Image Area',
             cancel: 'Cancel',
             apply: 'Apply',
-            emptyName: 'Please enter nickname',
             createOwn: 'Create your own at',
             designedBy: 'Designed & Developed by',
-            defaultComment: "Always looking for new friends to explore Eorzea together. Don't hesitate to reach out! Let's make some memories. ✨"
+            characterImage: 'Character image',
+            deleteSticker: 'Delete sticker',
+            rotateSticker: 'Rotate sticker',
+            scaleSticker: 'Resize sticker',
         },
         privacy: {
             title: "Privacy Policy",
@@ -270,9 +330,9 @@ export const i18n = {
                     p: "We do not store your images or collect personal data on our servers. All processing happens locally in your browser (Client-side) for maximum security."
                 },
                 {
-                    id: "ads",
-                    h: "2. Cookies and Ads (Google AdSense)",
-                    p: "This site uses Google AdSense. Google may use cookies to serve ads based on your visits to this or other websites. You can opt out via your browser settings or Google Ad settings."
+                    id: "storage",
+                    h: "2. Cookies and Browser Storage",
+                    p: "This service does not currently display advertising. Your card editing state and some settings may be stored in your browser's local storage for functionality and are not sent to an external server."
                 },
                 {
                     id: "contact",
@@ -302,24 +362,34 @@ export const i18n = {
             intro: "Learn how to make the most of the FF14 Character Card Generator.",
             sections: [
                 {
-                    id: "basic",
-                    h: "1. Basic Setup & Layout",
-                    p: "Enter your character name and Home World. Choose between horizontal or vertical layouts. For best results, upload a high-resolution screenshot."
+                    id: "intro_detail",
+                    h: "What is the FF14 Character Card Generator?",
+                    p: "It is an online profile tool for Final Fantasy XIV adventurers. Enter your character screenshot and game details to create a high-resolution card that is easy to share on social platforms."
                 },
                 {
-                    id: "jobs",
+                    id: "step1",
+                    h: "1. Basic Info & Home World",
+                    p: "Enter your character name and Home World first. You can choose worlds from Korea, Japan, North America, Europe, and Oceania. Enable Diff. IGN when your in-game name differs from your social name."
+                },
+                {
+                    id: "step2",
                     h: "2. Jobs & Levels",
-                    p: "Select your main job to highlight it on your card. Input your levels for combat, crafting, and gathering classes. Use the 'Apply' buttons to quickly set multiple classes to max level."
+                    p: "Choose from combat, crafting, and gathering jobs, then enter their levels. Select a main job to highlight it, or use the bulk actions to set multiple jobs to level 100 quickly."
                 },
                 {
-                    id: "playstyle",
+                    id: "step3",
                     h: "3. Playstyle & Comment",
-                    p: "Select playstyle tags like Hardcore, Glamour, or Housing to show what you enjoy most. Add a short comment (up to 200 characters) to greet other players."
+                    p: "Choose tags such as Hardcore, Raid, Glamour, Housing, or Roleplay to show what you enjoy in Eorzea. Add a short comment of up to 200 characters for a personal greeting."
                 },
                 {
-                    id: "custom",
-                    h: "4. Design & Save",
-                    p: "Pick a theme-matching point color (HEX) and font. Decorate empty spaces with custom stickers. Once you're done, click 'Save Image' at the bottom to download your card."
+                    id: "step4",
+                    h: "4. Image & Design",
+                    p: "Upload a screenshot and crop it to the position and ratio you want. Choose a font, set a theme point color in HEX, and decorate the card with stickers."
+                },
+                {
+                    id: "step5",
+                    h: "5. Save & Share",
+                    p: "When your settings are ready, click Save Image at the bottom. The browser renders a high-resolution PNG locally, so you can download it quickly and share it with your community."
                 }
             ]
         }
@@ -329,24 +399,27 @@ export const i18n = {
             title: 'プロフィール作成',
             tutorial: '情報を入力するとリアルタイムでプレビューできます。',
             headerTitle: 'FF14 キャラクターカードジェネレーター',
+            skipToContent: 'コンテンツへ移動',
+            close: '閉じる',
             saveImage: '画像を保存',
             saveError: '画像の生成に失敗しました。',
+            exportErrorCors: '保存に失敗しました — ブラウザのセキュリティポリシーにより書き出しがブロックされました。\nChromeの利用をおすすめします。ブラウザ拡張機能が有効な場合は、一時的に無効にしてお試しください。',
+            exportErrorGeneric: '保存に失敗しました。',
+            errorDetails: '詳細',
             reset: 'リセット',
-            renderingTitle: '高画質カードをレンダリング中です...',
+            renderingTitle: '高画質カードをレンダリング中です…',
             renderingDesc: '少々お待ちください'
         },
         footer: {
             home: "ホーム",
             guide: "ガイド",
-            about: "About",
-            faq: "FAQ",
+            about: "紹介",
+            faq: "よくある質問",
             contact: "お問い合わせ",
             privacy: "プライバシーポリシー",
-            terms: "利用規約"
-        },
-        changelog: {
-            title: 'アップデートのお知らせ',
-            close: '確認'
+            terms: "利用規約",
+            support: "サポート",
+            projectNotice: "FF14 キャラクターカード生成機 © SQUARE ENIX · ファンプロジェクト"
         },
         form: {
             layout: 'レイアウト',
@@ -368,6 +441,7 @@ export const i18n = {
             battleMax: '戦闘 Lv.100',
             lifeMax: '製作/採集 100',
             reset: 'リセット',
+            resetConfirm: '選択した項目をすべてリセットしますか？',
             playstyle: 'プレイスタイル',
             details: '詳細情報',
             selectTime: 'ログイン時間を選択',
@@ -378,19 +452,43 @@ export const i18n = {
             delete: '削除',
             font: 'フォント',
             pointColor: 'ポイントカラー',
+            pointColorHint: 'カードのアクセントカラーです。HEXコードを入力するか、おすすめから選択してください。',
+            colorPresets: 'おすすめ',
             newbie: '若葉',
             mentor: 'メンター',
             tabBasic: '基本',
             tabJob: 'ジョブ',
             tabStyle: 'スタイル',
             tabDesign: 'デザイン',
+            tabSlot: '保存',
             stickers: 'ステッカー',
             addSticker: 'ステッカー追加',
+            stickerHint: 'PNG・JPG・GIFなど、2MB以下の画像を追加してください。カード上で位置とサイズを調整できます。',
+            stickerEmpty: 'まだステッカーがありません。',
+            stickerFileTooLarge: 'ステッカーは2MB以下の画像をアップロードしてください。',
+            stickerUploadError: 'ステッカー画像を読み込めませんでした。別の画像を選択してください。',
             stickerX: '横位置',
             stickerY: '縦位置',
             stickerSize: 'サイズ',
             stickerRotate: '回転',
             advancedSticker: '詳細位置の調整',
+            tabNavigation: 'プロフィール作成ステップ',
+            autoFill: '自動で合わせる',
+            saveCurrentProfile: '現在のプロフィールを保存',
+            slotName: 'スロット名',
+            slotNamePlaceholder: 'スロット名（例：メイン、サブ）',
+            save: '保存',
+            savedSlots: '保存済みスロット',
+            noSavedSlots: '保存済みのスロットはありません。',
+            load: '読み込む',
+            loadConfirm: '現在の作業内容が上書きされます。読み込みますか？',
+            deleteConfirm: 'この保存プロフィールを削除しますか？',
+            defaultCharacter: 'キャラクター',
+            moveForward: '前へ移動',
+            moveBackward: '後ろへ移動',
+            value: '値',
+            position: '位置',
+            zoom: '拡大・縮小',
         },
         preview: {
             sprout: '若葉',
@@ -412,10 +510,12 @@ export const i18n = {
             adjustImageArea: '画像範囲の設定',
             cancel: 'キャンセル',
             apply: '適用',
-            emptyName: '名前を入力してください',
             createOwn: '自分だけのカードを作る:',
             designedBy: 'デザイン & 開発:',
-            defaultComment: 'エオルゼアで一緒に冒険したり、楽しい時間を過ごせる仲間を探しています。お気軽に声をかけてくださいね！ ✨'
+            characterImage: 'キャラクター画像',
+            deleteSticker: 'ステッカーを削除',
+            rotateSticker: 'ステッカーを回転',
+            scaleSticker: 'ステッカーの大きさを調整',
         },
         privacy: {
             title: "プライバシーポリシー",
@@ -426,9 +526,9 @@ export const i18n = {
                     p: "アップロードされた画像や個人情報をサーバーに保存したり、個人の識別情報を収集したりすることはありません。すべてのカード作成および編集作業は、ユーザーのブラウザ内(Client-side)でのみ処理されます。"
                 },
                 {
-                    id: "adsense",
-                    h: "2. クッキーと広告 (Google AdSense)",
-                    p: "当サイトでは Google AdSense 広告サービスを利用しています。Googleはユーザーの訪問履歴に基づいた広告を提供するためにクッキー(Cookie)を使用することがあります。ブラウザの設定でクッキーの収集を拒否できます。"
+                    id: "storage",
+                    h: "2. Cookieとブラウザストレージ",
+                    p: "現在、本サービスでは広告を表示していません。カードの編集状態と一部の設定は機能提供のためブラウザのローカルストレージに保存されますが、外部サーバーへ送信されることはありません。"
                 },
                 {
                     id: "contact",
@@ -458,24 +558,34 @@ export const i18n = {
             intro: "FF14キャラクターカード作成ツールを最大限に活用する方法をご案内します。",
             sections: [
                 {
-                    id: "setup",
-                    h: "1. 基本設定とレイアウト",
-                    p: "キャラクター名とホームワールドを入力します。横型または縦型のレイアウトを選択でき、高解像度のスクリーンショットをアップロードするほど綺麗なカードが作成できます。"
+                    id: "intro_detail",
+                    h: "FF14キャラクターカードジェネレーターとは？",
+                    p: "ファイナルファンタジーXIVの冒険者向けオンラインプロフィール作成ツールです。キャラクターのスクリーンショットとゲーム情報を入力して、SNSで共有しやすい高解像度カードを作成できます。"
                 },
                 {
-                    id: "jobs",
+                    id: "step1",
+                    h: "1. 基本情報とホームワールド",
+                    p: "まずキャラクター名とホームワールドを入力します。韓国、日本、北米、欧州、オセアニアのワールドを選択できます。ゲーム内の名前とSNS名が異なる場合は「ゲーム内と異なる」を有効にしてください。"
+                },
+                {
+                    id: "step2",
                     h: "2. ジョブとレベル",
-                    p: "メインジョブを設定するとカードに反映されます。戦闘、製作、採集タブを使ってレベルを入力してください。「一括適用」ボタンを使うと、すべてカンスト状態に設定できて便利です。"
+                    p: "戦闘、製作、採集のジョブを選び、レベルを入力します。メインジョブを設定するとカードで強調され、一括適用ボタンを使うと複数のジョブをすばやくレベル100にできます。"
                 },
                 {
-                    id: "playstyle",
+                    id: "step3",
                     h: "3. プレイスタイルと一言",
-                    p: "レイド、ミラプリ、ハウジングなど、よく遊ぶプレイスタイルのタグを選択して個性を表現しましょう。200文字以内のコメントで、他のプレイヤーへの挨拶を添えることができます。"
+                    p: "レイド、ミラプリ、ハウジング、ロールプレイなど、エオルゼアで好きな遊び方のタグを選びましょう。200文字以内のコメントで自分らしい挨拶を添えられます。"
                 },
                 {
-                    id: "design",
-                    h: "4. デザインと保存",
-                    p: "雰囲気に合うポイントカラー(HEX)とフォントを選びます。ステッカー機能を使って余白を可愛く飾ることも可能です。設定が完了したら、画面下部の「画像を保存」ボタンを押してダウンロードしてください。"
+                    id: "step4",
+                    h: "4. 画像とデザイン",
+                    p: "スクリーンショットをアップロードし、位置と比率を調整します。フォントとHEXのポイントカラーを選び、ステッカーでカードを飾りましょう。"
+                },
+                {
+                    id: "step5",
+                    h: "5. 保存とシェア",
+                    p: "設定が完了したら画面下部の「画像を保存」を押してください。ブラウザ内で高解像度PNGを生成するため、すぐにダウンロードしてコミュニティで共有できます。"
                 }
             ]
         }

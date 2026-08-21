@@ -1,19 +1,10 @@
 import { Link } from 'react-router-dom';
-import { usePlayer } from '../contexts/PlayerContext';
+import { usePlayerSelector } from '../contexts/PlayerContext';
 import { i18n } from '../utils/i18n';
 
 export function Footer() {
-    const { playerInfo } = usePlayer();
-    const lang = playerInfo.language;
-    const t = i18n[lang].footer || {
-        home: "Home",
-        guide: "Guide",
-        privacy: "Privacy Policy",
-        terms: "Terms of Service",
-        about: "About",
-        faq: "FAQ",
-        contact: "Contact"
-    };
+    const lang = usePlayerSelector(snapshot => snapshot.playerInfo.language);
+    const t = i18n[lang].footer;
 
     return (
         <footer
@@ -23,58 +14,44 @@ export function Footer() {
                 backgroundColor: 'var(--surface-200)',
             }}
         >
-            {/* ── Main row ─────────────────────────────────────────────── */}
-            <div className="max-w-screen-xl mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="mx-auto flex w-full max-w-[1300px] flex-col items-start justify-between gap-5 px-4 py-6 md:flex-row md:items-center md:px-6">
+                <Link
+                    to="/"
+                    className="text-[11px] font-semibold tracking-[-0.01em] text-[var(--text-secondary)] transition-[color,opacity] duration-150 hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-200)]"
+                >
+                    {t.projectNotice}
+                </Link>
 
-                {/* Brand */}
-                <p className="text-[12px] font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>
-                    {i18n[lang].layout.headerTitle}
-                </p>
-
-                {/* Nav links */}
-                <nav className="flex gap-6 text-[12px]">
-                    {([
-                        { to: '/', label: t.home },
-                        { to: '/guide', label: t.guide },
-                        { to: '/about', label: t.about },
-                        { to: '/faq', label: t.faq },
-                        { to: '/contact', label: t.contact },
-                        { to: '/privacy', label: t.privacy },
-                        { to: '/terms', label: t.terms },
-                    ] as const).map(({ to, label }) => (
-                        <Link
-                            key={to}
-                            to={to}
-                            className="transition-colors duration-150"
-                            style={{ color: 'var(--text-secondary)' }}
-                            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-                            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
-                        >
-                            {label}
-                        </Link>
-                    ))}
-                    <a
-                        href="https://ko-fi.com/reconeur"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="transition-colors duration-150 flex items-center gap-1 font-medium"
-                        style={{ color: 'var(--text-secondary)' }}
-                        onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-                        onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
-                    >
-                        ☕ {lang === 'ko' ? '후원하기' : lang === 'ja' ? 'サポート' : 'Support'}
-                    </a>
+                <nav aria-label={lang === 'ko' ? '사이트 안내' : lang === 'ja' ? 'サイト案内' : 'Site navigation'}>
+                    <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-medium text-[var(--text-secondary)] md:justify-end">
+                        {[
+                            { to: '/guide', label: t.guide },
+                            { to: '/faq', label: t.faq },
+                            { to: '/about', label: t.about },
+                            { to: '/terms', label: t.terms },
+                            { to: '/privacy', label: t.privacy },
+                        ].map(({ to, label }) => (
+                            <li key={to}>
+                                <Link
+                                    to={to}
+                                    className="transition-[color,opacity] duration-150 hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
+                                >
+                                    {label}
+                                </Link>
+                            </li>
+                        ))}
+                        <li>
+                            <a
+                                href="https://ko-fi.com/reconeur"
+                                target="_blank"
+                                rel="nofollow noopener noreferrer"
+                                className="font-semibold transition-[color,opacity] duration-150 hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
+                            >
+                                {t.support}
+                            </a>
+                        </li>
+                    </ul>
                 </nav>
-            </div>
-
-            {/* ── Legal notice ─────────────────────────────────────────── */}
-            <div
-                className="px-6 py-3 text-center"
-                style={{ borderTop: '1px solid var(--border-subtle)' }}
-            >
-                <p className="text-[10px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                    FINAL FANTASY XIV © 2010–2026 SQUARE ENIX CO., LTD. All Rights Reserved.
-                </p>
             </div>
         </footer>
     );

@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useState, useEffect, type ChangeEvent } from 'react';
+import { forwardRef, useCallback, useMemo, useRef, useState, useEffect, type ChangeEvent } from 'react';
 import { motion } from 'framer-motion';
 import { JOBS } from '../data/jobs';
 import { ImagePlus, Maximize2, X, RotateCw } from 'lucide-react';
@@ -24,6 +24,15 @@ interface CardPreviewProps {
     onImageChange?: (image: string | undefined) => void;
 }
 
+const BATTLE_ROLES = new Set([
+    'Tank',
+    'Healer',
+    'Melee',
+    'Physical Ranged',
+    'Magical Ranged',
+    'Limited',
+]);
+
 export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, onImageChange }, ref) => {
     const { playerInfo, updatePlayerField, selectedStickerId, setSelectedStickerId } = usePlayer();
     const { jobs, comment, image, font, mainJob, jobLevels } = playerInfo;
@@ -35,7 +44,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
     const constraintsRef = useRef<HTMLDivElement>(null);
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 
-    const updateStickers = (stickers: Sticker[]) => updatePlayerField('stickers', stickers);
+    const updateStickers = useCallback((stickers: Sticker[]) => updatePlayerField('stickers', stickers), [updatePlayerField]);
     
     const { 
         draggingId, 
@@ -99,7 +108,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
 
         window.addEventListener('keydown', handleKeyDown);
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedStickerId, playerInfo.stickers, updateStickers]);
+    }, [selectedStickerId, playerInfo.stickers, setSelectedStickerId, updatePlayerField, updateStickers]);
 
     const handleCropApply = (croppedImageBase64: string) => {
         onImageChange?.(croppedImageBase64);
@@ -110,17 +119,25 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
         setCropImageSrc(null);
     };
 
-    // Sort jobs: Main job first
-    const sortedJobs = JOBS.filter(j => jobs.includes(j.id)).sort((a, b) => {
-        if (a.id === mainJob) return -1;
-        if (b.id === mainJob) return 1;
-        return 0;
-    });
+    // Job grouping is unchanged visually, but no longer recalculates on every
+    // keystroke when the selected job list itself has not changed.
+    const { sortedJobs, battleJobs, craftingJobs, gatheringJobs } = useMemo(() => {
+        const selectedJobIds = new Set(jobs);
+        const sorted = JOBS
+            .filter(job => selectedJobIds.has(job.id))
+            .sort((a, b) => {
+                if (a.id === mainJob) return -1;
+                if (b.id === mainJob) return 1;
+                return 0;
+            });
 
-    // Group by role for display
-    const battleJobs = sortedJobs.filter(j => ['Tank', 'Healer', 'Melee', 'Physical Ranged', 'Magical Ranged', 'Limited'].includes(j.role));
-    const craftingJobs = sortedJobs.filter(j => j.role === 'Crafting');
-    const gatheringJobs = sortedJobs.filter(j => j.role === 'Gathering');
+        return {
+            sortedJobs: sorted,
+            battleJobs: sorted.filter(job => BATTLE_ROLES.has(job.role)),
+            craftingJobs: sorted.filter(job => job.role === 'Crafting'),
+            gatheringJobs: sorted.filter(job => job.role === 'Gathering'),
+        };
+    }, [jobs, mainJob]);
 
     return (
         <motion.div
@@ -159,12 +176,12 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 >
                     <img
                         src={image}
-                        alt="Character"
+                        alt={t.characterImage}
                         className="absolute inset-0 w-full h-full object-cover select-none transition-transform group-hover:scale-105 duration-300"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm export-ignore">
                         <span className="text-white font-medium text-sm flex items-center gap-2 bg-black/50 px-4 py-2 rounded-full">
-                            <ImagePlus size={16} /> {t.clickToEdit}
+                            <ImagePlus size={16} aria-hidden="true" /> {t.clickToEdit}
                         </span>
                     </div>
                 </motion.div>
@@ -176,7 +193,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 >
                     <div className="absolute inset-4 border-2 border-dashed border-neutral-300 dark:border-[#4a4a4c] rounded-xl pointer-events-none group-hover:scale-[0.98] transition-transform duration-300"></div>
                     <div className="p-4 bg-white/60 dark:bg-black/30 rounded-full group-hover:scale-110 transition-transform duration-300 z-10 border border-neutral-200/50 dark:border-[#4a4a4c]/50">
-                        <ImagePlus size={32} className="text-neutral-400 dark:text-[#86868b]" />
+                        <ImagePlus size={32} aria-hidden="true" className="text-neutral-400 dark:text-[#86868b]" />
                     </div>
                     <span className="text-neutral-500 dark:text-[#98989d] text-sm font-semibold text-center px-4 z-10 tracking-wide">{t.uploadPlease}</span>
                 </motion.div>
@@ -215,10 +232,10 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 <div className="pt-4 border-t border-neutral-100 dark:border-[#3a3a3c] flex justify-between items-end mt-auto">
                     <div className="flex flex-col gap-1">
                         <span className="text-[9px] font-bold uppercase tracking-[0.25em]" style={{ color: playerInfo.pointColor }}>
-                            {t.footerTitle || 'FF14 Character Card'}
+                            {t.footerTitle}
                         </span>
                         <span className="text-[10px] text-neutral-400 dark:text-[#86868b] font-medium tracking-tight">
-                            {t.createOwn} <strong className="text-neutral-600 dark:text-[#a1a1a6]">ff14-chcard.pages.dev</strong>
+                            {t.createOwn} <strong className="text-neutral-600 dark:text-[#a1a1a6]" translate="no">ff14-chcard.pages.dev</strong>
                         </span>
                     </div>
                     <div className="flex flex-col items-end gap-1 text-right">
@@ -280,7 +297,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                         <div className={`relative ${isSelected ? 'ring-2 ring-[#0071e3] ring-offset-2 ring-offset-white dark:ring-offset-[#1d1d1f] rounded export-ignore' : ''}`}>
                             <img
                                 src={sticker.url}
-                                alt="sticker"
+                                alt=""
                                 draggable={false}
                                 className="max-w-none pointer-events-none cursor-move drop-shadow-sm"
                                 style={{ width: 'auto', height: 'auto' }}
@@ -299,10 +316,10 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                                             updatePlayerField('stickers', playerInfo.stickers?.filter(s => s.id !== sticker.id) || []);
                                             setSelectedStickerId(null);
                                         }}
-                                        aria-label="스티커 삭제"
+                                        aria-label={t.deleteSticker}
                                     >
                                         <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center shadow-sm">
-                                            <X size={12} strokeWidth={3} />
+                                            <X size={12} aria-hidden="true" strokeWidth={3} />
                                         </div>
                                     </button>
 
@@ -315,10 +332,10 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                                             e.preventDefault();
                                             startTransform(sticker.id, sticker, e.clientX, e.clientY, 'rotate');
                                         }}
-                                        aria-label="스티커 회전 조절"
+                                        aria-label={t.rotateSticker}
                                     >
                                         <div className="w-7 h-7 bg-white border border-[#d2d2d7] rounded-full flex items-center justify-center shadow-sm">
-                                            <RotateCw size={12} strokeWidth={2.5} />
+                                            <RotateCw size={12} aria-hidden="true" strokeWidth={2.5} />
                                         </div>
                                     </div>
 
@@ -331,10 +348,10 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                                             e.preventDefault();
                                             startTransform(sticker.id, sticker, e.clientX, e.clientY, 'scale');
                                         }}
-                                        aria-label="스티커 크기 조절"
+                                        aria-label={t.scaleSticker}
                                     >
                                         <div className="w-7 h-7 bg-white border border-[#d2d2d7] rounded-full flex items-center justify-center shadow-sm">
-                                            <Maximize2 size={12} strokeWidth={2.5} className="rotate-90" />
+                                            <Maximize2 size={12} aria-hidden="true" strokeWidth={2.5} className="rotate-90" />
                                         </div>
                                     </div>
                                 </div>

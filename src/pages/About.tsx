@@ -1,10 +1,12 @@
 import { PageLayout } from '../components/PageLayout';
-import { usePlayer } from '../contexts/PlayerContext';
+import { usePlayerSelector } from '../contexts/PlayerContext';
+import { SEOContent } from '../components/SEOContent';
 import { Helmet } from 'react-helmet-async';
+import { pageMeta } from '../utils/pageMeta';
 
 export function About() {
-    const { playerInfo } = usePlayer();
-    const lang = playerInfo.language;
+    const lang = usePlayerSelector(snapshot => snapshot.playerInfo.language);
+    const meta = pageMeta[lang].about;
 
     const content = {
         ko: {
@@ -20,8 +22,8 @@ export function About() {
                 "한국어, 영어, 일본어 3개 국어 UI 지원 및 전 세계 모든 글로벌 데이터센터 완벽 대응",
                 "프리텐다드, 쿠키런 등 14종 이상의 엄선된 웹 폰트와 감성적인 스티커를 활용한 무한한 커스터마이징"
             ],
-            h4: "커뮤니티와 함께 성장합니다",
-            p3: "본 서비스는 100% 무료로 제공되며, 생성된 카드는 비상업적인 용도 내에서 자유롭게 사용할 수 있습니다. 초기 버전 출시 이후, 유저 여러분들이 트위터와 디스코드에서 보내주신 소중한 피드백(새로운 폰트 추가 요청, 스티커 기능 아이디어 등)을 바탕으로 시스템이 지속적으로 진화하고 있습니다. 앞으로도 에오르제아에서의 여러분의 모험이 이 카드를 통해 더욱 풍성해지고, 새로운 인연을 만나는 훌륭한 매개체가 되기를 진심으로 바랍니다."
+            h4: "이용 범위",
+            p3: "본 서비스는 100% 무료로 제공되며, 생성된 카드는 비상업적인 용도 내에서 자유롭게 사용할 수 있습니다. 카드 제작에 필요한 이미지 처리와 프로필 편집은 사용자의 브라우저 안에서 이루어집니다. 에오르제아에서의 소중한 모험을 한 장의 카드로 기록해 보세요."
         },
         en: {
             title: "About Us",
@@ -36,10 +38,11 @@ export function About() {
                 "Multilingual support and compatibility with all global data centers",
                 "Infinite customization using web fonts and stickers"
             ],
-            p3: "This service is 100% free and is continuously improved based on user feedback. We hope your adventures in Eorzea become even more enriching through this tool."
+            h4: "Usage",
+            p3: "This service is 100% free, and generated cards may be used for non-commercial purposes. Image processing and profile editing happen in your browser. Keep a memorable Eorzean adventure as a single profile card."
         },
         ja: {
-            title: "About",
+            title: "紹介",
             h1: "FF14キャラクターカードジェネレーターについて",
             p1: "FF14キャラクターカードジェネレーターは、ファイナルファンタジーXIVの冒険者たちが自分だけのキャラクターを美しいプロフィールカードとして簡単に作成・共有できるように作られた、非営利のファンプロジェクトです。",
             h2: "私たちの目標",
@@ -51,18 +54,19 @@ export function About() {
                 "多言語対応およびグローバルデータセンター対応",
                 "Webフォントやステッカーを活用した無限のカスタマイズ"
             ],
-            p3: "本サービスは完全無料で提供されており、ユーザーの皆様からのフィードバックをもとに継続的に改善されています。皆様のエオルゼアでの冒険がさらに豊かなものになることを願っています。"
+            h4: "ご利用について",
+            p3: "本サービスは完全無料で提供され、作成したカードは非商用の範囲で自由に利用できます。画像処理とプロフィール編集はブラウザ内で行われます。エオルゼアでの大切な冒険を一枚のカードに記録してください。"
         }
     }[lang];
 
     return (
         <>
             <Helmet>
-                <title>소개 - FF14 캐릭터 카드 생성기</title>
-                <meta name="description" content="파이널 판타지 14 캐릭터 카드 생성기에 대한 소개 및 개발 목적을 안내합니다." />
+                <title>{meta.title}</title>
+                <meta name="description" content={meta.description} />
                 <link rel="canonical" href="https://ff14-chcard.pages.dev/about" />
             </Helmet>
-            <PageLayout title="About">
+            <PageLayout title={content.title}>
                 <article className="space-y-8" itemScope itemType="https://schema.org/AboutPage">
                     <section>
                         <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{content.h1}</h2>
@@ -84,10 +88,11 @@ export function About() {
                     </section>
 
                     <section className="pt-4 border-t" style={{ borderColor: 'var(--border-subtle)' }}>
-                        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{content.h4 || "Community & Future"}</h2>
+                        <h2 className="text-xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{content.h4}</h2>
                         <p className="leading-relaxed opacity-90">{content.p3}</p>
                     </section>
                 </article>
+                <SEOContent />
             </PageLayout>
         </>
     );

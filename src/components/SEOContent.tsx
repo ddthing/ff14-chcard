@@ -1,9 +1,8 @@
-import { usePlayer } from '../contexts/PlayerContext';
-import { Sparkles, Palette, Globe, Smartphone, Download, Share2 } from 'lucide-react';
+import { usePlayerSelector } from '../contexts/PlayerContext';
+import { Sparkles, Palette, Globe, Smartphone, Download, Share2, Check } from 'lucide-react';
 
 export function SEOContent() {
-    const { playerInfo } = usePlayer();
-    const lang = playerInfo.language || 'ko';
+    const lang = usePlayerSelector(snapshot => snapshot.playerInfo.language) || 'ko';
 
     const t = {
         ko: {
@@ -24,13 +23,14 @@ export function SEOContent() {
                 { num: "03", title: "저장 및 공유", desc: "고해상도 이미지로 다운로드하여 해시태그와 함께 공유합니다." }
             ],
             useCaseTitle: "어디에 활용할 수 있나요?",
+            useCaseLabel: "활용 예시",
             useCaseDesc: "트위터(X)의 메인 트윗으로 고정하여 나를 방문하는 사람들에게 내 캐릭터 성향을 한눈에 알리거나, 자유부대(길드) 및 공대 구인구직을 위한 디스코드 채널에 이력서처럼 제출해 보세요.",
             checks: [
                 "안전한 브라우저(Client-side) 이미지 처리",
                 "개인정보 및 서버 데이터 수집 없음",
                 "상업적 이용 및 재판매 절대 불가"
             ],
-            createBox: "Create Your Card"
+            createBox: "나만의 카드 만들기"
         },
         en: {
             badge: "No Installation Required",
@@ -50,13 +50,14 @@ export function SEOContent() {
                 { num: "03", title: "Save & Share", desc: "Download the high-resolution image and share it with your friends!" }
             ],
             useCaseTitle: "Where can I use it?",
+            useCaseLabel: "Use cases",
             useCaseDesc: "Pin it as your main tweet on Twitter (X) to introduce yourself, or submit it like a resume in Discord channels for Free Company or Static recruitments.",
             checks: [
                 "Secure Client-side image processing",
                 "No personal or server data collection",
                 "Commercial use strictly prohibited"
             ],
-            createBox: "Create Your Card"
+            createBox: "Create your card"
         },
         ja: {
             badge: "インストール不要",
@@ -76,13 +77,14 @@ export function SEOContent() {
                 { num: "03", title: "保存＆シェア", desc: "高解像度画像をダウンロードして、ハッシュタグと一緒にシェアしましょう！" }
             ],
             useCaseTitle: "どこで使えますか？",
+            useCaseLabel: "活用例",
             useCaseDesc: "Twitter(X)の固定ツイートにして訪問者に自分のプレイスタイルを伝えたり、FCや固定メンバー募集のDiscordチャンネルに履歴書として提出してみてください。",
             checks: [
                 "安全なブラウザ内(Client-side)画像処理",
                 "個人情報やサーバーデータの収集なし",
                 "商用利用および転売は固く禁止"
             ],
-            createBox: "Create Your Card"
+            createBox: "カードを作成"
         }
     }[lang];
 
@@ -95,7 +97,7 @@ export function SEOContent() {
                 {/* Hero / Intro */}
                 <header className="text-center mb-24">
                     <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-6 text-sm font-medium" style={{ backgroundColor: 'var(--surface-200)', color: 'var(--text-secondary)', border: '1px solid var(--border-subtle)' }}>
-                        <Sparkles size={14} className="text-blue-500" />
+                        <Sparkles size={14} style={{ color: 'var(--foreground)' }} aria-hidden="true" />
                         <span>{t.badge}</span>
                     </div>
                     <h2 className="text-3xl md:text-5xl font-black mb-6 tracking-tight" style={{ color: 'var(--text-primary)' }}>
@@ -148,7 +150,7 @@ export function SEOContent() {
                 <section className="p-8 md:p-12 rounded-[32px] mb-12 flex flex-col md:flex-row items-center justify-between gap-10" style={{ backgroundColor: 'var(--surface-200)' }}>
                     <div className="flex-1">
                         <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-4 text-xs font-bold uppercase tracking-wider" style={{ backgroundColor: 'var(--surface-50)', color: 'var(--text-secondary)' }}>
-                            <Share2 size={12} /> Use Cases
+                            <Share2 size={12} aria-hidden="true" /> {t.useCaseLabel}
                         </div>
                         <h2 className="text-2xl md:text-3xl font-bold mb-4" style={{ color: 'var(--text-primary)' }}>{t.useCaseTitle}</h2>
                         <p className="text-base leading-relaxed mb-6" style={{ color: 'var(--text-secondary)' }}>
@@ -156,7 +158,7 @@ export function SEOContent() {
                         </p>
                         <ul className="space-y-3 text-sm font-medium" style={{ color: 'var(--text-primary)' }}>
                             {t.checks.map((check, idx) => (
-                                <li key={idx} className="flex items-center gap-2">✓ {check}</li>
+                            <li key={idx} className="flex items-center gap-2"><Check size={14} aria-hidden="true" /> {check}</li>
                             ))}
                         </ul>
                     </div>

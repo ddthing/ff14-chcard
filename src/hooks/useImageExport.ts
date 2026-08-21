@@ -5,6 +5,11 @@ interface UseImageExportOptions {
   filename?: string;
   pixelRatio?: number;
   onError?: (message: string) => void;
+  errorCopy?: {
+    cors: string;
+    generic: string;
+    details: string;
+  };
 }
 
 /**
@@ -19,12 +24,12 @@ interface UseImageExportOptions {
  *    This is the most reliable fix for blank/missing images in Firefox and Safari.
  * 4. Transform is reset to 'none' before capture so html-to-image gets the
  *    true pixel dimensions rather than a scaled version.
- * 5. Exports ad / sticker-selection UI nodes are excluded via CSS class filter.
+ * 5. Exports sticker-selection UI nodes are excluded via CSS class filter.
  *
  * Returns a stable `exportRef` (attach to the element you want to capture)
  * and a `download` async function the caller triggers on button click.
  */
-export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError }: UseImageExportOptions = {}) {
+export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError, errorCopy }: UseImageExportOptions = {}) {
   const exportRef = useRef<HTMLDivElement>(null);
 
   const download = useCallback(async () => {
@@ -54,8 +59,6 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
       const el = n as HTMLElement;
       if (!el.classList) return true;
       return (
-        !el.classList.contains('adsense-container') &&
-        !el.classList.contains('changelog-badge') &&
         !el.classList.contains('export-ignore')
       );
     };
@@ -101,13 +104,15 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
       const message = err instanceof Error ? err.message : String(err);
       const isCorsRelated = message.includes('cssRules') || message.includes('SecurityError');
 
-      const userMessage = isCorsRelated
-        ? `저장 실패 — 브라우저 보안 정책 충돌.\n크롬(Chrome) 사용을 권장하며, 광고 차단 앱이 활성화된 경우 잠시 꺼보세요.\n\nDetails: ${message}`
-        : `저장 실패.\n\nDetails: ${message}`;
+      const userMessage = errorCopy
+        ? `${isCorsRelated ? errorCopy.cors : errorCopy.generic}\n\n${errorCopy.details}: ${message}`
+        : isCorsRelated
+          ? `Save failed — a browser security policy blocked the export.\n\nDetails: ${message}`
+          : `Save failed.\n\nDetails: ${message}`;
 
       onError?.(userMessage);
     }
-  }, [filename, pixelRatio, onError]);
+  }, [filename, pixelRatio, onError, errorCopy]);
 
   return { exportRef, download };
 }

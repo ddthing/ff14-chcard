@@ -16,27 +16,25 @@ export function useWindowScale(
     const [scale, setScale] = useState(1);
 
     useEffect(() => {
-        const calculateScale = () => {
-            if (containerRef.current) {
-                const containerWidth = containerRef.current.offsetWidth;
-                const isMobile = window.innerWidth < 768;
-                
-                let availableWidth;
-                if (isMobile) {
-                    availableWidth = Math.min(containerWidth - padding, window.innerWidth - padding);
-                } else {
-                    // md:p-8 padding (32px * 2 = 64px)
-                    availableWidth = containerWidth - (padding * 2);
-                }
-                
-                const newScale = Math.min(1, availableWidth / targetWidth);
-                setScale(newScale);
-            }
+        const container = containerRef.current;
+        if (!container) return;
+
+        const calculateScale = (containerWidth: number) => {
+            const isMobile = window.innerWidth < 768;
+            const availableWidth = isMobile
+                ? Math.min(containerWidth - padding, window.innerWidth - padding)
+                : containerWidth - (padding * 2);
+            const nextScale = Math.max(0.1, Math.min(1, availableWidth / targetWidth));
+            setScale(previousScale => previousScale === nextScale ? previousScale : nextScale);
         };
 
-        calculateScale();
-        window.addEventListener('resize', calculateScale);
-        return () => window.removeEventListener('resize', calculateScale);
+        calculateScale(container.getBoundingClientRect().width);
+        const observer = new ResizeObserver(([entry]) => {
+            if (entry) calculateScale(entry.contentRect.width);
+        });
+        observer.observe(container);
+
+        return () => observer.disconnect();
     }, [containerRef, targetWidth, padding]);
 
     return scale;

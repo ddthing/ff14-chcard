@@ -1,10 +1,12 @@
 import { Helmet } from 'react-helmet-async';
 import { PageLayout } from '../components/PageLayout';
-import { usePlayer } from '../contexts/PlayerContext';
+import { usePlayerSelector } from '../contexts/PlayerContext';
+import { Bug, Coffee, Mail, MessageCircle } from 'lucide-react';
+import { pageMeta } from '../utils/pageMeta';
 
 export function Contact() {
-    const { playerInfo } = usePlayer();
-    const lang = playerInfo.language;
+    const lang = usePlayerSelector(snapshot => snapshot.playerInfo.language);
+    const meta = pageMeta[lang].contact;
 
     const content = {
         ko: {
@@ -48,8 +50,8 @@ export function Contact() {
     return (
         <>
             <Helmet>
-                <title>문의하기 - FF14 캐릭터 카드 생성기</title>
-                <meta name="description" content="파이널 판타지 14 캐릭터 카드 생성기에 대한 버그 제보, 기능 건의, 기타 문의를 남겨주세요." />
+                <title>{meta.title}</title>
+                <meta name="description" content={meta.description} />
                 <link rel="canonical" href="https://ff14-chcard.pages.dev/contact" />
             </Helmet>
             <PageLayout title={content.title}>
@@ -62,32 +64,32 @@ export function Contact() {
                     <div className="grid md:grid-cols-2 gap-8">
                         <section className="p-6 rounded-xl border" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-100)' }}>
                             <h3 className="text-lg font-bold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                ✉️ {content.emailTitle}
+                                <Mail size={18} aria-hidden="true" /> {content.emailTitle}
                             </h3>
                             <p className="opacity-80 text-sm mb-4">{content.emailDesc}</p>
-                            <a href="mailto:coner@luv3r.me" className="font-medium hover:underline text-blue-500">
+                            <a href="mailto:coner@luv3r.me" className="font-medium hover:underline" style={{ color: 'var(--foreground)' }}>
                                 coner@luv3r.me
                             </a>
                         </section>
 
                         <section className="p-6 rounded-xl border" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-100)' }}>
                             <h3 className="text-lg font-bold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                💬 {content.snsTitle}
+                                <MessageCircle size={18} aria-hidden="true" /> {content.snsTitle}
                             </h3>
                             <p className="opacity-80 text-sm mb-4">{content.snsDesc}</p>
-                            <a href="https://x.com/reconeur" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline text-blue-500">
+                            <a href="https://x.com/reconeur" target="_blank" rel="noopener noreferrer" className="font-medium hover:underline" style={{ color: 'var(--foreground)' }}>
                                 @reconeur
                             </a>
                         </section>
 
                         <section className="p-6 rounded-xl border md:col-span-2" style={{ borderColor: 'var(--border-subtle)', backgroundColor: 'var(--surface-100)' }}>
                             <h3 className="text-lg font-bold mb-2 flex items-center gap-2" style={{ color: 'var(--text-primary)' }}>
-                                🐛 {content.bugTitle}
+                                <Bug size={18} aria-hidden="true" /> {content.bugTitle}
                             </h3>
                             <p className="opacity-80 text-sm mb-4">{content.bugDesc}</p>
                             <div className="pt-2 border-t mt-4" style={{ borderColor: 'var(--border-subtle)' }}>
                                 <a href="https://ko-fi.com/reconeur" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-2 font-medium hover:opacity-70 transition-opacity">
-                                    ☕ {content.sponsor}
+                                    <Coffee size={16} aria-hidden="true" /> {content.sponsor}
                                 </a>
                             </div>
                         </section>

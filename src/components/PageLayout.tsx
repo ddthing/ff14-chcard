@@ -1,7 +1,8 @@
 import { type ReactNode } from 'react';
 import { GlobalHeader } from './GlobalHeader';
 import { Footer } from './Footer';
-import { usePlayer } from '../contexts/PlayerContext';
+import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
+import { i18n } from '../utils/i18n';
 
 
 interface PageLayoutProps {
@@ -10,15 +11,16 @@ interface PageLayoutProps {
 }
 
 export function PageLayout({ children, title }: PageLayoutProps) {
-    const { playerInfo, updateLanguage } = usePlayer();
-    const lang = playerInfo.language;
+    const lang = usePlayerSelector(snapshot => snapshot.playerInfo.language);
+    const { updateLanguage } = usePlayerActions();
 
     return (
         <div className="min-h-screen flex flex-col transition-colors duration-200" style={{ backgroundColor: 'var(--surface-200)', color: 'var(--text-primary)' }}>
-            <GlobalHeader lang={lang} onLanguageChange={updateLanguage} showLogo={true} />
+            <a href="#main-content" className="skip-link">{i18n[lang].layout.skipToContent}</a>
+            <GlobalHeader lang={lang} onLanguageChange={updateLanguage} pageTitle={title} />
 
             {/* ── Content ────────────────────────────────────────────────── */}
-            <main className="flex-1 w-full max-w-3xl mx-auto px-6 py-12 md:py-20 animate-tab-in">
+            <main id="main-content" className="flex-1 w-full max-w-3xl mx-auto px-6 py-12 md:py-20 animate-tab-in">
                 {/* Page title — no decorative bar, border-bottom instead */}
                 <div className="mb-12 pb-6" style={{ borderBottom: '1px solid var(--border-default)' }}>
                     <h1
