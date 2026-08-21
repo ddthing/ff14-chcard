@@ -3,6 +3,8 @@ dist/
 dist-ssr/
 .env*
 .agent/
+.agents/
+scratch/
 .cline/
 tsconfig.tsbuildinfo
 .vscode/
