@@ -10,11 +10,11 @@
       try {
         const currentRoute = `${window.location.pathname}${window.location.search}${window.location.hash}`;
         window.sessionStorage.setItem(redirectKey, currentRoute);
+        window.location.replace(`/?__spa_route=${encodeURIComponent(currentRoute)}`);
       } catch {
         // Continue to the home page when session storage is unavailable.
+        window.location.replace(`/?__spa_route=${encodeURIComponent(window.location.pathname)}`);
       }
-
-      window.location.replace('/');
     })();
   </script>
 </head>
