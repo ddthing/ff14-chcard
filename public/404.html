@@ -1,12 +1,25 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
 <head>
   <meta charset="utf-8">
   <title>FF14 캐릭터 카드 생성기</title>
   <script type="text/javascript">
-    window.location.replace('/ff14-chcard/');
+    (() => {
+      const redirectKey = 'ff14-chcard:spa-redirect';
+
+      try {
+        const currentRoute = `${window.location.pathname}${window.location.search}${window.location.hash}`;
+        window.sessionStorage.setItem(redirectKey, currentRoute);
+      } catch {
+        // Continue to the home page when session storage is unavailable.
+      }
+
+      window.location.replace('/');
+    })();
   </script>
 </head>
 <body>
+  <p>페이지를 불러오는 중입니다…</p>
+  <p><a href="/">홈으로 이동</a></p>
 </body>
 </html>
