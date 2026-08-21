@@ -23,7 +23,7 @@ export function CardMainJob() {
 
     return (
         <div 
-            className="flex items-center gap-4 rounded-xl p-4 border relative overflow-hidden transition-all group/mainjob"
+            className="flex items-center gap-4 rounded-xl p-4 border relative overflow-hidden transition-[background-color,border-color,box-shadow] group/mainjob"
             style={{ 
                 backgroundColor: `${playerInfo.pointColor}10`, 
                 borderColor: `${playerInfo.pointColor}30` 
@@ -32,7 +32,7 @@ export function CardMainJob() {
             {/* Subtle background glow */}
             <div className="absolute top-0 right-0 w-32 h-32 blur-3xl opacity-20 pointer-events-none" style={{ backgroundColor: playerInfo.pointColor }}></div>
             
-            <img src={mJob.iconUrl} alt={localizedMainJobName} className="w-12 h-12 dark-invert group-hover/mainjob:scale-110 transition-transform duration-300" />
+            <img src={mJob.iconUrl} alt={localizedMainJobName} width={48} height={48} className="w-12 h-12 dark-invert group-hover/mainjob:scale-110 transition-transform duration-300" />
             <div className="relative z-10">
                 <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] mb-1 opacity-90" style={{ color: playerInfo.pointColor }}>{t.mainJob}</div>
                 <div className="text-2xl font-black tracking-tight leading-none text-slate-900 dark:text-slate-100 whitespace-nowrap">{localizedMainJobName}</div>

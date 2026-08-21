@@ -11,6 +11,7 @@ export function CardProfileHeader() {
 
     return (
         <div className="flex items-end justify-between border-b border-neutral-100 dark:border-[#3a3a3c] pb-5">
+            {!name && <h1 className="sr-only">{i18n[lang].layout.headerTitle}</h1>}
             <div>
                 {(name || isSprout || isMentor || isNicknameChanged) && (
                     <div className="flex items-center gap-2">

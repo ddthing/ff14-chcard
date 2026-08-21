@@ -165,7 +165,7 @@ export function CardForm() {
                             id={`profile-tab-${tab.id}`}
                             role="tab"
                             aria-selected={activeTab === tab.id}
-                            aria-controls={`profile-panel-${tab.id}`}
+                            aria-controls={activeTab === tab.id ? `profile-panel-${tab.id}` : undefined}
                             tabIndex={activeTab === tab.id ? 0 : -1}
                             onKeyDown={event => handleTabKeyDown(event, index)}
                             className="relative flex min-w-[78px] flex-1 items-center justify-center gap-1.5 px-2 py-3 text-[11px] font-semibold transition-[color,background-color,box-shadow] duration-150 focus-visible:z-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]"
@@ -237,20 +237,24 @@ export function CardForm() {
                                                 {playerInfo.image ? (
                                     /* Uploaded state: thumbnail + change / remove actions */
                                     <div className="flex gap-2.5 items-center">
-                                        <div
-                                            className="w-14 h-14 rounded-[8px] overflow-hidden cursor-pointer shrink-0 group relative"
+                                        <button
+                                            type="button"
+                                            aria-label={t.uploadImage}
+                                            className="w-14 h-14 rounded-[8px] overflow-hidden cursor-pointer shrink-0 group relative border-0 p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                                             style={{ border: '1px solid var(--border-default)' }}
                                             onClick={() => fileInputRef.current?.click()}
                                         >
                                             <img
                                                 src={playerInfo.image}
                                                 alt={t.nickname}
+                                                width={56}
+                                                height={56}
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
                                             />
                                             <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                                 <ImagePlus size={15} aria-hidden="true" className="text-white" />
                                             </div>
-                                        </div>
+                                        </button>
                                         <div className="flex flex-col gap-1.5 flex-1">
                                             <button
                                                 type="button"
@@ -310,6 +314,7 @@ export function CardForm() {
                                         key={layout}
                                         type="button"
                                         onClick={() => handleChange('layout', layout)}
+                                        aria-pressed={playerInfo.layout === layout}
                                         className="flex-1 rounded-[6px] py-1.5 text-[11px] font-semibold transition-[color,background-color,border-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                                         style={
                                             playerInfo.layout === layout
@@ -391,7 +396,7 @@ export function CardForm() {
                                                 handleChange('pointColor', val.toLowerCase());
                                             }
                                         }}
-                                        className="min-w-0 flex-1 border-none bg-transparent p-0 font-mono text-[12px] font-bold uppercase outline-none"
+                                        className="min-w-0 flex-1 border-none bg-transparent p-0 font-mono text-[12px] font-bold uppercase outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                                         style={{ color: 'var(--text-primary)' }}
                                         placeholder="#HEX"
                                         maxLength={7}

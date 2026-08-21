@@ -69,7 +69,7 @@ export function Home() {
 
       {/* Rendering Modal */}
       {isRendering && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby="rendering-title" aria-busy="true">
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in duration-200" role="status" aria-live="polite" aria-atomic="true" aria-busy="true" aria-label={i18n[playerInfo.language].layout.renderingTitle}>
               <div
                   className="w-full max-w-[340px] rounded-2xl flex flex-col overflow-hidden animate-in zoom-in-[0.98] duration-300"
                   style={{
@@ -79,10 +79,10 @@ export function Home() {
               >
                   <div className="p-6 flex flex-col items-center justify-center text-center gap-4">
                       {/* Spinner */}
-                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" role="status" aria-label={i18n[playerInfo.language].layout.renderingTitle} style={{ borderColor: 'var(--text-primary)', borderTopColor: 'transparent' }}></div>
+                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" aria-hidden="true" style={{ borderColor: 'var(--text-primary)', borderTopColor: 'transparent' }}></div>
                       
                       <div className="space-y-1">
-                          <p id="rendering-title" className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{i18n[playerInfo.language].layout.renderingTitle}</p>
+                          <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{i18n[playerInfo.language].layout.renderingTitle}</p>
                           <p className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>{i18n[playerInfo.language].layout.renderingDesc}</p>
                       </div>
                       

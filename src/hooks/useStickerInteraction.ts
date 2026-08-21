@@ -1,4 +1,4 @@
-import { useState, useCallback, type RefObject } from 'react';
+import { useState, useCallback, useRef, type RefObject } from 'react';
 import type { Sticker } from '../types';
 
 interface TransformStart {
@@ -19,6 +19,11 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
     const [transformingId, setTransformingId] = useState<string | null>(null);
     const [transformAction, setTransformAction] = useState<'scale' | 'rotate' | null>(null);
     const [transformStart, setTransformStart] = useState<TransformStart | null>(null);
+    const interactionSnapshotRef = useRef<Sticker[] | null>(null);
+
+    const beginInteraction = useCallback(() => {
+        interactionSnapshotRef.current = stickers?.map(sticker => ({ ...sticker })) ?? [];
+    }, [stickers]);
 
     const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
         if (!constraintsRef.current || (!draggingId && !transformingId)) return;
@@ -69,11 +74,21 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
         setDraggingId(null);
         setTransformingId(null);
         setTransformAction(null);
+        setTransformStart(null);
+        interactionSnapshotRef.current = null;
     }, []);
 
+    const handlePointerCancel = useCallback(() => {
+        const snapshot = interactionSnapshotRef.current;
+        if (snapshot) updateStickers(snapshot);
+        interactionSnapshotRef.current = null;
+        handlePointerUp();
+    }, [handlePointerUp, updateStickers]);
+
     const startDrag = useCallback((id: string) => {
+        beginInteraction();
         setDraggingId(id);
-    }, []);
+    }, [beginInteraction]);
 
     const startTransform = useCallback((
         id: string,
@@ -83,6 +98,7 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
         action: 'scale' | 'rotate'
     ) => {
         if (!constraintsRef.current) return;
+        beginInteraction();
         const rect = constraintsRef.current.getBoundingClientRect();
         const cx = (sticker.x / 100) * rect.width;
         const cy = (sticker.y / 100) * rect.height;
@@ -97,13 +113,14 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
             dist: Math.hypot(px - cx, py - cy),
             angle: Math.atan2(py - cy, px - cx),
         });
-    }, [constraintsRef]);
+    }, [beginInteraction, constraintsRef]);
 
     return {
         draggingId,
         transformingId,
         handlePointerMove,
         handlePointerUp,
+        handlePointerCancel,
         startDrag,
         startTransform,
     };

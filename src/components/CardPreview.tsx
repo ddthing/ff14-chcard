@@ -1,4 +1,4 @@
-import { forwardRef, useCallback, useMemo, useRef, useState, useEffect, type ChangeEvent } from 'react';
+import { forwardRef, useCallback, useMemo, useRef, useState, useEffect, type ChangeEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { motion } from 'framer-motion';
 import { JOBS } from '../data/jobs';
 import { ImagePlus, Maximize2, X, RotateCw } from 'lucide-react';
@@ -41,6 +41,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
     const t = i18n[lang].preview;
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const imageTriggerRef = useRef<HTMLButtonElement>(null);
     const constraintsRef = useRef<HTMLDivElement>(null);
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
 
@@ -51,6 +52,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
         transformingId, 
         handlePointerMove, 
         handlePointerUp, 
+        handlePointerCancel,
         startDrag, 
         startTransform 
     } = useStickerInteraction({ 
@@ -75,8 +77,9 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
     useEffect(() => {
         if (!selectedStickerId) return;
 
-        const handleKeyDown = (e: KeyboardEvent) => {
+        const handleKeyDown = (e: globalThis.KeyboardEvent) => {
             if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
+            if (e.target instanceof HTMLElement && e.target.closest('.transform-control')) return;
 
             const sticker = playerInfo.stickers?.find(s => s.id === selectedStickerId);
             if (!sticker) return;
@@ -119,6 +122,34 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
         setCropImageSrc(null);
     };
 
+    const adjustSticker = useCallback((stickerId: string, action: 'scale' | 'rotate', direction: 1 | -1) => {
+        updateStickers(playerInfo.stickers?.map(sticker => {
+            if (sticker.id !== stickerId) return sticker;
+
+            if (action === 'rotate') {
+                return { ...sticker, rotation: (sticker.rotation + direction * 5 + 360) % 360 };
+            }
+
+            return { ...sticker, scale: Number(Math.max(0.1, Math.min(3, sticker.scale + direction * 0.05)).toFixed(2)) };
+        }) || []);
+    }, [playerInfo.stickers, updateStickers]);
+
+    const handleStickerHandleKeyDown = useCallback((
+        event: ReactKeyboardEvent<HTMLButtonElement>,
+        stickerId: string,
+        action: 'scale' | 'rotate',
+    ) => {
+        const isHorizontal = event.key === 'ArrowLeft' || event.key === 'ArrowRight';
+        const isVertical = event.key === 'ArrowUp' || event.key === 'ArrowDown';
+        if (!isHorizontal && !isVertical) return;
+
+        const increases = action === 'rotate'
+            ? event.key === 'ArrowRight'
+            : event.key === 'ArrowUp' || event.key === 'ArrowRight';
+        event.preventDefault();
+        adjustSticker(stickerId, action, increases ? 1 : -1);
+    }, [adjustSticker]);
+
     // Job grouping is unchanged visually, but no longer recalculates on every
     // keystroke when the selected job list itself has not changed.
     const { sortedJobs, battleJobs, craftingJobs, gatheringJobs } = useMemo(() => {
@@ -153,6 +184,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                     imageSrc={cropImageSrc}
                     onApply={handleCropApply}
                     onCancel={handleCropCancel}
+                    returnFocusRef={imageTriggerRef}
                     lang={lang}
                     aspectRatio={playerInfo.layout === 'left-portrait' ? 2 / 4.5 : 700 / 280}
                 />
@@ -162,21 +194,27 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 type="file"
                 ref={fileInputRef}
                 accept="image/*"
+                aria-label={t.uploadPlease}
                 className="hidden"
                 onChange={handleImageUpload}
             />
 
             {/* Image Section */}
             {image ? (
-                <motion.div
+                <motion.button
+                    type="button"
                     layout
-                    className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px] border-r border-[#d2d2d7] dark:border-[#3a3a3c]' : 'w-full h-[280px]'} relative overflow-hidden group cursor-pointer shrink-0`}
+                    ref={imageTriggerRef}
+                    aria-label={t.clickToEdit}
+                    className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px] border-r border-[#d2d2d7] dark:border-[#3a3a3c]' : 'w-full h-[280px]'} relative overflow-hidden group cursor-pointer shrink-0 border-0 p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]`}
                     onClick={() => fileInputRef.current?.click()}
                     title={t.clickToEdit}
                 >
                     <img
                         src={image}
                         alt={t.characterImage}
+                        width={playerInfo.layout === 'left-portrait' ? 320 : 700}
+                        height={playerInfo.layout === 'left-portrait' ? 720 : 280}
                         className="absolute inset-0 w-full h-full object-cover select-none transition-transform group-hover:scale-105 duration-300"
                     />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm export-ignore">
@@ -184,11 +222,14 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                             <ImagePlus size={16} aria-hidden="true" /> {t.clickToEdit}
                         </span>
                     </div>
-                </motion.div>
+                </motion.button>
             ) : (
-                <motion.div
+                <motion.button
+                    type="button"
                     layout
-                    className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px] border-r border-neutral-200 dark:border-[#3a3a3c]' : 'w-full h-[280px] border-b border-neutral-200 dark:border-[#3a3a3c]'} bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-[#2a2a2c] dark:to-[#323234] flex flex-col items-center justify-center gap-4 cursor-pointer hover:from-neutral-100 hover:to-neutral-200 dark:hover:from-[#323234] dark:hover:to-[#3a3a3c] transition-colors group shrink-0 relative`}
+                    ref={imageTriggerRef}
+                    aria-label={t.uploadPlease}
+                    className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px] border-r border-neutral-200 dark:border-[#3a3a3c]' : 'w-full h-[280px] border-b border-neutral-200 dark:border-[#3a3a3c]'} bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-[#2a2a2c] dark:to-[#323234] flex flex-col items-center justify-center gap-4 cursor-pointer hover:from-neutral-100 hover:to-neutral-200 dark:hover:from-[#323234] dark:hover:to-[#3a3a3c] transition-colors group shrink-0 relative border-0 p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]`}
                     onClick={() => fileInputRef.current?.click()}
                 >
                     <div className="absolute inset-4 border-2 border-dashed border-neutral-300 dark:border-[#4a4a4c] rounded-xl pointer-events-none group-hover:scale-[0.98] transition-transform duration-300"></div>
@@ -196,7 +237,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                         <ImagePlus size={32} aria-hidden="true" className="text-neutral-400 dark:text-[#86868b]" />
                     </div>
                     <span className="text-neutral-500 dark:text-[#98989d] text-sm font-semibold text-center px-4 z-10 tracking-wide">{t.uploadPlease}</span>
-                </motion.div>
+                </motion.button>
             )}
 
             {/* Content */}
@@ -262,7 +303,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                         className="absolute inset-0 pointer-events-auto z-[60]"
                         onPointerMove={handlePointerMove}
                         onPointerUp={handlePointerUp}
-                        onPointerLeave={handlePointerUp}
+                        onPointerCancel={handlePointerCancel}
                     />
                 )}
                 
@@ -272,44 +313,53 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                     onPointerDown={() => setSelectedStickerId(null)}
                 />
 
-                {playerInfo.stickers?.map((sticker) => {
+                {playerInfo.stickers?.map((sticker, index) => {
                     const isSelected = selectedStickerId === sticker.id;
                     return (
                     <div
                         key={sticker.id}
                         className="absolute pointer-events-auto select-none group/sticker"
+                        role="group"
+                        aria-label={`${i18n[lang].form.stickers} ${index + 1}`}
                         style={{
                             left: `${sticker.x}%`,
                             top: `${sticker.y}%`,
                             transform: `translate(-50%, -50%) scale(${sticker.scale}) rotate(${sticker.rotation}deg)`,
                             zIndex: (draggingId === sticker.id || transformingId === sticker.id) ? 55 : (isSelected ? 52 : 51)
                         }}
-                        onPointerDown={(e) => {
-                            e.stopPropagation();
-                            setSelectedStickerId(sticker.id);
-                            // Only allow drag if we aren't clicking a UI button
-                            if (!(e.target as HTMLElement).closest('.transform-control')) {
-                                startDrag(sticker.id);
-                            }
-                        }}
                     >
                         {/* 스티커 이미지 박스 (선택 시 테두리 표시) */}
-                        <div className={`relative ${isSelected ? 'ring-2 ring-[#0071e3] ring-offset-2 ring-offset-white dark:ring-offset-[#1d1d1f] rounded export-ignore' : ''}`}>
-                            <img
-                                src={sticker.url}
-                                alt=""
-                                draggable={false}
-                                className="max-w-none pointer-events-none cursor-move drop-shadow-sm"
-                                style={{ width: 'auto', height: 'auto' }}
-                            />
-                            
-                            {/* 선택 시 조작 UI: 삭제(X) 및 트랜스폼(핸들) */}
-                            {isSelected && (
-                                <div className="absolute inset-0 pointer-events-none export-ignore">
+                        <button
+                            type="button"
+                            aria-label={`${i18n[lang].form.stickers} ${index + 1}`}
+                            aria-pressed={isSelected}
+                            className="block border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
+                            onClick={() => setSelectedStickerId(sticker.id)}
+                            onPointerDown={(e) => {
+                                e.stopPropagation();
+                                setSelectedStickerId(sticker.id);
+                                startDrag(sticker.id);
+                            }}
+                            onPointerCancel={handlePointerCancel}
+                        >
+                            <div className={`relative ${isSelected ? 'ring-2 ring-[#0071e3] ring-offset-2 ring-offset-white dark:ring-offset-[#1d1d1f] rounded export-ignore' : ''}`}>
+                                <img
+                                    src={sticker.url}
+                                    alt=""
+                                    draggable={false}
+                                    className="max-w-none pointer-events-none cursor-move drop-shadow-sm"
+                                    style={{ width: 'auto', height: 'auto' }}
+                                />
+                            </div>
+                        </button>
+
+                        {/* 선택 시 조작 UI: 삭제(X) 및 트랜스폼(핸들) */}
+                        {isSelected && (
+                            <div className="absolute inset-0 pointer-events-none export-ignore">
                                     {/* 삭제 버튼 (우상단) - Inverse Scaling */}
                                     <button
                                         type="button"
-                                        className="transform-control pointer-events-auto absolute -top-5 -right-5 w-10 h-10 flex items-center justify-center text-white hover:opacity-80 transition-opacity cursor-pointer group/btn"
+                                        className="transform-control pointer-events-auto absolute -top-5 -right-5 w-10 h-10 flex items-center justify-center text-white hover:opacity-80 transition-opacity cursor-pointer group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
                                         style={{ transform: `scale(${1 / Math.max(0.1, sticker.scale)})`, transformOrigin: 'center' }}
                                         onClick={(e) => {
                                             e.stopPropagation();
@@ -324,39 +374,50 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                                     </button>
 
                                     {/* 회전 핸들 (좌하단) - Inverse Scaling */}
-                                    <div 
-                                        className="transform-control pointer-events-auto absolute -bottom-5 -left-5 w-10 h-10 flex items-center justify-center text-[#1d1d1f] hover:opacity-80 transition-opacity cursor-crosshair touch-none group/btn"
+                                    <button
+                                        type="button"
+                                        className="transform-control pointer-events-auto absolute -bottom-5 -left-5 w-10 h-10 flex items-center justify-center border-0 bg-transparent p-0 text-[#1d1d1f] hover:opacity-80 transition-opacity cursor-crosshair touch-none group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
                                         style={{ transform: `scale(${1 / Math.max(0.1, sticker.scale)})`, transformOrigin: 'center' }}
                                         onPointerDown={(e) => {
                                             e.stopPropagation();
                                             e.preventDefault();
                                             startTransform(sticker.id, sticker, e.clientX, e.clientY, 'rotate');
                                         }}
+                                        onPointerCancel={handlePointerCancel}
+                                        onClick={(e) => {
+                                            if (e.detail === 0) adjustSticker(sticker.id, 'rotate', 1);
+                                        }}
+                                        onKeyDown={(e) => handleStickerHandleKeyDown(e, sticker.id, 'rotate')}
                                         aria-label={t.rotateSticker}
                                     >
                                         <div className="w-7 h-7 bg-white border border-[#d2d2d7] rounded-full flex items-center justify-center shadow-sm">
                                             <RotateCw size={12} aria-hidden="true" strokeWidth={2.5} />
                                         </div>
-                                    </div>
+                                    </button>
 
                                     {/* 크기 조절 핸들 (우하단) - Inverse Scaling */}
-                                    <div 
-                                        className="transform-control pointer-events-auto absolute -bottom-5 -right-5 w-10 h-10 flex items-center justify-center text-[#1d1d1f] hover:opacity-80 transition-opacity cursor-se-resize touch-none group/btn"
+                                    <button
+                                        type="button"
+                                        className="transform-control pointer-events-auto absolute -bottom-5 -right-5 w-10 h-10 flex items-center justify-center border-0 bg-transparent p-0 text-[#1d1d1f] hover:opacity-80 transition-opacity cursor-se-resize touch-none group/btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3]"
                                         style={{ transform: `scale(${1 / Math.max(0.1, sticker.scale)})`, transformOrigin: 'center' }}
                                         onPointerDown={(e) => {
                                             e.stopPropagation();
                                             e.preventDefault();
                                             startTransform(sticker.id, sticker, e.clientX, e.clientY, 'scale');
                                         }}
+                                        onPointerCancel={handlePointerCancel}
+                                        onClick={(e) => {
+                                            if (e.detail === 0) adjustSticker(sticker.id, 'scale', 1);
+                                        }}
+                                        onKeyDown={(e) => handleStickerHandleKeyDown(e, sticker.id, 'scale')}
                                         aria-label={t.scaleSticker}
                                     >
                                         <div className="w-7 h-7 bg-white border border-[#d2d2d7] rounded-full flex items-center justify-center shadow-sm">
                                             <Maximize2 size={12} aria-hidden="true" strokeWidth={2.5} className="rotate-90" />
                                         </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                                    </button>
+                            </div>
+                        )}
                     </div>
                 )})}
             </div>

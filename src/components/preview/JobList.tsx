@@ -33,7 +33,7 @@ export function JobList({ title, jobs, mainJob, jobLevels, lang, type, pointColo
                         className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 border"
                         style={{ backgroundColor: `${pointColor}10`, borderColor: `${pointColor}20` }}
                     >
-                        <img src={job.iconUrl} alt={getJobName(job)} className="w-5 h-5 dark-invert" />
+                        <img src={job.iconUrl} alt={getJobName(job)} width={20} height={20} className="w-5 h-5 dark-invert" />
                         <span className="text-xs font-medium whitespace-nowrap" style={{ color: 'var(--text-primary)' }}>
                             {getJobName(job)}
                         </span>

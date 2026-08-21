@@ -86,7 +86,7 @@ export function useFontLoader(fontId: string) {
         if (fontCss) {
             const style = document.createElement('style');
             style.id = styleId;
-            style.innerHTML = fontCss;
+            style.textContent = fontCss;
             document.head.appendChild(style);
         }
     }, [fontId]);

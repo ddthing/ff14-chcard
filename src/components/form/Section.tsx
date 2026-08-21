@@ -18,7 +18,7 @@ export function Section({ title, children, defaultOpen = true }: { title: React.
                 type="button"
                 onClick={() => setIsOpen(!isOpen)}
                 aria-expanded={isOpen}
-                aria-controls={contentId}
+                aria-controls={isOpen ? contentId : undefined}
                 className="group flex w-full cursor-pointer items-center justify-between rounded-[6px] outline-none transition-[color,background-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-100)]"
             >
                 <h3
@@ -29,6 +29,7 @@ export function Section({ title, children, defaultOpen = true }: { title: React.
                 </h3>
                 <ChevronDown 
                     size={14} 
+                    aria-hidden="true"
                     className={`transition-transform duration-200 group-hover:text-neutral-500 ${isOpen ? 'rotate-180' : ''}`} 
                     style={{ color: 'var(--text-muted)' }}
                 />
