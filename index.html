@@ -16,7 +16,9 @@
       const redirectKey = 'ff14-chcard:spa-redirect';
 
       try {
-        const redirect = window.sessionStorage.getItem(redirectKey);
+        const currentUrl = new URL(window.location.href);
+        const queryRedirect = currentUrl.searchParams.get('__spa_route');
+        const redirect = queryRedirect || window.sessionStorage.getItem(redirectKey);
         if (!redirect) return;
 
         window.sessionStorage.removeItem(redirectKey);
