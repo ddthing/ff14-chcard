@@ -1,5 +1,6 @@
-import { ChevronDown } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import { Helmet } from 'react-helmet-async';
+import { Link } from 'react-router-dom';
 import { PageLayout } from '../components/PageLayout';
 import { usePlayerSelector } from '../contexts/PlayerContext';
 import { faqContent } from '../utils/faqContent';
@@ -9,6 +10,20 @@ export function Faq() {
     const lang = usePlayerSelector(snapshot => snapshot.playerInfo.language);
     const t = faqContent[lang];
     const meta = pageMeta[lang].faq;
+    const guideLink = {
+        ko: {
+            text: '입력 항목을 고르는 기준과 저장 전 점검표는 가이드에서 확인할 수 있습니다.',
+            label: '카드 제작 가이드 보기',
+        },
+        en: {
+            text: 'The guide explains how to choose fields and check a card before saving.',
+            label: 'Open the card creation guide',
+        },
+        ja: {
+            text: '入力項目を選ぶ基準と保存前のチェックリストは、ガイドで確認できます。',
+            label: 'カード作成ガイドを見る',
+        },
+    }[lang];
 
     const faqSchema = {
         '@context': 'https://schema.org',
@@ -71,6 +86,13 @@ export function Faq() {
                                 </div>
                             </details>
                         ))}
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-6" style={{ borderColor: 'var(--border-subtle)' }}>
+                        <p className="text-[13px] leading-6" style={{ color: 'var(--text-secondary)' }}>{guideLink.text}</p>
+                        <Link to="/guide#checklist" className="inline-flex shrink-0 items-center gap-2 text-[13px] font-semibold hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]" style={{ color: 'var(--text-primary)' }}>
+                            {guideLink.label}
+                            <ArrowRight size={15} aria-hidden="true" />
+                        </Link>
                     </div>
                 </article>
             </PageLayout>

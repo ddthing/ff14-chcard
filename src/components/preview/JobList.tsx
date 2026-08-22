@@ -24,7 +24,7 @@ export function JobList({ title, jobs, mainJob, jobLevels, lang, type, pointColo
     };
 
     return (
-        <div>
+        <div className="pl-4">
             <div className="text-[10px] font-semibold uppercase tracking-wider mb-2" style={{ color: 'var(--text-secondary)' }}>{title}</div>
             <div className="flex flex-wrap gap-2">
                 {displayJobs.map(job => (

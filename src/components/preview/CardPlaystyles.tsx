@@ -10,7 +10,7 @@ export function CardPlaystyles() {
     if (!playstyles || playstyles.length === 0) return null;
 
     return (
-        <div>
+        <div className="pl-4">
             <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">{t.playstyle}</div>
             <div className="flex flex-wrap gap-1.5">
                 {playstyles.map(tag => (

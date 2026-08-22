@@ -270,7 +270,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 )}
 
                 {/* Watermark / Footer (Viral Loop) */}
-                <div className="pt-4 border-t border-neutral-100 dark:border-[#3a3a3c] flex justify-between items-end mt-auto">
+                <div className="mt-auto flex items-end justify-between border-t border-neutral-100 px-4 pt-4 dark:border-[#3a3a3c]">
                     <div className="flex flex-col gap-1">
                         <span className="text-[9px] font-bold uppercase tracking-[0.25em]" style={{ color: playerInfo.pointColor }}>
                             {t.footerTitle}

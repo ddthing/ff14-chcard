@@ -13,7 +13,7 @@ export const pageMeta = {
         },
         guide: {
             title: '가이드 - FF14 캐릭터 카드 생성기',
-            description: 'FF14 캐릭터 카드 생성기의 사용 방법을 안내합니다. 기본 정보 입력부터 직업, 디자인, 이미지 저장까지 단계별로 확인해 보세요.',
+            description: 'FF14 캐릭터 카드의 목적을 정하고, 스크린샷·직업·자기소개·꾸미기·저장 전 확인을 실제 입력 단계에 맞춰 안내합니다.',
         },
         faq: {
             title: '자주 묻는 질문 - FF14 캐릭터 카드 생성기',
@@ -21,7 +21,7 @@ export const pageMeta = {
         },
         about: {
             title: '소개 - FF14 캐릭터 카드 생성기',
-            description: 'FF14 캐릭터 카드 생성기의 제작 목적, 주요 기능, 개인정보 보호 방침을 소개합니다.',
+            description: 'FF14 캐릭터 카드 생성기의 제작 목적, 지원 범위, 제공하지 않는 기능, 브라우저 처리 방식을 안내합니다.',
         },
         contact: {
             title: '문의하기 - FF14 캐릭터 카드 생성기',
@@ -43,7 +43,7 @@ export const pageMeta = {
         },
         guide: {
             title: 'Guide - FF14 Character Card Generator',
-            description: 'Learn how to use the FF14 Character Card Generator, from entering profile details and jobs to customizing and saving your card.',
+            description: 'Plan an FF14 character card with practical guidance for screenshots, jobs, profile text, decoration, and saving.',
         },
         faq: {
             title: 'Frequently Asked Questions - FF14 Character Card Generator',
@@ -51,7 +51,7 @@ export const pageMeta = {
         },
         about: {
             title: 'About - FF14 Character Card Generator',
-            description: 'Learn about the purpose, features, and privacy principles behind the FF14 Character Card Generator.',
+            description: 'Learn the purpose, supported scope, limitations, and browser-based processing of the FF14 Character Card Generator.',
         },
         contact: {
             title: 'Contact - FF14 Character Card Generator',
@@ -73,7 +73,7 @@ export const pageMeta = {
         },
         guide: {
             title: 'ガイド - FF14 キャラクターカードジェネレーター',
-            description: 'プロフィール情報やジョブの入力からデザイン、画像の保存まで、FF14キャラクターカードの作り方を紹介します。',
+            description: 'スクリーンショット、ジョブ、プロフィール、装飾、保存前の確認を通してFF14キャラクターカードの作り方を紹介します。',
         },
         faq: {
             title: 'よくある質問 - FF14 キャラクターカードジェネレーター',
@@ -81,7 +81,7 @@ export const pageMeta = {
         },
         about: {
             title: '紹介 - FF14 キャラクターカードジェネレーター',
-            description: 'FF14キャラクターカードジェネレーターの目的、主な機能、プライバシーへの取り組みを紹介します。',
+            description: 'FF14キャラクターカードジェネレーターの目的、対応範囲、制限、ブラウザ内の処理について紹介します。',
         },
         contact: {
             title: 'お問い合わせ - FF14 キャラクターカードジェネレーター',

@@ -130,20 +130,20 @@ export const i18n = {
                 {
                     id: "purpose",
                     h: "1. 개인정보의 처리 목적",
-                    p: "본 서비스는 사용자가 업로드하는 캐릭터 이미지를 서버에 저장하거나 별도의 개인 식별 정보를 수집하지 않습니다. 모든 카드 생성 및 편집 작업은 사용자의 브라우저 로컬 환경(Client-side) 내에서만 처리됩니다."
+                    p: "본 서비스는 계정이나 공개 프로필을 제공하지 않으며, 사용자가 업로드한 캐릭터 이미지와 입력한 프로필을 서비스 서버에 저장하는 기능을 제공하지 않습니다. 카드 편집과 PNG 생성은 사용자의 브라우저에서 처리됩니다."
                 },
                 {
                     id: "storage",
                     h: "2. 쿠키 및 브라우저 저장소",
-                    p: "현재 본 서비스는 광고를 표시하지 않습니다. 카드 편집 상태와 일부 설정은 기능 제공을 위해 사용자의 브라우저 로컬 스토리지에 저장되며, 외부 서버로 전송되지 않습니다."
+                    p: "카드 편집 상태, 저장 슬롯, 테마 설정 등 일부 정보는 기능 제공을 위해 브라우저의 localStorage에 저장될 수 있습니다. 브라우저 사이트 데이터나 쿠키를 삭제하면 이 정보가 사라질 수 있습니다. 화면에 필요한 웹폰트는 외부 제공처에서 불러올 수 있습니다."
                 },
                 {
                     id: "rights",
                     h: "3. 정보주체의 권리 및 연락처",
-                    p: "본 서비스는 개인 정보를 보관하지 않으므로 데이터 삭제 요청이 불필요하나, 서비스 운영 및 법적 문의가 필요한 경우 개발자 (https://coner.luv3r.me/)에게 문의해 주시기 바랍니다."
+                    p: "브라우저에 저장된 정보는 이용자가 브라우저 사이트 데이터 삭제 기능으로 직접 삭제할 수 있습니다. 서비스 운영, 법적 문의 또는 개인정보 관련 문의는 문의하기 페이지를 이용해 주세요."
                 }
             ],
-            updatedAt: "최종 수정일: 2026년 4월 25일"
+            updatedAt: "최종 수정일: 2026년 8월 22일"
         },
         terms: {
             title: "이용약관",
@@ -161,42 +161,6 @@ export const i18n = {
             ],
             updatedAt: "최종 수정일: 2026년 4월 25일"
         },
-        guide: {
-            title: "사용자 가이드",
-            intro: "FF14 캐릭터 카드 생성기를 100% 활용하는 방법을 안내해 드립니다.",
-            sections: [
-                {
-                    id: "intro_detail",
-                    h: "FF14 캐릭터 카드 생성기란?",
-                    p: "파이널 판타지 14(FFXIV)를 즐기는 모험가 분들을 위한 온라인 프로필 제작 도구입니다. 본인의 캐릭터 스크린샷과 게임 내 정보를 입력하면, 트위터(X)나 인스타그램, 디스코드 등 다양한 SNS에 공유하기 좋은 고화질 캐릭터 카드를 즉시 생성할 수 있습니다. 복잡한 이미지 편집 프로그램이나 포토샵을 다룰 필요 없이, 누구나 웹 브라우저에서 마우스 클릭만으로 나만의 개성 있는 프로필을 완성할 수 있습니다."
-                },
-                {
-                    id: "step1",
-                    h: "1. 기본 정보 및 서버(홈 월드) 설정",
-                    p: "가장 먼저 캐릭터의 닉네임과 소속된 홈 월드를 입력해 주세요. 한국 서버(카벙클, 초코보, 모그리, 톤베리, 펜리르)는 물론, 일본, 북미, 유럽, 오세아니아 등 글로벌 전 데이터센터의 서버를 선택할 수 있습니다. '인게임과 다름' 옵션을 체크하면 인게임 닉네임과 SNS 활동명이 다를 경우 유용하게 사용할 수 있습니다."
-                },
-                {
-                    id: "step2",
-                    h: "2. 직업 및 레벨 세팅 (전투/제작/채집)",
-                    p: "파이널 판타지 14의 모든 직업을 완벽하게 지원합니다. 나이트, 전사, 백마도사 등의 탱커/힐러부터 최신 확장팩에 추가된 바이퍼, 픽토맨서까지 21종의 전투 직업은 물론, 목수, 요리사 등 8종의 제작 직업(DoH)과 3종의 채집 직업(DoL) 레벨을 세밀하게 설정할 수 있습니다. 만렙 유저를 위해 버튼 한 번으로 전투, 채집/제작 직업을 한 번에 100레벨로 설정할 수 있는 '일괄 적용' 기능도 제공됩니다."
-                },
-                {
-                    id: "step3",
-                    h: "3. 플레이스타일과 코멘트 (자기소개)",
-                    p: "하드코어, 레이드, 절 레이드, 룩덕, 하우징, 스크린샷, 터주 낚시, 롤플레잉(RP) 등 여러분이 에오르제아에서 가장 즐겨 하는 콘텐츠를 태그 형태로 선택해 보세요. 그리고 200자 이내의 코멘트 란에는 트위터 트친소나 부대 모집 시 전하고 싶은 인사말을 작성할 수 있습니다."
-                },
-                {
-                    id: "step4",
-                    h: "4. 이미지 첨부 및 꾸미기 (폰트/색상/스티커)",
-                    p: "캐릭터의 가장 멋진 스크린샷을 업로드한 뒤, 원하는 비율과 위치로 크롭(자르기) 하세요. 프리텐다드, 쿠키런, 갈무리9 등 14종의 예쁜 한국어 웹 폰트 중 하나를 선택하고, 테마에 맞는 포인트 컬러(HEX 코드)를 지정해 카드 분위기를 완전히 바꿀 수 있습니다. 마지막으로 다양한 스티커를 카드 위에 붙여 꾸미면 세상에 단 하나뿐인 프로필이 완성됩니다."
-                },
-                {
-                    id: "step5",
-                    h: "5. 고화질 이미지 저장 및 공유",
-                    p: "모든 설정이 완료되면 화면 하단의 '이미지 저장' 버튼을 누르세요. 서버를 거치지 않고 브라우저 자체적으로 고해상도 PNG 이미지를 렌더링하여 안전하고 빠르게 다운로드할 수 있습니다. 완성된 이미지는 트위터의 #파판14_트친소 해시태그와 함께 공유해 새로운 인연을 만들어 보세요!"
-                }
-            ]
-        }
     },
     en: {
         layout: {
@@ -327,19 +291,19 @@ export const i18n = {
                 {
                     id: "purpose",
                     h: "1. Data Processing",
-                    p: "We do not store your images or collect personal data on our servers. All processing happens locally in your browser (Client-side) for maximum security."
+                    p: "The service does not provide accounts or public profiles, and it has no feature for storing uploaded character images or profile input on a service server. Card editing and PNG generation happen in your browser."
                 },
                 {
                     id: "storage",
                     h: "2. Cookies and Browser Storage",
-                    p: "This service does not currently display advertising. Your card editing state and some settings may be stored in your browser's local storage for functionality and are not sent to an external server."
+                    p: "Some information such as card editing state, saved slots, and theme settings may be stored in browser localStorage for functionality. Clearing site data or cookies can remove it. Web fonts needed by the interface may be loaded from external providers."
                 },
                 {
                     id: "contact",
                     h: "3. Rights & Contact",
-                    p: "Since we do not store any personal data, deletion requests are not necessary. For service-related or legal inquiries, please contact the developer at https://coner.luv3r.me/"}
+                    p: "You can delete browser-stored information through your browser's site-data settings. For service, legal, or privacy questions, please use the Contact page."}
             ],
-            updatedAt: "Last updated: April 25, 2026"
+            updatedAt: "Last updated: August 22, 2026"
         },
         terms: {
             title: "Terms of Service",
@@ -357,42 +321,6 @@ export const i18n = {
             ],
             updatedAt: "Last updated: April 25, 2026"
         },
-        guide: {
-            title: "User Guide",
-            intro: "Learn how to make the most of the FF14 Character Card Generator.",
-            sections: [
-                {
-                    id: "intro_detail",
-                    h: "What is the FF14 Character Card Generator?",
-                    p: "It is an online profile tool for Final Fantasy XIV adventurers. Enter your character screenshot and game details to create a high-resolution card that is easy to share on social platforms."
-                },
-                {
-                    id: "step1",
-                    h: "1. Basic Info & Home World",
-                    p: "Enter your character name and Home World first. You can choose worlds from Korea, Japan, North America, Europe, and Oceania. Enable Diff. IGN when your in-game name differs from your social name."
-                },
-                {
-                    id: "step2",
-                    h: "2. Jobs & Levels",
-                    p: "Choose from combat, crafting, and gathering jobs, then enter their levels. Select a main job to highlight it, or use the bulk actions to set multiple jobs to level 100 quickly."
-                },
-                {
-                    id: "step3",
-                    h: "3. Playstyle & Comment",
-                    p: "Choose tags such as Hardcore, Raid, Glamour, Housing, or Roleplay to show what you enjoy in Eorzea. Add a short comment of up to 200 characters for a personal greeting."
-                },
-                {
-                    id: "step4",
-                    h: "4. Image & Design",
-                    p: "Upload a screenshot and crop it to the position and ratio you want. Choose a font, set a theme point color in HEX, and decorate the card with stickers."
-                },
-                {
-                    id: "step5",
-                    h: "5. Save & Share",
-                    p: "When your settings are ready, click Save Image at the bottom. The browser renders a high-resolution PNG locally, so you can download it quickly and share it with your community."
-                }
-            ]
-        }
     },
     ja: {
         layout: {
@@ -523,19 +451,19 @@ export const i18n = {
                 {
                     id: "processing",
                     h: "1. データの取り扱い",
-                    p: "アップロードされた画像や個人情報をサーバーに保存したり、個人の識別情報を収集したりすることはありません。すべてのカード作成および編集作業は、ユーザーのブラウザ内(Client-side)でのみ処理されます。"
+                    p: "本サービスはアカウントや公開プロフィールを提供しておらず、アップロードしたキャラクター画像やプロフィール入力をサービスのサーバーに保存する機能はありません。カードの編集とPNG生成はブラウザ内で行われます。"
                 },
                 {
                     id: "storage",
                     h: "2. Cookieとブラウザストレージ",
-                    p: "現在、本サービスでは広告を表示していません。カードの編集状態と一部の設定は機能提供のためブラウザのローカルストレージに保存されますが、外部サーバーへ送信されることはありません。"
+                    p: "カードの編集状態、保存スロット、テーマ設定などの一部情報は、機能のためブラウザのlocalStorageに保存される場合があります。ブラウザデータやCookieを削除すると消えることがあります。画面に必要なWebフォントは外部の提供元から読み込まれる場合があります。"
                 },
                 {
                     id: "contact",
                     h: "3. 情報主体の権利及び連絡先",
-                    p: "本サービスは個人情報を保管しないため、データの削除要請は不要です。運営上の問い合わせや法的連絡が必要な場合は、開発者 (https://coner.luv3r.me/) までお問い合わせください。"}
+                    p: "ブラウザに保存された情報は、ブラウザのサイトデータ設定から利用者自身で削除できます。サービス運営、法的連絡、プライバシーに関するお問い合わせは、お問い合わせページをご利用ください。"}
             ],
-            updatedAt: "最終更新日: 2026年4月25日"
+            updatedAt: "最終更新日: 2026年8月22日"
         },
         terms: {
             title: "利用規約",
@@ -553,42 +481,6 @@ export const i18n = {
             ],
             updatedAt: "最終更新日: 2026年4月25日"
         },
-        guide: {
-            title: "ユーザーガイド",
-            intro: "FF14キャラクターカード作成ツールを最大限に活用する方法をご案内します。",
-            sections: [
-                {
-                    id: "intro_detail",
-                    h: "FF14キャラクターカードジェネレーターとは？",
-                    p: "ファイナルファンタジーXIVの冒険者向けオンラインプロフィール作成ツールです。キャラクターのスクリーンショットとゲーム情報を入力して、SNSで共有しやすい高解像度カードを作成できます。"
-                },
-                {
-                    id: "step1",
-                    h: "1. 基本情報とホームワールド",
-                    p: "まずキャラクター名とホームワールドを入力します。韓国、日本、北米、欧州、オセアニアのワールドを選択できます。ゲーム内の名前とSNS名が異なる場合は「ゲーム内と異なる」を有効にしてください。"
-                },
-                {
-                    id: "step2",
-                    h: "2. ジョブとレベル",
-                    p: "戦闘、製作、採集のジョブを選び、レベルを入力します。メインジョブを設定するとカードで強調され、一括適用ボタンを使うと複数のジョブをすばやくレベル100にできます。"
-                },
-                {
-                    id: "step3",
-                    h: "3. プレイスタイルと一言",
-                    p: "レイド、ミラプリ、ハウジング、ロールプレイなど、エオルゼアで好きな遊び方のタグを選びましょう。200文字以内のコメントで自分らしい挨拶を添えられます。"
-                },
-                {
-                    id: "step4",
-                    h: "4. 画像とデザイン",
-                    p: "スクリーンショットをアップロードし、位置と比率を調整します。フォントとHEXのポイントカラーを選び、ステッカーでカードを飾りましょう。"
-                },
-                {
-                    id: "step5",
-                    h: "5. 保存とシェア",
-                    p: "設定が完了したら画面下部の「画像を保存」を押してください。ブラウザ内で高解像度PNGを生成するため、すぐにダウンロードしてコミュニティで共有できます。"
-                }
-            ]
-        }
     }
 };
 

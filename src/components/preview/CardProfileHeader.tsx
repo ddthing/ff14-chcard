@@ -10,7 +10,7 @@ export function CardProfileHeader() {
     const t = i18n[lang].preview;
 
     return (
-        <div className="flex items-end justify-between border-b border-neutral-100 dark:border-[#3a3a3c] pb-5">
+        <div className="flex items-end justify-between border-b border-neutral-100 px-4 pb-5 dark:border-[#3a3a3c]">
             {!name && <h1 className="sr-only">{i18n[lang].layout.headerTitle}</h1>}
             <div>
                 {(name || isSprout || isMentor || isNicknameChanged) && (
