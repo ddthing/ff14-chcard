@@ -1,7 +1,7 @@
 import { ArrowRight, Check } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { PageLayout } from '../components/PageLayout';
+import { SeoHead } from '../components/SeoHead';
 import { usePlayerSelector } from '../contexts/PlayerContext';
 import { aboutContent } from '../utils/aboutContent';
 import { pageMeta } from '../utils/pageMeta';
@@ -13,11 +13,7 @@ export function About() {
 
     return (
         <>
-            <Helmet>
-                <title>{meta.title}</title>
-                <meta name="description" content={meta.description} />
-                <link rel="canonical" href="https://ff14-chcard.pages.dev/about" />
-            </Helmet>
+            <SeoHead meta={meta} path="/about" />
             <PageLayout title={t.title}>
                 <article className="space-y-10 pb-12" itemScope itemType="https://schema.org/AboutPage">
                     <header className="space-y-4 border-b pb-8" style={{ borderColor: 'var(--border-subtle)' }}>

@@ -21,12 +21,12 @@ export function Section({ title, children, defaultOpen = true }: { title: React.
                 aria-controls={isOpen ? contentId : undefined}
                 className="group flex w-full cursor-pointer items-center justify-between rounded-[6px] outline-none transition-[color,background-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--surface-100)]"
             >
-                <h3
+                <h2
                     className="text-[10px] font-bold uppercase tracking-[0.1em] group-hover:text-neutral-500 transition-colors"
                     style={{ color: 'var(--text-muted)' }}
                 >
                     {title}
-                </h3>
+                </h2>
                 <ChevronDown 
                     size={14} 
                     aria-hidden="true"

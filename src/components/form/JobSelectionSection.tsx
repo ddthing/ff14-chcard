@@ -197,18 +197,18 @@ export function JobSelectionSection() {
         <section className="space-y-4">
             {/* ── Header: title + bulk actions ─────────────────────────────── */}
             <div className="flex items-center justify-between flex-wrap gap-2">
-                <h3
+                <h2
                     className="text-[10px] font-semibold uppercase tracking-[0.1em]"
                     style={{ color: 'var(--text-muted)' }}
                 >
                     {t.job}
-                </h3>
+                </h2>
                 <div className="flex items-center gap-2">
                     <div className="flex items-center gap-1">
                         <button
                             type="button"
                             onClick={() => handleBulkSelect('battle', 100)}
-                            className="px-2 py-1 text-[10px] font-semibold rounded-[5px] transition-colors whitespace-nowrap"
+                            className="px-2 py-1 text-[10px] font-semibold rounded-[5px] transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                             style={bulkBtnStyle}
                         >
                             {t.battleMax}
@@ -216,7 +216,7 @@ export function JobSelectionSection() {
                         <button
                             type="button"
                             onClick={() => handleBulkSelect('life', 100)}
-                            className="px-2 py-1 text-[10px] font-semibold rounded-[5px] transition-colors whitespace-nowrap"
+                            className="px-2 py-1 text-[10px] font-semibold rounded-[5px] transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                             style={bulkBtnStyle}
                         >
                             {t.lifeMax}
@@ -224,7 +224,7 @@ export function JobSelectionSection() {
                         <button
                             type="button"
                             onClick={() => handleBulkSelect('all', 100)}
-                            className="px-2 py-1 text-[10px] font-semibold rounded-[5px] transition-colors whitespace-nowrap"
+                            className="px-2 py-1 text-[10px] font-semibold rounded-[5px] transition-colors whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                             style={bulkBtnStyle}
                         >
                             {t.allMax}
@@ -234,7 +234,7 @@ export function JobSelectionSection() {
                     <button
                         type="button"
                         onClick={() => handleBulkSelect('clear', 0)}
-                        className="flex items-center gap-1 text-[10px] font-semibold transition-colors"
+                        className="flex items-center gap-1 text-[10px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                         style={{ color: 'var(--text-muted)' }}
                         onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.color = 'var(--destructive)')}
                         onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)')}
@@ -423,7 +423,8 @@ export function JobSelectionSection() {
                                 <div className="relative">
                                     <img
                                         src={job.iconUrl}
-                                        alt={jobName}
+                                        alt=""
+                                        aria-hidden="true"
                                         width={32}
                                         height={32}
                                         className={`h-8 w-8 transition-[filter,transform,opacity] duration-300 dark-invert ${

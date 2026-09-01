@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, type RefObject } from 'react';
+import { useState, useCallback, useEffect, useRef, type RefObject } from 'react';
 import type { Sticker } from '../types';
 
 interface TransformStart {
@@ -20,6 +20,7 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
     const [transformAction, setTransformAction] = useState<'scale' | 'rotate' | null>(null);
     const [transformStart, setTransformStart] = useState<TransformStart | null>(null);
     const interactionSnapshotRef = useRef<Sticker[] | null>(null);
+    const interactionRectRef = useRef<DOMRect | null>(null);
 
     const beginInteraction = useCallback(() => {
         interactionSnapshotRef.current = stickers?.map(sticker => ({ ...sticker })) ?? [];
@@ -28,7 +29,7 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
     const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
         if (!constraintsRef.current || (!draggingId && !transformingId)) return;
 
-        const rect = constraintsRef.current.getBoundingClientRect();
+        const rect = interactionRectRef.current ?? constraintsRef.current.getBoundingClientRect();
         const px = e.clientX - rect.left;
         const py = e.clientY - rect.top;
 
@@ -76,6 +77,7 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
         setTransformAction(null);
         setTransformStart(null);
         interactionSnapshotRef.current = null;
+        interactionRectRef.current = null;
     }, []);
 
     const handlePointerCancel = useCallback(() => {
@@ -85,10 +87,23 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
         handlePointerUp();
     }, [handlePointerUp, updateStickers]);
 
+    useEffect(() => {
+        if (!draggingId && !transformingId) return;
+
+        window.addEventListener('pointerup', handlePointerUp);
+        window.addEventListener('pointercancel', handlePointerCancel);
+        return () => {
+            window.removeEventListener('pointerup', handlePointerUp);
+            window.removeEventListener('pointercancel', handlePointerCancel);
+        };
+    }, [draggingId, transformingId, handlePointerCancel, handlePointerUp]);
+
     const startDrag = useCallback((id: string) => {
+        if (!constraintsRef.current) return;
         beginInteraction();
+        interactionRectRef.current = constraintsRef.current.getBoundingClientRect();
         setDraggingId(id);
-    }, [beginInteraction]);
+    }, [beginInteraction, constraintsRef]);
 
     const startTransform = useCallback((
         id: string,
@@ -100,6 +115,7 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
         if (!constraintsRef.current) return;
         beginInteraction();
         const rect = constraintsRef.current.getBoundingClientRect();
+        interactionRectRef.current = rect;
         const cx = (sticker.x / 100) * rect.width;
         const cy = (sticker.y / 100) * rect.height;
         const px = clientX - rect.left;

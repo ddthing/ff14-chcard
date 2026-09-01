@@ -11,9 +11,9 @@ import {
     Swords,
     UserRound,
 } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { PageLayout } from '../components/PageLayout';
+import { SeoHead } from '../components/SeoHead';
 import { usePlayerSelector } from '../contexts/PlayerContext';
 import { guideContent, type GuideSectionId } from '../utils/guideContent';
 import { getGuideReference } from '../utils/guideReference';
@@ -43,11 +43,7 @@ export function Guide() {
 
     return (
         <>
-            <Helmet>
-                <title>{meta.title}</title>
-                <meta name="description" content={meta.description} />
-                <link rel="canonical" href="https://ff14-chcard.pages.dev/guide" />
-            </Helmet>
+            <SeoHead meta={meta} path="/guide" />
             <PageLayout title={t.title}>
                 <article className="space-y-10 pb-12">
                     <header className="space-y-4 border-b pb-8" style={{ borderColor: 'var(--border-subtle)' }}>
@@ -70,27 +66,27 @@ export function Guide() {
                         </div>
                         <ol className="grid gap-2 text-[13px] sm:grid-cols-2">
                             <li>
-                                <a className="inline-flex items-center gap-2 hover:underline" href="#use-cases" style={{ color: 'var(--text-secondary)' }}>
+                                <a className="inline-flex items-center gap-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]" href="#use-cases" style={{ color: 'var(--text-secondary)' }}>
                                     <span className="font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>00</span>
                                     {t.useCasesTitle}
                                 </a>
                             </li>
                             {t.sections.map((section, index) => (
                                 <li key={section.id}>
-                                    <a className="inline-flex items-center gap-2 hover:underline" href={`#${section.id}`} style={{ color: 'var(--text-secondary)' }}>
+                                    <a className="inline-flex items-center gap-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]" href={`#${section.id}`} style={{ color: 'var(--text-secondary)' }}>
                                         <span className="font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>{String(index + 1).padStart(2, '0')}</span>
                                         {section.title}
                                     </a>
                                 </li>
                             ))}
                             <li>
-                                <a className="inline-flex items-center gap-2 hover:underline" href="#supported-scope" style={{ color: 'var(--text-secondary)' }}>
+                                <a className="inline-flex items-center gap-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]" href="#supported-scope" style={{ color: 'var(--text-secondary)' }}>
                                     <span className="font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>07</span>
                                     {t.referenceTitle}
                                 </a>
                             </li>
                             <li>
-                                <a className="inline-flex items-center gap-2 hover:underline" href="#checklist" style={{ color: 'var(--text-secondary)' }}>
+                                <a className="inline-flex items-center gap-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]" href="#checklist" style={{ color: 'var(--text-secondary)' }}>
                                     <span className="font-mono text-[11px]" style={{ color: 'var(--text-muted)' }}>08</span>
                                     {t.checklistTitle}
                                 </a>
@@ -229,7 +225,7 @@ export function Guide() {
                                 <h2 className="text-[22px] font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>{t.checklistTitle}</h2>
                                 <p className="mt-2 leading-7" style={{ color: 'var(--text-secondary)' }}>{t.checklistIntro}</p>
                             </div>
-                            <span className="shrink-0 font-mono text-[12px]" style={{ color: 'var(--text-muted)' }}>{t.checklistProgress(completedCount, t.checklist.length)}</span>
+                            <span className="shrink-0 font-mono text-[12px]" style={{ color: 'var(--text-muted)' }} role="status" aria-live="polite" aria-atomic="true">{t.checklistProgress(completedCount, t.checklist.length)}</span>
                         </div>
                         <div className="mt-5 grid gap-2 border-t pt-5 sm:grid-cols-2" style={{ borderColor: 'var(--border-subtle)' }}>
                             {t.checklist.map(item => (
@@ -241,7 +237,7 @@ export function Guide() {
                                             lang,
                                             checked: { ...checked, [item.id]: event.target.checked },
                                         })}
-                                        className="mt-1 size-4 shrink-0 accent-[var(--foreground)]"
+                                        className="mt-1 size-4 shrink-0 accent-[var(--foreground)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2"
                                     />
                                     <span>{item.label}</span>
                                 </label>

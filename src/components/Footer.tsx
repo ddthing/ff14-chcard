@@ -48,6 +48,7 @@ export function Footer() {
                                 className="font-semibold transition-[color,opacity] duration-150 hover:text-[var(--text-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                             >
                                 {t.support}
+                                <span className="sr-only">({i18n[lang].layout.externalNewWindow})</span>
                             </a>
                         </li>
                     </ul>

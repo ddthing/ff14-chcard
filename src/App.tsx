@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense, useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { PlayerProvider, usePlayerSelector } from './contexts/PlayerContext';
+import { i18n } from './utils/i18n';
 
 const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
 const Privacy = lazy(() => import('./pages/Privacy').then(module => ({ default: module.Privacy })));
@@ -21,17 +22,26 @@ function DocumentLanguage() {
   return null;
 }
 
+function LoadingFallback() {
+  const language = usePlayerSelector(snapshot => snapshot.playerInfo.language);
+
+  return (
+    <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--surface-200)' }} role="status" aria-live="polite">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" aria-hidden="true" style={{ borderColor: 'var(--text-primary)', borderTopColor: 'transparent' }} />
+        <span className="text-sm font-medium" style={{ color: 'var(--text-secondary)' }}>{i18n[language].layout.loading}</span>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   return (
     <HelmetProvider>
       <PlayerProvider>
         <BrowserRouter>
           <DocumentLanguage />
-          <Suspense fallback={
-            <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--surface-200)' }}>
-              <div className="w-8 h-8 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: 'var(--text-primary)', borderTopColor: 'transparent' }}></div>
-            </div>
-          }>
+          <Suspense fallback={<LoadingFallback />}>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/privacy" element={<Privacy />} />

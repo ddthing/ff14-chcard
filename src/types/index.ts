@@ -36,7 +36,6 @@ export interface PlayerInfo {
     isSprout: boolean;
     isMentor: boolean;
     jobLevels: Record<string, number>; // Job ID -> Level mapping
-    imagePosition?: { x: number; y: number; scale: number };
     layout?: 'header' | 'left-portrait';
     language: Language;
     pointColor: string;

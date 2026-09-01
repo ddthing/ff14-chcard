@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Save, Download, Trash2 } from 'lucide-react';
+import { useRef, useState, type ChangeEvent } from 'react';
+import { Save, Download, Trash2, FileDown, Upload } from 'lucide-react';
 import { usePlayer } from '../../contexts/PlayerContext';
 import type { PlayerInfo } from '../../types';
 import { Button } from '../ui/Button';
 import { i18n } from '../../utils/i18n';
+import { normalizePlayerInfo } from '../../utils/playerData';
 
 interface SlotData {
     id: string;
@@ -15,10 +16,27 @@ interface SlotData {
 function loadSlots(): SlotData[] {
     try {
         const saved = localStorage.getItem('ff14-chcard-slots');
-        return saved ? JSON.parse(saved) as SlotData[] : [];
+        return normalizeSlots(saved ? JSON.parse(saved) : undefined);
     } catch {
         return [];
     }
+}
+
+function normalizeSlots(value: unknown): SlotData[] {
+    if (!Array.isArray(value)) return [];
+
+    return value.flatMap((candidate, index) => {
+        if (typeof candidate !== 'object' || candidate === null || Array.isArray(candidate)) return [];
+        const record = candidate as Record<string, unknown>;
+        if (typeof record.data !== 'object' || record.data === null) return [];
+
+        return [{
+            id: typeof record.id === 'string' ? record.id : `imported-slot-${index}`,
+            name: typeof record.name === 'string' && record.name.trim() ? record.name.trim() : `Slot ${index + 1}`,
+            date: typeof record.date === 'string' ? record.date : '',
+            data: normalizePlayerInfo(record.data),
+        }];
+    });
 }
 
 export function SlotSection() {
@@ -26,37 +44,89 @@ export function SlotSection() {
     const t = i18n[playerInfo.language].form;
     const [slots, setSlots] = useState<SlotData[]>(loadSlots);
     const [newSlotName, setNewSlotName] = useState('');
+    const [status, setStatus] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
+    const importInputRef = useRef<HTMLInputElement>(null);
 
     const saveSlots = (newSlots: SlotData[]) => {
-        setSlots(newSlots);
         try {
             localStorage.setItem('ff14-chcard-slots', JSON.stringify(newSlots));
+            setSlots(newSlots);
+            return true;
         } catch {
-            // Slot persistence is best-effort and should not interrupt editing.
+            setStatus({ type: 'error', message: t.slotSaveError });
+            return false;
         }
     };
 
     const handleSaveCurrent = () => {
         const name = newSlotName.trim() || playerInfo.name || t.defaultCharacter;
+        const existingIndex = slots.findIndex(slot => slot.name.toLocaleLowerCase() === name.toLocaleLowerCase());
+        if (existingIndex >= 0 && !window.confirm(t.overwriteSlotConfirm)) return;
+
         const newSlot: SlotData = {
-            id: Date.now().toString(),
+            id: existingIndex >= 0 ? slots[existingIndex].id : Date.now().toString(),
             name,
             date: new Intl.DateTimeFormat(playerInfo.language).format(new Date()),
-            data: { ...playerInfo }
+            data: normalizePlayerInfo(playerInfo),
         };
-        saveSlots([...slots, newSlot]);
-        setNewSlotName('');
+        const nextSlots = existingIndex >= 0
+            ? slots.map((slot, index) => index === existingIndex ? newSlot : slot)
+            : [...slots, newSlot];
+        if (saveSlots(nextSlots)) {
+            setNewSlotName('');
+            setStatus({ type: 'success', message: existingIndex >= 0 ? t.slotUpdated : t.slotSaved });
+        }
     };
 
     const handleLoad = (slot: SlotData) => {
         if (window.confirm(t.loadConfirm)) {
             setPlayerInfo(slot.data);
+            setStatus({ type: 'success', message: t.slotLoaded });
         }
     };
 
     const handleDelete = (id: string) => {
         if (window.confirm(t.deleteConfirm)) {
-            saveSlots(slots.filter(s => s.id !== id));
+            if (saveSlots(slots.filter(s => s.id !== id))) {
+                setStatus({ type: 'success', message: t.slotDeleted });
+            }
+        }
+    };
+
+    const handleExport = () => {
+        const payload = JSON.stringify({
+            format: 'ff14-chcard-backup',
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            currentProfile: normalizePlayerInfo(playerInfo),
+            slots,
+        }, null, 2);
+        const url = URL.createObjectURL(new Blob([payload], { type: 'application/json' }));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `ff14-chcard-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        link.click();
+        URL.revokeObjectURL(url);
+        setStatus({ type: 'success', message: t.backupExported });
+    };
+
+    const handleImport = async (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        event.target.value = '';
+        if (!file) return;
+
+        try {
+            const parsed: unknown = JSON.parse(await file.text());
+            if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new Error('invalid backup');
+            const record = parsed as Record<string, unknown>;
+            if (record.format !== 'ff14-chcard-backup') throw new Error('invalid backup');
+            const importedSlots = normalizeSlots(record.slots);
+            if (!window.confirm(t.importConfirm)) return;
+            if (!saveSlots(importedSlots)) return;
+            if (record.currentProfile !== undefined) setPlayerInfo(normalizePlayerInfo(record.currentProfile));
+            setStatus({ type: 'success', message: t.backupImported });
+        } catch {
+            setStatus({ type: 'error', message: t.backupImportError });
         }
     };
 
@@ -86,6 +156,34 @@ export function SlotSection() {
             </div>
 
             <div className="h-px w-full my-2" style={{ backgroundColor: 'var(--border-subtle)' }} />
+
+            <div className="flex flex-wrap gap-2">
+                <input
+                    ref={importInputRef}
+                    type="file"
+                    accept="application/json,.json"
+                    className="hidden"
+                    onChange={handleImport}
+                    aria-label={t.importBackup}
+                />
+                <Button type="button" variant="secondary" size="sm" onClick={handleExport}>
+                    <FileDown size={14} aria-hidden="true" /> {t.exportBackup}
+                </Button>
+                <Button type="button" variant="secondary" size="sm" onClick={() => importInputRef.current?.click()}>
+                    <Upload size={14} aria-hidden="true" /> {t.importBackup}
+                </Button>
+            </div>
+
+            {status && (
+                <p
+                    role="status"
+                    aria-live={status.type === 'error' ? 'assertive' : 'polite'}
+                    className="text-[11px]"
+                    style={{ color: status.type === 'error' ? 'var(--destructive)' : 'var(--text-secondary)' }}
+                >
+                    {status.message}
+                </p>
+            )}
 
             <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
                 <span className="text-[12px] font-bold" style={{ color: 'var(--text-primary)' }}>{t.savedSlots} ({slots.length})</span>

@@ -7,7 +7,8 @@ import {
     useSyncExternalStore,
     type ReactNode,
 } from 'react';
-import type { PlayerInfo, Language } from '../types';
+import type { PlayerInfo, Language, Sticker } from '../types';
+import { normalizePlayerInfo } from '../utils/playerData';
 
 type PlayerInfoUpdater = PlayerInfo | ((prev: PlayerInfo) => PlayerInfo);
 type Listener = () => void;
@@ -20,11 +21,19 @@ interface PlayerContextType {
     updateImage: (image: string | undefined) => void;
     selectedStickerId: string | null;
     setSelectedStickerId: (id: string | null) => void;
+    removedSticker: { sticker: Sticker; index: number } | null;
+    removeSticker: (id: string) => void;
+    undoStickerRemoval: () => void;
+    dismissStickerUndo: () => void;
+    persistenceStatus: 'image-omitted' | 'failed' | null;
+    dismissPersistenceStatus: () => void;
 }
 
 interface PlayerStoreSnapshot {
     playerInfo: PlayerInfo;
     selectedStickerId: string | null;
+    removedSticker: { sticker: Sticker; index: number } | null;
+    persistenceStatus: 'image-omitted' | 'failed' | null;
 }
 
 interface PlayerStore {
@@ -36,88 +45,39 @@ interface PlayerStore {
     updateLanguage: (lang: Language) => void;
     updateImage: (image: string | undefined) => void;
     setSelectedStickerId: (id: string | null) => void;
+    removeSticker: (id: string) => void;
+    undoStickerRemoval: () => void;
+    dismissStickerUndo: () => void;
+    setPersistenceStatus: (status: PlayerStoreSnapshot['persistenceStatus']) => void;
+    dismissPersistenceStatus: () => void;
 }
 
-type PlayerActions = Omit<PlayerContextType, 'playerInfo' | 'selectedStickerId'>;
-
-import { PROFILE_SCHEMA_VERSION } from '../constants/storage';
+type PlayerActions = Omit<PlayerContextType, 'playerInfo' | 'selectedStickerId' | 'removedSticker' | 'persistenceStatus'>;
 
 const STORAGE_KEY = 'ff14-playerInfo';
-
-const defaultPlayerInfo: PlayerInfo = {
-    name: '',
-    region: 'KR',
-    dataCenter: '',
-    server: '',
-    jobs: [],
-    playstyles: [],
-    activeTime: '',
-    comment: '',
-    font: 'font-pretendard',
-    mainJob: undefined,
-    isNicknameChanged: false,
-    isSprout: false,
-    isMentor: false,
-    jobLevels: {},
-    imagePosition: { x: 0, y: 0, scale: 1 },
-    layout: 'header',
-    language: 'ko',
-    pointColor: '#e44c21',
-    stickers: [],
-    version: PROFILE_SCHEMA_VERSION,
-};
 
 function loadPlayerInfo(): PlayerInfo {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return defaultPlayerInfo;
-        
-        const parsed = JSON.parse(raw);
-        
-        // Hybrid Reset Logic
-        // If the stored data has an older version (or no version) it might need a reset.
-        if (parsed.version !== PROFILE_SCHEMA_VERSION) {
-            return {
-                ...defaultPlayerInfo,
-                // Keep the user's specific text/content data
-                name: parsed.name || '',
-                server: parsed.server || '',
-                region: parsed.region || 'KR',
-                dataCenter: parsed.dataCenter || '',
-                jobs: parsed.jobs || [],
-                jobLevels: parsed.jobLevels || {},
-                playstyles: parsed.playstyles || [],
-                activeTime: parsed.activeTime || '',
-                comment: parsed.comment || '',
-                image: parsed.image,
-                mainJob: parsed.mainJob,
-                isNicknameChanged: parsed.isNicknameChanged || false,
-                isSprout: parsed.isSprout || false,
-                isMentor: parsed.isMentor || false,
-                imagePosition: parsed.imagePosition || { x: 0, y: 0, scale: 1 },
-                stickers: parsed.stickers || [],
-                // Force reset specific design elements to defaults:
-                // font, layout, language, pointColor are not copied from `parsed`
-            };
-        }
-
-        return { ...defaultPlayerInfo, ...parsed };
+        return normalizePlayerInfo(raw ? JSON.parse(raw) : undefined);
     } catch {
-        return defaultPlayerInfo;
+        return normalizePlayerInfo(undefined);
     }
 }
 
-function persistPlayerInfo(playerInfo: PlayerInfo) {
+function persistPlayerInfo(playerInfo: PlayerInfo): PlayerStoreSnapshot['persistenceStatus'] {
     try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(playerInfo));
+        return null;
     } catch {
         // Fallback: If quota is exceeded, keep the text and layout data but omit the image.
         try {
             const rest = { ...playerInfo };
             delete rest.image;
             localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
+            return 'image-omitted';
         } catch {
-            // Local persistence is best-effort and must never interrupt editing.
+            return 'failed';
         }
     }
 }
@@ -126,6 +86,8 @@ function createPlayerStore(): PlayerStore {
     let snapshot: PlayerStoreSnapshot = {
         playerInfo: loadPlayerInfo(),
         selectedStickerId: null,
+        removedSticker: null,
+        persistenceStatus: null,
     };
     const listeners = new Set<Listener>();
     const playerInfoListeners = new Set<Listener>();
@@ -175,6 +137,50 @@ function createPlayerStore(): PlayerStore {
         notify(listeners);
     };
 
+    const removeSticker = (id: string) => {
+        const stickers = snapshot.playerInfo.stickers ?? [];
+        const index = stickers.findIndex(sticker => sticker.id === id);
+        if (index < 0) return;
+
+        snapshot = {
+            ...snapshot,
+            playerInfo: { ...snapshot.playerInfo, stickers: stickers.filter(sticker => sticker.id !== id) },
+            selectedStickerId: snapshot.selectedStickerId === id ? null : snapshot.selectedStickerId,
+            removedSticker: { sticker: stickers[index], index },
+        };
+        notify(listeners);
+        notify(playerInfoListeners);
+    };
+
+    const undoStickerRemoval = () => {
+        if (!snapshot.removedSticker) return;
+        const { sticker, index } = snapshot.removedSticker;
+        const stickers = [...(snapshot.playerInfo.stickers ?? [])];
+        stickers.splice(Math.min(index, stickers.length), 0, sticker);
+        snapshot = {
+            ...snapshot,
+            playerInfo: { ...snapshot.playerInfo, stickers },
+            selectedStickerId: sticker.id,
+            removedSticker: null,
+        };
+        notify(listeners);
+        notify(playerInfoListeners);
+    };
+
+    const dismissStickerUndo = () => {
+        if (!snapshot.removedSticker) return;
+        snapshot = { ...snapshot, removedSticker: null };
+        notify(listeners);
+    };
+
+    const setPersistenceStatus = (persistenceStatus: PlayerStoreSnapshot['persistenceStatus']) => {
+        if (snapshot.persistenceStatus === persistenceStatus) return;
+        snapshot = { ...snapshot, persistenceStatus };
+        notify(listeners);
+    };
+
+    const dismissPersistenceStatus = () => setPersistenceStatus(null);
+
     return {
         getSnapshot: () => snapshot,
         subscribe,
@@ -184,6 +190,11 @@ function createPlayerStore(): PlayerStore {
         updateLanguage,
         updateImage,
         setSelectedStickerId,
+        removeSticker,
+        undoStickerRemoval,
+        dismissStickerUndo,
+        setPersistenceStatus,
+        dismissPersistenceStatus,
     };
 }
 
@@ -200,7 +211,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             if (timeoutId !== undefined) window.clearTimeout(timeoutId);
             timeoutId = window.setTimeout(() => {
                 timeoutId = undefined;
-                persistPlayerInfo(store.getSnapshot().playerInfo);
+                store.setPersistenceStatus(persistPlayerInfo(store.getSnapshot().playerInfo));
             }, 250);
         };
 
@@ -248,6 +259,10 @@ export function usePlayerActions(): PlayerActions {
         updateLanguage: store.updateLanguage,
         updateImage: store.updateImage,
         setSelectedStickerId: store.setSelectedStickerId,
+        removeSticker: store.removeSticker,
+        undoStickerRemoval: store.undoStickerRemoval,
+        dismissStickerUndo: store.dismissStickerUndo,
+        dismissPersistenceStatus: store.dismissPersistenceStatus,
     }), [store]);
 }
 
@@ -264,6 +279,12 @@ export function usePlayer() {
         updateLanguage: store.updateLanguage,
         updateImage: store.updateImage,
         selectedStickerId: snapshot.selectedStickerId,
+        removedSticker: snapshot.removedSticker,
+        persistenceStatus: snapshot.persistenceStatus,
         setSelectedStickerId: store.setSelectedStickerId,
+        removeSticker: store.removeSticker,
+        undoStickerRemoval: store.undoStickerRemoval,
+        dismissStickerUndo: store.dismissStickerUndo,
+        dismissPersistenceStatus: store.dismissPersistenceStatus,
     }), [snapshot, store]);
 }

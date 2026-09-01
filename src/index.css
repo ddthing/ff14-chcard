@@ -220,7 +220,6 @@ button:not(:disabled),
  * Each rule targets BOTH the container itself AND all descendants (via *)
  * so h1, span, p, etc. properly inherit the selected font.
  * ========================= */
-.card-preview.font-a2z, .card-preview.font-a2z *                   { font-family: 'A2z', 'Pretendard', 'Meiryo', sans-serif !important; }
 .card-preview.font-pretendard, .card-preview.font-pretendard *     { font-family: 'Pretendard', 'Meiryo', sans-serif !important; }
 .card-preview.font-mona, .card-preview.font-mona *                 { font-family: 'Mona12', 'Pretendard', 'Meiryo', sans-serif !important; }
 .card-preview.font-gmarket, .card-preview.font-gmarket *           { font-family: 'GMarketSans', 'Pretendard', 'Meiryo', sans-serif !important; }
@@ -235,10 +234,6 @@ button:not(:disabled),
 .card-preview.font-galmuri9, .card-preview.font-galmuri9 *         { font-family: 'Galmuri9', 'Pretendard', 'Meiryo', sans-serif !important; }
 .card-preview.font-seogung, .card-preview.font-seogung *           { font-family: 'Seogung', 'Pretendard', 'Meiryo', sans-serif !important; }
 .card-preview.font-cloudsanscode, .card-preview.font-cloudsanscode * { font-family: 'CloudSansCode', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-tangba, .card-preview.font-tangba *             { font-family: 'Tangba', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-puradak, .card-preview.font-puradak *           { font-family: 'PuradakGentleGothic', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-paperozi, .card-preview.font-paperozi *         { font-family: 'Paperozi', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-tmoney, .card-preview.font-tmoney *             { font-family: 'TMoneyDungunbaram', 'Pretendard', 'Meiryo', sans-serif !important; }
 
 /* ===== Utilities ===== */
 

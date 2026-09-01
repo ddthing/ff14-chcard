@@ -32,9 +32,9 @@ export function CardMainJob() {
             {/* Subtle background glow */}
             <div className="absolute top-0 right-0 w-32 h-32 blur-3xl opacity-20 pointer-events-none" style={{ backgroundColor: playerInfo.pointColor }}></div>
             
-            <img src={mJob.iconUrl} alt={localizedMainJobName} width={48} height={48} className="absolute right-4 top-1/2 h-12 w-12 -translate-y-1/2 dark-invert transition-transform duration-300 group-hover/mainjob:scale-110" />
+            <img src={mJob.iconUrl} alt="" aria-hidden="true" width={48} height={48} className="absolute right-4 top-1/2 h-12 w-12 -translate-y-1/2 dark-invert transition-transform duration-300 group-hover/mainjob:scale-110" />
             <div className="relative z-10 min-w-0">
-                <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] mb-1 opacity-90" style={{ color: playerInfo.pointColor }}>{t.mainJob}</div>
+                <div className="text-[10px] font-extrabold uppercase tracking-[0.15em] mb-1" style={{ color: 'var(--text-primary)' }}>{t.mainJob}</div>
                 <div className="text-2xl font-black tracking-tight leading-none text-slate-900 dark:text-slate-100 whitespace-nowrap">{localizedMainJobName}</div>
                 <div className="inline-block mt-2 px-2 py-0.5 rounded text-[10px] font-bold whitespace-nowrap" style={{ backgroundColor: playerInfo.pointColor, color: getContrastColor(playerInfo.pointColor) }}>
                     Lv.{jobLevels[mainJob] || '?'}

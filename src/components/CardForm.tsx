@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState, type ChangeEvent, type Keyboa
 import type { PlayerInfo } from '../types';
 import { ChevronDown, Check, ContactRound, Swords, Tags, Paintbrush, ImagePlus, X, Save } from 'lucide-react';
 import { i18n, getFonts } from '../utils/i18n';
-import { inputClass } from '../utils/styles';
+import { getAccessiblePointColor, getContrastRatio, inputClass } from '../utils/styles';
 import { ImageCropperModal } from './ImageCropperModal';
 
 // ─── Form Section Sub-Components ─────────────────────────────────────────────
@@ -15,16 +15,21 @@ import { StickerSection } from './form/StickerSection';
 import { SlotSection } from './form/SlotSection';
 
 import { usePlayer } from '../contexts/PlayerContext';
+import { ImageFileError, readImageFile } from '../utils/imageFile';
 
 type TabId = 'basic' | 'job' | 'style' | 'design' | 'slot';
 
 export function CardForm() {
     const { playerInfo, setPlayerInfo, updateImage: onImageChange } = usePlayer();
     const fontRef = useRef<HTMLDivElement>(null);
+    const fontTriggerRef = useRef<HTMLButtonElement>(null);
+    const fontOptionRefs = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const imageTriggerRef = useRef<HTMLButtonElement>(null);
     const [isFontOpen, setIsFontOpen] = useState(false);
     const [activeTab, setActiveTab] = useState<TabId>('basic');
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+    const [imageError, setImageError] = useState<string | null>(null);
     const tabRefs = useRef<Partial<Record<TabId, HTMLButtonElement | null>>>({});
     const tabListRef = useRef<HTMLDivElement>(null);
     const [tabScrollState, setTabScrollState] = useState({ left: false, right: false });
@@ -34,6 +39,8 @@ export function CardForm() {
     const tp = i18n[lang].preview;
     const fontsOptions = getFonts(lang);
     const isPointColorValid = /^#[0-9a-f]{6}$/i.test(playerInfo.pointColor);
+    const pointColorContrast = isPointColorValid ? getContrastRatio(playerInfo.pointColor, '#ffffff') : null;
+    const hasSafePointColorContrast = pointColorContrast !== null && pointColorContrast >= 4.5;
 
     // 폰트 드롭다운 외부 클릭 닫기
     useEffect(() => {
@@ -50,16 +57,52 @@ export function CardForm() {
         setPlayerInfo(prev => ({ ...prev, [field]: value }));
     };
 
-    // 이미지 파일 선택 → 크롭 모달 열기
-    const handleFileChange = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => setCropImageSrc(reader.result as string);
-            reader.readAsDataURL(file);
+    const handleFontTriggerKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+        if (event.key === 'Escape' && isFontOpen) {
+            event.preventDefault();
+            setIsFontOpen(false);
         }
-        if (e.target) e.target.value = '';
-    }, []);
+    };
+
+    const handleFontOptionKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+        const lastIndex = fontsOptions.length - 1;
+        let nextIndex: number | null = null;
+
+        if (event.key === 'ArrowDown') nextIndex = index === lastIndex ? 0 : index + 1;
+        if (event.key === 'ArrowUp') nextIndex = index === 0 ? lastIndex : index - 1;
+        if (event.key === 'Home') nextIndex = 0;
+        if (event.key === 'End') nextIndex = lastIndex;
+
+        if (nextIndex !== null) {
+            event.preventDefault();
+            fontOptionRefs.current[fontsOptions[nextIndex].id]?.focus();
+            return;
+        }
+
+        if (event.key === 'Escape') {
+            event.preventDefault();
+            setIsFontOpen(false);
+            fontTriggerRef.current?.focus();
+        }
+    };
+
+    // 이미지 파일 선택 → 크롭 모달 열기
+    const handleFileChange = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file) return;
+
+        setImageError(null);
+        try {
+            setCropImageSrc(await readImageFile(file));
+        } catch (error) {
+            setImageError(error instanceof ImageFileError && error.code === 'too-large'
+                ? t.imageFileTooLarge
+                : error instanceof ImageFileError && error.code === 'invalid-type'
+                    ? t.imageInvalidType
+                    : t.imageUploadError);
+        }
+    }, [t.imageFileTooLarge, t.imageInvalidType, t.imageUploadError]);
 
     const handleCropApply = useCallback((croppedBase64: string) => {
         onImageChange(croppedBase64);
@@ -128,6 +171,7 @@ export function CardForm() {
                     imageSrc={cropImageSrc}
                     onApply={handleCropApply}
                     onCancel={() => setCropImageSrc(null)}
+                    returnFocusRef={imageTriggerRef}
                     lang={lang}
                     aspectRatio={playerInfo.layout === 'left-portrait' ? 2 / 4.5 : 700 / 280}
                 />
@@ -142,6 +186,7 @@ export function CardForm() {
                 className="hidden"
                 onChange={handleFileChange}
             />
+            {imageError && <p role="alert" className="px-4 pt-3 text-[11px]" style={{ color: 'var(--destructive)' }}>{imageError}</p>}
 
             {/* ───── Tab Bar ────────────────────────────────────────────────── */}
             <div className="relative shrink-0">
@@ -238,6 +283,7 @@ export function CardForm() {
                                     /* Uploaded state: thumbnail + change / remove actions */
                                     <div className="flex gap-2.5 items-center">
                                         <button
+                                            ref={imageTriggerRef}
                                             type="button"
                                             aria-label={t.uploadImage}
                                             className="w-14 h-14 rounded-[8px] overflow-hidden cursor-pointer shrink-0 group relative border-0 p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
@@ -246,7 +292,7 @@ export function CardForm() {
                                         >
                                             <img
                                                 src={playerInfo.image}
-                                                alt={t.nickname}
+                                                alt={tp.characterImage}
                                                 width={56}
                                                 height={56}
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
@@ -257,6 +303,7 @@ export function CardForm() {
                                         </button>
                                         <div className="flex flex-col gap-1.5 flex-1">
                                             <button
+                                                ref={imageTriggerRef}
                                                 type="button"
                                                 onClick={() => fileInputRef.current?.click()}
                                                 className="w-full py-2 text-[11px] font-semibold rounded-[8px] flex items-center justify-center gap-1.5 transition-colors"
@@ -281,6 +328,7 @@ export function CardForm() {
                                 ) : (
                                     /* Empty state: full-width drop zone */
                                     <button
+                                        ref={imageTriggerRef}
                                         type="button"
                                         onClick={() => fileInputRef.current?.click()}
                                     className="group flex h-[64px] w-full items-center justify-center gap-2.5 rounded-[8px] border-2 border-dashed text-[12px] font-semibold transition-[color,border-color,background-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
@@ -387,6 +435,8 @@ export function CardForm() {
                                     <input
                                         type="text"
                                         aria-label={`${t.pointColor} HEX`}
+                                        aria-invalid={!isPointColorValid}
+                                        aria-describedby="point-color-status"
                                         name="point-color-hex"
                                         autoComplete="off"
                                         value={playerInfo.pointColor.toUpperCase()}
@@ -401,6 +451,23 @@ export function CardForm() {
                                         placeholder="#HEX"
                                         maxLength={7}
                                     />
+                                </div>
+                                <div id="point-color-status" className="flex items-center justify-between gap-3 text-[10px]" role="status" aria-live="polite">
+                                    <span style={{ color: isPointColorValid && !hasSafePointColorContrast ? 'var(--destructive)' : 'var(--text-muted)' }}>
+                                        {!isPointColorValid
+                                            ? t.pointColorInvalid
+                                            : t.pointColorContrast(pointColorContrast?.toFixed(2) ?? '0.00', hasSafePointColorContrast)}
+                                    </span>
+                                    {isPointColorValid && !hasSafePointColorContrast && (
+                                        <button
+                                            type="button"
+                                            onClick={() => handleChange('pointColor', getAccessiblePointColor(playerInfo.pointColor))}
+                                            className="shrink-0 font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
+                                            style={{ color: 'var(--text-primary)' }}
+                                        >
+                                            {t.adjustToSafeColor}
+                                        </button>
+                                    )}
                                 </div>
                                 <div className="space-y-1.5">
                                     <p className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>
@@ -432,11 +499,14 @@ export function CardForm() {
                         <Section title={t.font}>
                             <div className="relative w-full" ref={fontRef}>
                                  <button
+                                     ref={fontTriggerRef}
                                      type="button"
                                      onClick={() => setIsFontOpen(!isFontOpen)}
                                      aria-label={t.font}
                                      aria-expanded={isFontOpen}
                                      aria-haspopup="listbox"
+                                     aria-controls={isFontOpen ? 'font-listbox' : undefined}
+                                     onKeyDown={handleFontTriggerKeyDown}
                                      className={`${inputClass} flex items-center justify-between cursor-pointer`}
                                 >
                                     <div className="flex items-center gap-2">
@@ -458,6 +528,7 @@ export function CardForm() {
 
                                 {isFontOpen && (
                                      <div
+                                         id="font-listbox"
                                          className="absolute top-full mt-1.5 left-0 right-0 rounded-[10px] z-50 max-h-60 overflow-y-auto p-1"
                                          role="listbox"
                                          aria-label={t.font}
@@ -466,19 +537,22 @@ export function CardForm() {
                                             border: '1px solid var(--border-medium)',
                                         }}
                                     >
-                                        {fontsOptions.map(font => {
+                                        {fontsOptions.map((font, index) => {
                                             const isSelected = playerInfo.font === font.id;
                                             return (
                                                  <button
                                                      key={font.id}
+                                                     ref={element => { fontOptionRefs.current[font.id] = element; }}
                                                      type="button"
                                                      role="option"
                                                      aria-selected={isSelected}
+                                                     onKeyDown={event => handleFontOptionKeyDown(event, index)}
                                                      onClick={() => {
                                                         handleChange('font', font.id);
                                                         setIsFontOpen(false);
+                                                        fontTriggerRef.current?.focus();
                                                     }}
-                                                    className="card-preview w-full flex items-center justify-between px-3 py-2 rounded-[7px] transition-colors duration-100"
+                                                    className="card-preview w-full flex items-center justify-between px-3 py-2 rounded-[7px] transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]"
                                                     style={{
                                                         backgroundColor: isSelected ? 'var(--surface-300)' : 'transparent',
                                                         color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',

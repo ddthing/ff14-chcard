@@ -17,7 +17,7 @@ export function render(url: string): StaticRenderResult {
 
     if (helmetContext.helmet) {
         const { helmet } = helmetContext;
-        const head = [helmet.title.toString(), helmet.meta.toString(), helmet.link.toString()]
+        const head = [helmet.title.toString(), helmet.meta.toString(), helmet.link.toString(), helmet.script.toString()]
             .filter(Boolean)
             .join('\n  ');
 
@@ -27,7 +27,7 @@ export function render(url: string): StaticRenderResult {
     // React 19 renders Helmet tags as metadata elements during SSR instead of
     // populating HelmetProvider's legacy server context. Move those elements
     // into <head> before the prerender script injects the page body.
-    const metadataPattern = /<title>[\s\S]*?<\/title>|<meta\s+name="description"[^>]*\/?\s*>|<link\s+rel="canonical"[^>]*\/?\s*>/gi;
+    const metadataPattern = /<title>[\s\S]*?<\/title>|<meta\b(?=[^>]*(?:name="description"|property="og:|name="twitter:))[^>]*\/?\s*>|<link\b(?=[^>]*rel="canonical")[^>]*\/?\s*>|<script\b(?=[^>]*type="application\/ld\+json")[^>]*>[\s\S]*?<\/script>/gi;
     const metadata = rendered.match(metadataPattern) ?? [];
 
     if (metadata.length === 0) {

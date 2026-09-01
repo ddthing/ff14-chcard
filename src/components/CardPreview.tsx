@@ -1,5 +1,5 @@
-import { forwardRef, useCallback, useMemo, useRef, useState, useEffect, type ChangeEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
-import { motion } from 'framer-motion';
+import { forwardRef, useCallback, useMemo, useRef, useState, type ChangeEvent, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
 import { JOBS } from '../data/jobs';
 import { ImagePlus, Maximize2, X, RotateCw } from 'lucide-react';
 import { i18n } from '../utils/i18n';
@@ -12,6 +12,7 @@ import { usePlayer } from '../contexts/PlayerContext';
 import { useStickerInteraction } from '../hooks/useStickerInteraction';
 import { useFontLoader } from '../hooks/useFontLoader';
 import type { Sticker } from '../types';
+import { ImageFileError, readImageFile } from '../utils/imageFile';
 
 /**
  * Card Preview Component
@@ -34,7 +35,7 @@ const BATTLE_ROLES = new Set([
 ]);
 
 export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, onImageChange }, ref) => {
-    const { playerInfo, updatePlayerField, selectedStickerId, setSelectedStickerId } = usePlayer();
+    const { playerInfo, updatePlayerField, selectedStickerId, setSelectedStickerId, removeSticker } = usePlayer();
     const { jobs, comment, image, font, mainJob, jobLevels } = playerInfo;
 
     const lang = playerInfo.language;
@@ -44,6 +45,8 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
     const imageTriggerRef = useRef<HTMLButtonElement>(null);
     const constraintsRef = useRef<HTMLDivElement>(null);
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
+    const [imageError, setImageError] = useState<string | null>(null);
+    const shouldReduceMotion = useReducedMotion();
 
     const updateStickers = useCallback((stickers: Sticker[]) => updatePlayerField('stickers', stickers), [updatePlayerField]);
     
@@ -63,55 +66,51 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
 
     useFontLoader(playerInfo.font);
 
-    const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => setCropImageSrc(reader.result as string);
-            reader.readAsDataURL(file);
+        e.target.value = '';
+        if (!file) return;
+
+        setImageError(null);
+        try {
+            setCropImageSrc(await readImageFile(file));
+        } catch (error) {
+            setImageError(error instanceof ImageFileError && error.code === 'too-large'
+                ? i18n[lang].form.imageFileTooLarge
+                : error instanceof ImageFileError && error.code === 'invalid-type'
+                    ? i18n[lang].form.imageInvalidType
+                    : i18n[lang].form.imageUploadError);
         }
-        if (e.target) e.target.value = '';
     };
 
-    // Keyboard Nudge & Delete
-    useEffect(() => {
-        if (!selectedStickerId) return;
+    const handleStickerKeyDown = useCallback((event: ReactKeyboardEvent<HTMLButtonElement>, stickerId: string) => {
+        const moveStep = event.shiftKey ? 2 : 0.2;
+        let dx = 0;
+        let dy = 0;
 
-        const handleKeyDown = (e: globalThis.KeyboardEvent) => {
-            if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
-            if (e.target instanceof HTMLElement && e.target.closest('.transform-control')) return;
+        if (event.key === 'ArrowUp') dy = -moveStep;
+        else if (event.key === 'ArrowDown') dy = moveStep;
+        else if (event.key === 'ArrowLeft') dx = -moveStep;
+        else if (event.key === 'ArrowRight') dx = moveStep;
+        else if (event.key === 'Delete' || event.key === 'Backspace') {
+            event.preventDefault();
+            removeSticker(stickerId);
+            return;
+        } else {
+            return;
+        }
 
-            const sticker = playerInfo.stickers?.find(s => s.id === selectedStickerId);
-            if (!sticker) return;
-
-            const moveStep = e.shiftKey ? 2 : 0.2;
-            let dx = 0;
-            let dy = 0;
-
-            if (e.key === 'ArrowUp') dy = -moveStep;
-            else if (e.key === 'ArrowDown') dy = moveStep;
-            else if (e.key === 'ArrowLeft') dx = -moveStep;
-            else if (e.key === 'ArrowRight') dx = moveStep;
-            else if (e.key === 'Delete' || e.key === 'Backspace') {
-                updatePlayerField('stickers', playerInfo.stickers?.filter(s => s.id !== selectedStickerId) || []);
-                setSelectedStickerId(null);
-                e.preventDefault();
-                return;
-            } else {
-                return;
-            }
-
-            e.preventDefault();
-            updateStickers(playerInfo.stickers?.map(s => 
-                s.id === selectedStickerId 
-                    ? { ...s, x: Number(Math.max(0, Math.min(100, s.x + dx)).toFixed(1)), y: Number(Math.max(0, Math.min(100, s.y + dy)).toFixed(1)) }
-                    : s
-            ) || []);
-        };
-
-        window.addEventListener('keydown', handleKeyDown);
-        return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [selectedStickerId, playerInfo.stickers, setSelectedStickerId, updatePlayerField, updateStickers]);
+        event.preventDefault();
+        updateStickers(playerInfo.stickers?.map(sticker =>
+            sticker.id === stickerId
+                ? {
+                    ...sticker,
+                    x: Number(Math.max(0, Math.min(100, sticker.x + dx)).toFixed(1)),
+                    y: Number(Math.max(0, Math.min(100, sticker.y + dy)).toFixed(1)),
+                }
+                : sticker
+        ) || []);
+    }, [playerInfo.stickers, removeSticker, updateStickers]);
 
     const handleCropApply = (croppedImageBase64: string) => {
         onImageChange?.(croppedImageBase64);
@@ -172,8 +171,8 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
 
     return (
         <motion.div
-            layout
-            transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+            layout={!shouldReduceMotion}
+            transition={shouldReduceMotion ? { duration: 0 } : { type: "spring", bounce: 0.2, duration: 0.6 }}
             className={`card-preview max-w-none overflow-hidden relative flex origin-top ${playerInfo.layout === 'left-portrait' ? 'w-[800px] flex-row min-h-[720px]' : 'w-[700px] flex-col'} ${font}`}
             style={{ backgroundColor: 'var(--surface-50)' }}
             ref={ref}
@@ -198,12 +197,17 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 className="hidden"
                 onChange={handleImageUpload}
             />
+            {imageError && (
+                <p role="alert" className="export-ignore absolute left-4 right-4 top-4 z-[70] bg-[var(--surface-50)] p-3 text-xs shadow-lg" style={{ color: 'var(--destructive)' }}>
+                    {imageError}
+                </p>
+            )}
 
             {/* Image Section */}
             {image ? (
                 <motion.button
                     type="button"
-                    layout
+                    layout={!shouldReduceMotion}
                     ref={imageTriggerRef}
                     aria-label={t.clickToEdit}
                     className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px] border-r border-[#d2d2d7] dark:border-[#3a3a3c]' : 'w-full h-[280px]'} relative overflow-hidden group cursor-pointer shrink-0 border-0 p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]`}
@@ -226,7 +230,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
             ) : (
                 <motion.button
                     type="button"
-                    layout
+                    layout={!shouldReduceMotion}
                     ref={imageTriggerRef}
                     aria-label={t.uploadPlease}
                     className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px] border-r border-neutral-200 dark:border-[#3a3a3c]' : 'w-full h-[280px] border-b border-neutral-200 dark:border-[#3a3a3c]'} bg-gradient-to-br from-neutral-50 to-neutral-100 dark:from-[#2a2a2c] dark:to-[#323234] flex flex-col items-center justify-center gap-4 cursor-pointer hover:from-neutral-100 hover:to-neutral-200 dark:hover:from-[#323234] dark:hover:to-[#3a3a3c] transition-colors group shrink-0 relative border-0 p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]`}
@@ -241,7 +245,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
             )}
 
             {/* Content */}
-            <motion.div layout className={`p-8 space-y-6 flex-1 relative flex flex-col`}>
+            <motion.div layout={!shouldReduceMotion} className={`p-8 space-y-6 flex-1 relative flex flex-col`}>
                 
                 {/* Name / Server / Status */}
                 <CardProfileHeader />
@@ -272,7 +276,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 {/* Watermark / Footer (Viral Loop) */}
                 <div className="mt-auto flex items-end justify-between border-t border-neutral-100 px-4 pt-4 dark:border-[#3a3a3c]">
                     <div className="flex flex-col gap-1">
-                        <span className="text-[9px] font-bold uppercase tracking-[0.25em]" style={{ color: playerInfo.pointColor }}>
+                        <span className="text-[9px] font-bold uppercase tracking-[0.25em]" style={{ color: 'var(--text-primary)' }}>
                             {t.footerTitle}
                         </span>
                         <span className="text-[10px] text-neutral-400 dark:text-[#86868b] font-medium tracking-tight">
@@ -284,8 +288,9 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                             {t.designedBy}
                         </span>
                         <span className="text-[11px] font-bold text-neutral-700 dark:text-[#d1d1d6]">
-                            <a href="https://x.com/reconeur" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity">
+                            <a href="https://x.com/reconeur" target="_blank" rel="noopener noreferrer" className="hover:opacity-70 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]">
                                 @reconeur
+                                <span className="sr-only">({i18n[lang].layout.externalNewWindow})</span>
                             </a>
                         </span>
                     </div>
@@ -332,9 +337,11 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                         <button
                             type="button"
                             aria-label={`${i18n[lang].form.stickers} ${index + 1}`}
+                            aria-describedby={`sticker-keyboard-help-${index}`}
                             aria-pressed={isSelected}
                             className="block border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
                             onClick={() => setSelectedStickerId(sticker.id)}
+                            onKeyDown={(event) => handleStickerKeyDown(event, sticker.id)}
                             onPointerDown={(e) => {
                                 e.stopPropagation();
                                 setSelectedStickerId(sticker.id);
@@ -342,10 +349,13 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                             }}
                             onPointerCancel={handlePointerCancel}
                         >
+                            <span id={`sticker-keyboard-help-${index}`} className="sr-only">{t.stickerKeyboardHelp}</span>
                             <div className={`relative ${isSelected ? 'ring-2 ring-[#0071e3] ring-offset-2 ring-offset-white dark:ring-offset-[#1d1d1f] rounded export-ignore' : ''}`}>
                                 <img
                                     src={sticker.url}
                                     alt=""
+                                    width={96}
+                                    height={96}
                                     draggable={false}
                                     className="max-w-none pointer-events-none cursor-move drop-shadow-sm"
                                     style={{ width: 'auto', height: 'auto' }}
@@ -363,8 +373,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                                         style={{ transform: `scale(${1 / Math.max(0.1, sticker.scale)})`, transformOrigin: 'center' }}
                                         onClick={(e) => {
                                             e.stopPropagation();
-                                            updatePlayerField('stickers', playerInfo.stickers?.filter(s => s.id !== sticker.id) || []);
-                                            setSelectedStickerId(null);
+                                            removeSticker(sticker.id);
                                         }}
                                         aria-label={t.deleteSticker}
                                     >

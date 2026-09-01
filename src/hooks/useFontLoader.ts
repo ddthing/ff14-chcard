@@ -6,10 +6,6 @@ import { useEffect } from 'react';
  * we prevent any possibility of accidental preloading and significantly improve LCP.
  */
 export const FONT_FACES: Record<string, string> = {
-    'font-a2z': `
-        @font-face { font-family: 'A2z'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/에이투지체-4Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
-        @font-face { font-family: 'A2z'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/에이투지체-7Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
-    `,
     'font-mona': `
         @font-face { font-family: 'Mona12'; src: url('https://cdn.jsdelivr.net/gh/MonadABXY/mona-font/web/Mona12.woff2') format('woff2'); font-weight: 400; font-display: swap; }
         @font-face { font-family: 'Mona12'; src: url('https://cdn.jsdelivr.net/gh/MonadABXY/mona-font/web/Mona12-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
@@ -38,20 +34,6 @@ export const FONT_FACES: Record<string, string> = {
     'font-hancom': `
         @font-face { font-family: 'HancomMalrangmalrang'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2406-1@1.0/HancomMalangMalang-Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
         @font-face { font-family: 'HancomMalrangmalrang'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2406-1@1.0/HancomMalangMalang-Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
-    `,
-    'font-tangba': `
-        @font-face { font-family: 'Tangba'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-4@1.1/Tangba12.woff2') format('woff2'); font-weight: normal; font-display: swap; }
-    `,
-    'font-puradak': `
-        @font-face { font-family: 'PuradakGentleGothic'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_11-01@1.1/PuradakGentleGothicR.woff2') format('woff2'); font-weight: normal; font-display: swap; }
-    `,
-    'font-paperozi': `
-        @font-face { font-family: 'Paperozi'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2'); font-weight: 400; font-display: swap; }
-        @font-face { font-family: 'Paperozi'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2'); font-weight: 700; font-display: swap; }
-    `,
-    'font-tmoney': `
-        @font-face { font-family: 'TMoneyDungunbaram'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-07@1.0/TmoneyRoundWindRegular.woff') format('woff'); font-weight: normal; font-display: swap; }
-        @font-face { font-family: 'TMoneyDungunbaram'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_20-07@1.0/TmoneyRoundWindExtraBold.woff') format('woff'); font-weight: 800; font-display: swap; }
     `,
     'font-cafe24': `
         @font-face { font-family: 'Cafe24SuperMagic'; src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2307-2@1.0/Cafe24Supermagic-Regular-v1.0.woff2') format('woff2'); font-weight: 400; font-display: swap; }

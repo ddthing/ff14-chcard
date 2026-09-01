@@ -17,7 +17,7 @@ export function CardPlaystyles() {
                     <span 
                         key={tag} 
                         className="px-2.5 py-1 rounded-full text-xs font-medium"
-                        style={{ backgroundColor: `${playerInfo.pointColor}15`, color: playerInfo.pointColor }}
+                        style={{ backgroundColor: `${playerInfo.pointColor}15`, color: 'var(--text-primary)' }}
                     >
                         {playstyleTranslate(tag, lang)}
                     </span>

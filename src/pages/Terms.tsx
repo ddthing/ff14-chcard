@@ -1,8 +1,8 @@
 import { PageLayout } from '../components/PageLayout';
 import { usePlayerSelector } from '../contexts/PlayerContext';
 import { i18n } from '../utils/i18n';
-import { Helmet } from 'react-helmet-async';
 import { pageMeta } from '../utils/pageMeta';
+import { SeoHead } from '../components/SeoHead';
 
 export function Terms() {
     const lang = usePlayerSelector(snapshot => snapshot.playerInfo.language);
@@ -11,11 +11,7 @@ export function Terms() {
 
     return (
         <>
-            <Helmet>
-                <title>{meta.title}</title>
-                <meta name="description" content={meta.description} />
-                <link rel="canonical" href="https://ff14-chcard.pages.dev/terms" />
-            </Helmet>
+            <SeoHead meta={meta} path="/terms" />
             <PageLayout title={t.title}>
             <article className="space-y-10" itemScope itemType="https://schema.org/TermsOfService">
                 {t.sections.map((s) => (

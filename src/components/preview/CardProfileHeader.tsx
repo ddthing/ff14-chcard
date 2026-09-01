@@ -11,22 +11,21 @@ export function CardProfileHeader() {
 
     return (
         <div className="flex items-end justify-between border-b border-neutral-100 px-4 pb-5 dark:border-[#3a3a3c]">
-            {!name && <h1 className="sr-only">{i18n[lang].layout.headerTitle}</h1>}
             <div>
                 {(name || isSprout || isMentor || isNicknameChanged) && (
                     <div className="flex items-center gap-2">
                         {name && (
-                            <h1 className="text-3xl font-bold tracking-tight leading-none whitespace-nowrap">
+                            <div className="text-3xl font-bold tracking-tight leading-none whitespace-nowrap">
                                 {name}
-                            </h1>
+                            </div>
                         )}
                         {isSprout && (
-                            <span style={{ color: playerInfo.pointColor }} title={t.sprout}>
+                            <span style={{ color: 'var(--text-primary)' }} title={t.sprout} aria-label={t.sprout}>
                                 <Sprout size={22} aria-hidden="true" />
                             </span>
                         )}
                         {isMentor && (
-                            <span style={{ color: playerInfo.pointColor }} title={t.mentor}>
+                            <span style={{ color: 'var(--text-primary)' }} title={t.mentor} aria-label={t.mentor}>
                                 <Crown size={22} aria-hidden="true" />
                             </span>
                         )}

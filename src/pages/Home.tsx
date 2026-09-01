@@ -8,9 +8,11 @@ import { usePlayer } from '../contexts/PlayerContext';
 import { useImageExport } from '../hooks/useImageExport';
 import { useToast } from '../hooks/useToast';
 import { ToastNotification } from '../components/common/ToastNotification';
-import { Helmet } from 'react-helmet-async';
 import { Button } from '../components/ui/Button';
 import { pageMeta } from '../utils/pageMeta';
+import { SeoHead } from '../components/SeoHead';
+import { StickerUndoNotice } from '../components/common/StickerUndoNotice';
+import { PersistenceNotice } from '../components/common/PersistenceNotice';
 
 export function Home() {
   const { playerInfo, updateImage, updateLanguage } = usePlayer();
@@ -59,13 +61,11 @@ export function Home() {
 
   return (
     <>
-      <Helmet>
-        <title>{meta.title}</title>
-        <meta name="description" content={meta.description} />
-        <link rel="canonical" href="https://ff14-chcard.pages.dev/" />
-      </Helmet>
+      <SeoHead meta={meta} path="/" />
 
       <ToastNotification toast={toast} onDismiss={dismissToast} />
+      <StickerUndoNotice />
+      <PersistenceNotice />
 
       {/* Rendering Modal */}
       {isRendering && (
@@ -91,6 +91,7 @@ export function Home() {
           </div>
       )}
 
+      <div inert={isRendering ? true : undefined} aria-hidden={isRendering || undefined}>
       <MainLayout
         lang={playerInfo.language}
         layoutType={playerInfo.layout || 'header'}
@@ -112,6 +113,8 @@ export function Home() {
              >
                <Button
                 onClick={handleDownload}
+                disabled={isRendering}
+                aria-busy={isRendering}
                 size="lg"
                 className="w-full active:scale-[0.98]"
               >
@@ -129,6 +132,7 @@ export function Home() {
           />
         }
       />
+      </div>
     </>
   );
 }

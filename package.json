@@ -12,7 +12,6 @@
   "dependencies": {
     "@ff14-glamour/design-system": "file:./packages/design-system",
     "clsx": "^2.1.1",
-    "feather-icons": "^4.29.2",
     "framer-motion": "^12.34.2",
     "html-to-image": "^1.11.13",
     "lucide-react": "^0.574.0",

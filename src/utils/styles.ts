@@ -47,3 +47,45 @@ export function getContrastColor(hexColor: string): '#000000' | '#ffffff' {
 
     return contrastWithBlack >= contrastWithWhite ? '#000000' : '#ffffff';
 }
+
+function hexToRgb(hexColor: string): [number, number, number] | null {
+    const hex = hexColor.replace('#', '').trim();
+    if (!/^[0-9a-f]{6}$/i.test(hex)) return null;
+    return [
+        parseInt(hex.substring(0, 2), 16),
+        parseInt(hex.substring(2, 4), 16),
+        parseInt(hex.substring(4, 6), 16),
+    ];
+}
+
+function relativeLuminance(hexColor: string): number | null {
+    const rgb = hexToRgb(hexColor);
+    if (!rgb) return null;
+    const [red, green, blue] = rgb.map(value => {
+        const channel = value / 255;
+        return channel <= 0.03928 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+}
+
+export function getContrastRatio(foreground: string, background: string): number | null {
+    const foregroundLuminance = relativeLuminance(foreground);
+    const backgroundLuminance = relativeLuminance(background);
+    if (foregroundLuminance === null || backgroundLuminance === null) return null;
+    const lighter = Math.max(foregroundLuminance, backgroundLuminance);
+    const darker = Math.min(foregroundLuminance, backgroundLuminance);
+    return (lighter + 0.05) / (darker + 0.05);
+}
+
+/** Darken a valid color just enough to reach normal-text contrast on white. */
+export function getAccessiblePointColor(hexColor: string, minimumRatio = 4.5): string {
+    const rgb = hexToRgb(hexColor);
+    if (!rgb) return '#595959';
+    if ((getContrastRatio(hexColor, '#ffffff') ?? 0) >= minimumRatio) return hexColor.toLowerCase();
+
+    for (let factor = 0.95; factor >= 0; factor -= 0.05) {
+        const candidate = `#${rgb.map(value => Math.round(value * factor).toString(16).padStart(2, '0')).join('')}`;
+        if ((getContrastRatio(candidate, '#ffffff') ?? 0) >= minimumRatio) return candidate;
+    }
+    return '#000000';
+}

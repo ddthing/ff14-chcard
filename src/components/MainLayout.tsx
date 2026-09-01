@@ -64,7 +64,13 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
             <GlobalHeader lang={lang} onLanguageChange={onLanguageChange} pageTitle={i18n[lang].layout.headerTitle} />
 
             {/* ── Floating App Widget Wrapper ─────────────────────────────── */}
-            <div className="flex-1 w-full flex flex-col items-center justify-start py-6 md:py-12 px-4 transition-colors duration-200">
+            <main
+                id="main-content"
+                aria-labelledby="page-title"
+                className="flex-1 w-full flex flex-col items-center justify-start py-6 md:py-12 px-4 transition-colors duration-200"
+            >
+                <h1 id="page-title" className="sr-only">{i18n[lang].layout.headerTitle}</h1>
+                <div className="w-full flex flex-col items-center justify-start">
                 
                 <div 
                     className="w-full max-w-[1300px] flex flex-col md:flex-row items-stretch rounded-xl md:rounded-2xl overflow-hidden relative transition-[background-color,border-color,box-shadow] duration-300"
@@ -88,7 +94,7 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
                     </aside>
 
                     {/* ── Right Content Area (Canvas + Footer) ──────────────── */}
-                    <main id="main-content" className="order-2 md:order-2 flex-1 flex flex-col min-w-0 relative items-center justify-center py-6 px-0 md:py-10 md:px-10" style={{ backgroundColor: 'var(--surface-100)' }}>
+                    <div className="order-2 md:order-2 flex-1 flex flex-col min-w-0 relative items-center justify-center py-6 px-0 md:py-10 md:px-10" style={{ backgroundColor: 'var(--surface-100)' }}>
                         
                         {/* Canvas Panel */}
                         <div
@@ -114,10 +120,11 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
                                 </div>
                             </div>
                         </div>
-                    </main>
+                    </div>
                 </div>
                 
-            </div>
+                </div>
+            </main>
 
             <Footer />
         </div>

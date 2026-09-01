@@ -26,7 +26,7 @@ export function BasicInfoSection() {
         (isActive ? ' ring-1 ring-neutral-300 dark:ring-neutral-600' : ' hover:opacity-80');
 
     const getToggleStyle = (isActive: boolean): React.CSSProperties => isActive
-        ? { borderColor: `${playerInfo.pointColor}50`, color: playerInfo.pointColor, backgroundColor: `${playerInfo.pointColor}12` }
+        ? { borderColor: `${playerInfo.pointColor}50`, color: 'var(--text-primary)', backgroundColor: `${playerInfo.pointColor}12` }
         : { backgroundColor: 'var(--surface-300)', borderColor: 'var(--border-default)', color: 'var(--text-muted)' };
 
     return (
@@ -50,7 +50,7 @@ export function BasicInfoSection() {
                         onClick={() => handleChange('isNicknameChanged', !playerInfo.isNicknameChanged)}
                         className="flex h-[42px] w-full shrink-0 items-center justify-center whitespace-nowrap rounded-[8px] border px-3.5 py-0 text-[11px] font-semibold transition-[color,background-color,border-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] sm:w-auto"
                         style={playerInfo.isNicknameChanged
-                            ? { backgroundColor: `${playerInfo.pointColor}12`, borderColor: `${playerInfo.pointColor}50`, color: playerInfo.pointColor }
+                            ? { backgroundColor: `${playerInfo.pointColor}12`, borderColor: `${playerInfo.pointColor}50`, color: 'var(--text-primary)' }
                             : { backgroundColor: 'var(--surface-300)', borderColor: 'var(--border-default)', color: 'var(--text-muted)' }
                         }
                     >

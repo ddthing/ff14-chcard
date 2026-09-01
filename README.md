@@ -150,7 +150,7 @@ public/
 | ESLint / `typescript-eslint` | 코드 품질 검사 | MIT | [eslint/eslint](https://github.com/eslint/eslint), [typescript-eslint/typescript-eslint](https://github.com/typescript-eslint/typescript-eslint) |
 | DefinitelyTyped | TypeScript 타입 정의 | MIT | [DefinitelyTyped/DefinitelyTyped](https://github.com/DefinitelyTyped/DefinitelyTyped) |
 
-간접 의존성의 전체 목록은 [`package-lock.json`](./package-lock.json)과 [`pnpm-lock.yaml`](./pnpm-lock.yaml)에 기록되어 있습니다. 소스 코드나 번들 형태로 재배포할 때는 각 프로젝트의 라이선스 고지 조건을 유지해야 합니다.
+간접 의존성의 전체 목록은 [`package-lock.json`](./package-lock.json)에 기록되어 있습니다. 소스 코드나 번들 형태로 재배포할 때는 각 프로젝트의 라이선스 고지 조건을 유지해야 합니다.
 
 ### 웹 폰트
 

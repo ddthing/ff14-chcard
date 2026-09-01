@@ -10,3 +10,4 @@ scratch/
 tsconfig.tsbuildinfo
 .vscode/
 .DS_Store
+.superpowers/

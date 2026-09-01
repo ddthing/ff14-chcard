@@ -1,7 +1,7 @@
 import { ArrowRight, ChevronDown } from 'lucide-react';
-import { Helmet } from 'react-helmet-async';
 import { Link } from 'react-router-dom';
 import { PageLayout } from '../components/PageLayout';
+import { SeoHead } from '../components/SeoHead';
 import { usePlayerSelector } from '../contexts/PlayerContext';
 import { faqContent } from '../utils/faqContent';
 import { pageMeta } from '../utils/pageMeta';
@@ -40,12 +40,7 @@ export function Faq() {
 
     return (
         <>
-            <Helmet>
-                <title>{meta.title}</title>
-                <meta name="description" content={meta.description} />
-                <link rel="canonical" href="https://ff14-chcard.pages.dev/faq" />
-                <script type="application/ld+json">{JSON.stringify(faqSchema)}</script>
-            </Helmet>
+            <SeoHead meta={meta} path="/faq" structuredData={faqSchema} />
             <PageLayout title={t.pageTitle}>
                 <article className="space-y-6" itemScope itemType="https://schema.org/FAQPage">
                     <p className="mb-10 text-[15px] leading-relaxed" style={{ color: 'var(--text-secondary)' }}>

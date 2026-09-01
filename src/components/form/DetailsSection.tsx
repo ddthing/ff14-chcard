@@ -90,15 +90,21 @@ export function DetailsSection() {
             )}
 
             {/* 자기소개 코멘트 영역 */}
-            <textarea
-                name="profile-comment"
-                aria-label={t.commentPlaceholder}
-                value={playerInfo.comment}
-                onChange={(e) => handleChange('comment', e.target.value)}
-                className={`${inputClass} h-20 resize-none`}
-                placeholder={t.commentPlaceholder}
-                maxLength={200}
-            />
+            <div>
+                <textarea
+                    name="profile-comment"
+                    aria-label={t.commentPlaceholder}
+                    aria-describedby="profile-comment-count"
+                    value={playerInfo.comment}
+                    onChange={(e) => handleChange('comment', e.target.value)}
+                    className={`${inputClass} h-20 resize-none`}
+                    placeholder={t.commentPlaceholder}
+                    maxLength={200}
+                />
+                <p id="profile-comment-count" className="mt-1 text-right text-[10px] tabular-nums" style={{ color: 'var(--text-muted)' }}>
+                    {playerInfo.comment.length} / 200
+                </p>
+            </div>
             </div>
         </Section>
     );

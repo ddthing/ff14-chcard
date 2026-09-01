@@ -33,25 +33,42 @@
     })();
   </script>
 
+  <!-- Apply the saved theme before the stylesheet and React mount to avoid a light-mode flash. -->
+  <script>
+    (() => {
+      try {
+        if (window.localStorage.getItem('theme') === 'dark') {
+          document.documentElement.classList.add('dark');
+        }
+      } catch {
+        // Storage may be unavailable in privacy-restricted browser contexts.
+      }
+    })();
+  </script>
+
   <!-- SEO -->
   <title>FF14 캐릭터 카드 생성기 - 파판14 캐릭터 시트 만들기</title>
+  <meta name="description" content="파이널 판타지 14(FF14) 캐릭터 카드를 쉽고 예쁘게 만들어 보세요. 직업, 서버, 활동 시간 등을 꾸미고 고화질 PNG로 저장할 수 있는 무료 온라인 도구입니다." />
+  <link rel="canonical" href="https://ff14-chcard.pages.dev/" />
   <meta name="google-site-verification" content="-wDiKCJHQADA4Iyvw8lR16IkY6wftlOHLnzH3UKvUf4" />
   <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml" />
 
   <!-- Open Graph -->
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://ff14-chcard.pages.dev/" />
-  <meta property="og:title" content="FF14 캐릭터 카드 생성기 - 파판14 프로필 제작" />
-  <meta property="og:description" content="파판14 캐릭터 카드를 쉽고 예쁘게 만들어 보세요! 고화질 PNG 저장 지원." />
+  <meta property="og:title" content="FF14 캐릭터 카드 생성기 - 파판14 캐릭터 시트 만들기" />
+  <meta property="og:description" content="파이널 판타지 14(FF14) 캐릭터 카드를 쉽고 예쁘게 만들어 보세요. 직업, 서버, 활동 시간 등을 꾸미고 고화질 PNG로 저장할 수 있는 무료 온라인 도구입니다." />
   <meta property="og:site_name" content="FF14 캐릭터 카드 생성기" />
   <meta property="og:image" content="https://ff14-chcard.pages.dev/og-image.png" />
+  <meta property="og:image:alt" content="FF14 캐릭터 카드 생성기" />
 
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:url" content="https://ff14-chcard.pages.dev/" />
-  <meta name="twitter:title" content="FF14 캐릭터 카드 생성기" />
-  <meta name="twitter:description" content="파판14 캐릭터 카드를 쉽고 예쁘게 만들어 보세요!" />
+  <meta name="twitter:title" content="FF14 캐릭터 카드 생성기 - 파판14 캐릭터 시트 만들기" />
+  <meta name="twitter:description" content="파이널 판타지 14(FF14) 캐릭터 카드를 쉽고 예쁘게 만들어 보세요. 직업, 서버, 활동 시간 등을 꾸미고 고화질 PNG로 저장할 수 있는 무료 온라인 도구입니다." />
   <meta name="twitter:image" content="https://ff14-chcard.pages.dev/og-image.png" />
+  <meta name="twitter:image:alt" content="FF14 캐릭터 카드 생성기" />
 
   <!-- JSON-LD Structured Data -->
   <script type="application/ld+json">
@@ -77,17 +94,13 @@
     }
   </script>
 
-  <!-- Preconnect for fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Nanum+Myeongjo:wght@400;700;800&display=swap"
-    rel="stylesheet" crossorigin="anonymous" />
 </head>
 
 <body>
   <div id="root">
-    <!-- Minimal fallback content (replaced by React on mount) -->
-    <div style="font-family: sans-serif; max-width: 960px; margin: 0 auto; padding: 2rem; color: #26251e;">
+    <!-- Accessible fallback content shown before React mounts or when scripts fail. -->
+    <a href="#main-content" class="skip-link">콘텐츠로 건너뛰기</a>
+    <main id="main-content" style="font-family: sans-serif; max-width: 960px; margin: 0 auto; padding: 2rem; color: #26251e;">
       <h1>FF14 캐릭터 카드 생성기</h1>
       <p>파이널 판타지 14 캐릭터 정보와 스크린샷을 입력해 공유용 캐릭터 카드를 만들어 보세요.</p>
       <nav aria-label="사이트 안내">
@@ -97,7 +110,7 @@
         <a href="/terms">이용약관</a> ·
         <a href="/privacy">개인정보처리방침</a>
       </nav>
-    </div>
+    </main>
   </div>
   <script type="module" src="/src/main.tsx"></script>
 </body>

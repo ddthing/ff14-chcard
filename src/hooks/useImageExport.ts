@@ -1,5 +1,4 @@
 import { useCallback, useRef } from 'react';
-import { toPng } from 'html-to-image';
 
 interface UseImageExportOptions {
   filename?: string;
@@ -36,46 +35,50 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
     const node = exportRef.current;
     if (!node) return;
 
-    // ── 1. Wait for all web fonts to finish loading ─────────────────────────
+    let previousTransform: string | null = null;
+
     try {
-      if (document.fonts?.ready) {
-        await document.fonts.ready;
+      // Export is an explicit user action. Keep html-to-image out of the
+      // initial editor bundle and load it only when it is actually needed.
+      const { toPng } = await import('html-to-image');
+
+      // ── 1. Wait for all web fonts to finish loading ───────────────────────
+      try {
+        if (document.fonts?.ready) {
+          await document.fonts.ready;
+        }
+      } catch {
+        // Non-blocking — proceed even if font API is unavailable
       }
-    } catch {
-      // Non-blocking — proceed even if font API is unavailable
-    }
 
-    // ── 2. Allow one frame for the browser to composite any deferred paints ─
-    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
-    // Small additional delay for backdrop-filter / compositing layers
-    await new Promise<void>(resolve => setTimeout(resolve, 120));
+      // ── 2. Allow one frame for the browser to composite any deferred paints ─
+      await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+      // Small additional delay for backdrop-filter / compositing layers
+      await new Promise<void>(resolve => setTimeout(resolve, 120));
 
-    // ── 3. Reset CSS transform so html-to-image captures native dimensions ──
-    const prevTransform = node.style.transform;
-    node.style.transform = 'none';
+      // ── 3. Reset CSS transform so html-to-image captures native dimensions ──
+      previousTransform = node.style.transform;
+      node.style.transform = 'none';
 
-    // Node filter — strip elements that must not appear in the exported image
-    const exportFilter = (n: Node) => {
-      const el = n as HTMLElement;
-      if (!el.classList) return true;
-      return (
-        !el.classList.contains('export-ignore')
-      );
-    };
+      // Node filter — strip elements that must not appear in the exported image
+      const exportFilter = (n: Node) => {
+        const el = n as HTMLElement;
+        if (!el.classList) return true;
+        return !el.classList.contains('export-ignore');
+      };
 
-    const captureOptions = {
-      cacheBust: true,
-      pixelRatio,
-      filter: exportFilter,
-      style: { boxShadow: 'none', transform: 'none' },
-      // Disable font embedding from external stylesheets — they often cause
-      // CORS errors in Firefox / Safari. The fonts are already rendered by the
-      // browser; html-to-image will inline their face declarations from the
-      // document's loaded font set instead.
-      fontEmbedCSS: undefined as unknown as string,
-    };
+      const captureOptions = {
+        cacheBust: true,
+        pixelRatio,
+        filter: exportFilter,
+        style: { boxShadow: 'none', transform: 'none' },
+        // Disable font embedding from external stylesheets — they often cause
+        // CORS errors in Firefox / Safari. The fonts are already rendered by the
+        // browser; html-to-image will inline their face declarations from the
+        // document's loaded font set instead.
+        fontEmbedCSS: undefined as unknown as string,
+      };
 
-    try {
       // ── 4. First pass — primes the image cache (critical for Firefox/Safari)
       await toPng(node, captureOptions);
 
@@ -86,7 +89,7 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
       const dataUrl = await toPng(node, captureOptions);
 
       // Restore transform before any potential throw
-      node.style.transform = prevTransform;
+      node.style.transform = previousTransform ?? '';
 
       if (!dataUrl) throw new Error('Image generation returned empty result.');
 
@@ -99,7 +102,9 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
       document.body.removeChild(link);
 
     } catch (err) {
-      node.style.transform = prevTransform;
+      if (previousTransform !== null) {
+        node.style.transform = previousTransform;
+      }
 
       const message = err instanceof Error ? err.message : String(err);
       const isCorsRelated = message.includes('cssRules') || message.includes('SecurityError');
