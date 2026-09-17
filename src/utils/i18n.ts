@@ -4,6 +4,12 @@ export const i18n = {
     ko: {
         layout: {
             title: '프로필 작성',
+            studioTitle: '당신의 모험을, 한 장에.',
+            studioDescription: '캐릭터를 소개하는 가장 나다운 카드. 편집하고, 미리 보고, 간직하세요.',
+            editor: '카드 편집',
+            livePreview: '미리보기',
+            previewHint: '이미지를 눌러 스크린샷을 추가하세요.',
+            localOnly: '편집 내용은 이 브라우저에 보관됩니다.',
             tutorial: '정보를 입력하면 실시간으로 미리보기 가능합니다.',
             headerTitle: 'FF14 캐릭터 카드 생성기',
             skipToContent: '콘텐츠로 건너뛰기',
@@ -185,6 +191,12 @@ export const i18n = {
     },
     en: {
         layout: {
+            studioTitle: 'Your adventure, on a card.',
+            studioDescription: 'A character card that feels like you. Create, preview, and keep it.',
+            editor: 'Edit card',
+            livePreview: 'Preview',
+            previewHint: 'Select the image to add your screenshot.',
+            localOnly: 'Your edits stay in this browser.',
             title: 'Create Profile',
             tutorial: 'The preview will instantly update as you type.',
             headerTitle: 'FF14 Character Card Generator',
@@ -366,6 +378,12 @@ export const i18n = {
     },
     ja: {
         layout: {
+            studioTitle: 'あなたの冒険を、一枚に。',
+            studioDescription: '自分らしさが伝わるキャラクターカード。編集して、確認して、残そう。',
+            editor: 'カード編集',
+            livePreview: 'プレビュー',
+            previewHint: '画像を押してスクリーンショットを追加。',
+            localOnly: '編集内容はこのブラウザに保存されます。',
             title: 'プロフィール作成',
             tutorial: '情報を入力するとリアルタイムでプレビューできます。',
             headerTitle: 'FF14 キャラクターカードジェネレーター',

@@ -21,8 +21,7 @@ interface UseImageExportOptions {
  * 2. Correct font embedding — waits for document.fonts.ready before capture.
  * 3. Two-pass rendering (call toPng twice) to force cross-origin image caching.
  *    This is the most reliable fix for blank/missing images in Firefox and Safari.
- * 4. Transform is reset to 'none' before capture so html-to-image gets the
- *    true pixel dimensions rather than a scaled version.
+ * 4. Transform is reset on the captured clone, leaving the live preview intact.
  * 5. Exports sticker-selection UI nodes are excluded via CSS class filter.
  *
  * Returns a stable `exportRef` (attach to the element you want to capture)
@@ -30,17 +29,17 @@ interface UseImageExportOptions {
  */
 export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError, errorCopy }: UseImageExportOptions = {}) {
   const exportRef = useRef<HTMLDivElement>(null);
+  const inFlight = useRef(false);
 
   const download = useCallback(async () => {
     const node = exportRef.current;
-    if (!node) return;
-
-    let previousTransform: string | null = null;
+    if (!node || inFlight.current) return;
+    inFlight.current = true;
 
     try {
       // Export is an explicit user action. Keep html-to-image out of the
       // initial editor bundle and load it only when it is actually needed.
-      const { toPng } = await import('html-to-image');
+      const { toPng, getFontEmbedCSS } = await import('html-to-image');
 
       // ── 1. Wait for all web fonts to finish loading ───────────────────────
       try {
@@ -56,9 +55,8 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
       // Small additional delay for backdrop-filter / compositing layers
       await new Promise<void>(resolve => setTimeout(resolve, 120));
 
-      // ── 3. Reset CSS transform so html-to-image captures native dimensions ──
-      previousTransform = node.style.transform;
-      node.style.transform = 'none';
+      // Embed once for both passes. Transform overrides apply to the clone only.
+      const fontEmbedCSS = await getFontEmbedCSS(node);
 
       // Node filter — strip elements that must not appear in the exported image
       const exportFilter = (n: Node) => {
@@ -68,15 +66,11 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
       };
 
       const captureOptions = {
-        cacheBust: true,
+        cacheBust: false,
         pixelRatio,
         filter: exportFilter,
         style: { boxShadow: 'none', transform: 'none' },
-        // Disable font embedding from external stylesheets — they often cause
-        // CORS errors in Firefox / Safari. The fonts are already rendered by the
-        // browser; html-to-image will inline their face declarations from the
-        // document's loaded font set instead.
-        fontEmbedCSS: undefined as unknown as string,
+        fontEmbedCSS,
       };
 
       // ── 4. First pass — primes the image cache (critical for Firefox/Safari)
@@ -88,10 +82,7 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
       // ── 6. Second pass — the actual export ──────────────────────────────
       const dataUrl = await toPng(node, captureOptions);
 
-      // Restore transform before any potential throw
-      node.style.transform = previousTransform ?? '';
-
-      if (!dataUrl) throw new Error('Image generation returned empty result.');
+      if (!dataUrl || dataUrl === 'data:,') throw new Error('Image generation returned empty result.');
 
       // ── 7. Trigger download ──────────────────────────────────────────────
       const link = document.createElement('a');
@@ -102,10 +93,6 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
       document.body.removeChild(link);
 
     } catch (err) {
-      if (previousTransform !== null) {
-        node.style.transform = previousTransform;
-      }
-
       const message = err instanceof Error ? err.message : String(err);
       const isCorsRelated = message.includes('cssRules') || message.includes('SecurityError');
 
@@ -116,6 +103,8 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
           : `Save failed.\n\nDetails: ${message}`;
 
       onError?.(userMessage);
+    } finally {
+      inFlight.current = false;
     }
   }, [filename, pixelRatio, onError, errorCopy]);
 

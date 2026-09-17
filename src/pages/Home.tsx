@@ -4,7 +4,7 @@ import { CardForm } from '../components/CardForm';
 import { CardPreview } from '../components/CardPreview';
 import { Download } from 'lucide-react';
 import { i18n } from '../utils/i18n';
-import { usePlayer } from '../contexts/PlayerContext';
+import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
 import { useImageExport } from '../hooks/useImageExport';
 import { useToast } from '../hooks/useToast';
 import { ToastNotification } from '../components/common/ToastNotification';
@@ -15,8 +15,11 @@ import { StickerUndoNotice } from '../components/common/StickerUndoNotice';
 import { PersistenceNotice } from '../components/common/PersistenceNotice';
 
 export function Home() {
-  const { playerInfo, updateImage, updateLanguage } = usePlayer();
-  const meta = pageMeta[playerInfo.language].home;
+  const language = usePlayerSelector(snapshot => snapshot.playerInfo.language);
+  const name = usePlayerSelector(snapshot => snapshot.playerInfo.name);
+  const layout = usePlayerSelector(snapshot => snapshot.playerInfo.layout);
+  const { updateImage, updateLanguage } = usePlayerActions();
+  const meta = pageMeta[language].home;
 
   // ─── Image export — two-pass, cross-browser stable ─────────────────────────
   const [pixelRatio, setPixelRatio] = useState(() => (
@@ -38,12 +41,12 @@ export function Home() {
   const { toast, showToast, dismissToast } = useToast();
 
   const { exportRef, download } = useImageExport({
-    filename: `ff14-${playerInfo.name || 'sheet'}`,
+    filename: `ff14-${name || 'sheet'}`,
     pixelRatio,
     errorCopy: {
-      cors: i18n[playerInfo.language].layout.exportErrorCors,
-      generic: i18n[playerInfo.language].layout.exportErrorGeneric,
-      details: i18n[playerInfo.language].layout.errorDetails,
+      cors: i18n[language].layout.exportErrorCors,
+      generic: i18n[language].layout.exportErrorGeneric,
+      details: i18n[language].layout.errorDetails,
     },
     onError: (msg) => showToast(msg, 'error'),
   });
@@ -59,6 +62,13 @@ export function Home() {
     }
   };
 
+  const saveButton = (
+    <Button onClick={handleDownload} disabled={isRendering} aria-busy={isRendering} size="lg" className="w-full active:scale-[0.98]">
+      <Download size={15} aria-hidden="true" />
+      {i18n[language].layout.saveImage}
+    </Button>
+  );
+
   return (
     <>
       <SeoHead meta={meta} path="/" />
@@ -69,7 +79,7 @@ export function Home() {
 
       {/* Rendering Modal */}
       {isRendering && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in duration-200" role="status" aria-live="polite" aria-atomic="true" aria-busy="true" aria-label={i18n[playerInfo.language].layout.renderingTitle}>
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in duration-200" role="status" aria-live="polite" aria-atomic="true" aria-busy="true" aria-label={i18n[language].layout.renderingTitle}>
               <div
                   className="w-full max-w-[340px] rounded-2xl flex flex-col overflow-hidden animate-in zoom-in-[0.98] duration-300"
                   style={{
@@ -82,8 +92,8 @@ export function Home() {
                       <div className="h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" aria-hidden="true" style={{ borderColor: 'var(--text-primary)', borderTopColor: 'transparent' }}></div>
                       
                       <div className="space-y-1">
-                          <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{i18n[playerInfo.language].layout.renderingTitle}</p>
-                          <p className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>{i18n[playerInfo.language].layout.renderingDesc}</p>
+                          <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{i18n[language].layout.renderingTitle}</p>
+                          <p className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>{i18n[language].layout.renderingDesc}</p>
                       </div>
                       
                   </div>
@@ -93,13 +103,15 @@ export function Home() {
 
       <div inert={isRendering ? true : undefined} aria-hidden={isRendering || undefined}>
       <MainLayout
-        lang={playerInfo.language}
-        layoutType={playerInfo.layout || 'header'}
+        lang={language}
+        layoutType={layout || 'header'}
         onLanguageChange={updateLanguage}
+        isExporting={isRendering}
+        previewAction={saveButton}
         form={
           <div className="flex flex-col h-full relative overflow-hidden" style={{ backgroundColor: 'transparent' }}>
             {/* Form scrollable area */}
-            <div className="flex-1 flex flex-col overflow-hidden pb-[130px] md:pb-0">
+            <div className="flex-1 flex flex-col overflow-hidden">
               <CardForm />
             </div>
 
@@ -111,16 +123,7 @@ export function Home() {
                  borderTop: '1px solid var(--border-subtle)',
                }}
              >
-               <Button
-                onClick={handleDownload}
-                disabled={isRendering}
-                aria-busy={isRendering}
-                size="lg"
-                className="w-full active:scale-[0.98]"
-              >
-                <Download size={15} aria-hidden="true" />
-                {i18n[playerInfo.language].layout.saveImage}
-              </Button>
+               {saveButton}
             </div>
           </div>
         }

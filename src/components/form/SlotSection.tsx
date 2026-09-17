@@ -5,6 +5,7 @@ import type { PlayerInfo } from '../../types';
 import { Button } from '../ui/Button';
 import { i18n } from '../../utils/i18n';
 import { normalizePlayerInfo } from '../../utils/playerData';
+import { MAX_BACKUP_BYTES, parseProfileBackup } from '../../utils/profileBackup';
 
 interface SlotData {
     id: string;
@@ -64,7 +65,7 @@ export function SlotSection() {
         if (existingIndex >= 0 && !window.confirm(t.overwriteSlotConfirm)) return;
 
         const newSlot: SlotData = {
-            id: existingIndex >= 0 ? slots[existingIndex].id : Date.now().toString(),
+            id: existingIndex >= 0 ? slots[existingIndex].id : crypto.randomUUID(),
             name,
             date: new Intl.DateTimeFormat(playerInfo.language).format(new Date()),
             data: normalizePlayerInfo(playerInfo),
@@ -105,8 +106,10 @@ export function SlotSection() {
         const link = document.createElement('a');
         link.href = url;
         link.download = `ff14-chcard-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(link);
         link.click();
-        URL.revokeObjectURL(url);
+        link.remove();
+        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
         setStatus({ type: 'success', message: t.backupExported });
     };
 
@@ -116,14 +119,12 @@ export function SlotSection() {
         if (!file) return;
 
         try {
+            if (file.size > MAX_BACKUP_BYTES) throw new Error('Backup too large');
             const parsed: unknown = JSON.parse(await file.text());
-            if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new Error('invalid backup');
-            const record = parsed as Record<string, unknown>;
-            if (record.format !== 'ff14-chcard-backup') throw new Error('invalid backup');
-            const importedSlots = normalizeSlots(record.slots);
+            const backup = parseProfileBackup(parsed);
             if (!window.confirm(t.importConfirm)) return;
-            if (!saveSlots(importedSlots)) return;
-            if (record.currentProfile !== undefined) setPlayerInfo(normalizePlayerInfo(record.currentProfile));
+            if (!saveSlots(backup.slots)) return;
+            if (backup.currentProfile) setPlayerInfo(backup.currentProfile);
             setStatus({ type: 'success', message: t.backupImported });
         } catch {
             setStatus({ type: 'error', message: t.backupImportError });

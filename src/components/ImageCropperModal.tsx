@@ -1,9 +1,11 @@
-import { useState, useCallback, useEffect, useId, useRef, type KeyboardEvent as ReactKeyboardEvent, type RefObject } from 'react';
-import Cropper from 'react-easy-crop';
+import { lazy, Suspense, useState, useCallback, useEffect, useId, useRef, type KeyboardEvent as ReactKeyboardEvent, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import getCroppedImg, { createImage } from '../utils/cropImage';
 import { ZoomIn, Maximize } from 'lucide-react';
 import type { Language } from '../types';
 import { i18n } from '../utils/i18n';
+
+const Cropper = lazy(() => import('react-easy-crop'));
 
 interface ImageCropperModalProps {
     imageSrc: string;
@@ -23,6 +25,8 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
     const dialogRef = useRef<HTMLDivElement>(null);
     const closeButtonRef = useRef<HTMLButtonElement>(null);
     const onCancelRef = useRef(onCancel);
+    const activeRef = useRef(false);
+    const processingRef = useRef(false);
     const titleId = useId();
     const descriptionId = useId();
 
@@ -31,7 +35,11 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
     }, [onCancel]);
 
     useEffect(() => {
+        activeRef.current = true;
         const previousBodyOverflow = document.body.style.overflow;
+        const appRoot = document.getElementById('root');
+        const previousInert = appRoot?.inert ?? false;
+        if (appRoot) appRoot.inert = true;
         const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         const focusReturnTarget = returnFocusRef?.current;
         document.body.style.overflow = 'hidden';
@@ -76,6 +84,8 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
         document.addEventListener('keydown', handleKeyDown);
 
         return () => {
+            activeRef.current = false;
+            if (appRoot) appRoot.inert = previousInert;
             document.removeEventListener('keydown', handleKeyDown);
             document.body.style.overflow = previousBodyOverflow;
             const focusTarget = focusReturnTarget ?? previousFocus;
@@ -90,23 +100,26 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
     }, []);
 
     const handleApply = async () => {
-        if (!croppedAreaPixels || isProcessing) return;
+        if (!croppedAreaPixels || processingRef.current) return;
+        processingRef.current = true;
         setIsProcessing(true);
         setProcessingError(null);
         try {
             const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels, 0);
-            if (croppedImage) {
+            if (croppedImage && activeRef.current) {
                 onApply(croppedImage);
             }
         } catch {
-            setProcessingError(i18n[lang].preview.cropError);
+            if (activeRef.current) setProcessingError(i18n[lang].preview.cropError);
         } finally {
-            setIsProcessing(false);
+            processingRef.current = false;
+            if (activeRef.current) setIsProcessing(false);
         }
     };
 
     const handleAutoFill = async () => {
-        if (isProcessing) return;
+        if (processingRef.current) return;
+        processingRef.current = true;
         setIsProcessing(true);
         setProcessingError(null);
         try {
@@ -126,13 +139,14 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
             }
 
             const croppedImage = await getCroppedImg(imageSrc, { x, y, width: cropWidth, height: cropHeight }, 0);
-            if (croppedImage) {
+            if (croppedImage && activeRef.current) {
                 onApply(croppedImage);
             }
         } catch {
-            setProcessingError(i18n[lang].preview.cropError);
+            if (activeRef.current) setProcessingError(i18n[lang].preview.cropError);
         } finally {
-            setIsProcessing(false);
+            processingRef.current = false;
+            if (activeRef.current) setIsProcessing(false);
         }
     };
 
@@ -165,11 +179,11 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
     const t = i18n[lang].preview;
     const form = i18n[lang].form;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} aria-busy={isProcessing}>
+    return createPortal(
+        <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} aria-busy={isProcessing}>
             <div 
                 ref={dialogRef}
-                className="w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col h-[80vh] sm:h-[600px] animate-in zoom-in-[0.98] duration-300"
+                className="w-full max-w-2xl overflow-hidden flex flex-col h-[80dvh] max-h-[calc(100dvh-2rem)] sm:h-[600px] animate-in zoom-in-[0.98] duration-300"
                 style={{ backgroundColor: 'var(--surface-100)', border: '1px solid var(--border-medium)' }}
             >
                 {/* Header */}
@@ -187,6 +201,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
 
                 {/* Cropper Container */}
                 <div className="relative flex-1 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]" style={{ backgroundColor: 'var(--surface-200)' }} tabIndex={0} aria-label={t.dragToMove} onKeyDown={handleCropKeyDown}>
+                    <Suspense fallback={<p role="status" className="p-6 text-center text-sm">{i18n[lang].layout.loading}</p>}>
                     <Cropper
                         image={imageSrc}
                         crop={crop}
@@ -196,6 +211,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                         onZoomChange={setZoom}
                         onCropComplete={onCropComplete}
                     />
+                    </Suspense>
                 </div>
 
                 {/* Controls */}
@@ -277,6 +293,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body,
     );
 }

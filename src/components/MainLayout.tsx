@@ -4,6 +4,7 @@ import { useWindowScale } from '../hooks/useWindowScale';
 import { GlobalHeader } from './GlobalHeader';
 import { Footer } from './Footer';
 import { i18n } from '../utils/i18n';
+import { Eye, PanelLeft, Image } from 'lucide-react';
 
 
 /**
@@ -20,11 +21,15 @@ interface MainLayoutProps {
     layoutType: 'header' | 'left-portrait';
     /** 언어 변경 콜백 */
     onLanguageChange: (lang: Language) => void;
+    isExporting?: boolean;
+    previewAction?: ReactNode;
 }
 
-export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }: MainLayoutProps) {
+export function MainLayout({ form, preview, lang, layoutType, onLanguageChange, isExporting, previewAction }: MainLayoutProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const cardWrapperRef = useRef<HTMLDivElement>(null);
+    const [mobilePanel, setMobilePanel] = useState<'editor' | 'preview'>('editor');
+    const t = i18n[lang].layout;
 
 
     const targetWidth = layoutType === 'left-portrait' ? 800 : 700;
@@ -41,8 +46,9 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
             const entry = entries[0];
             if (!entry) return;
 
-            const minH = layoutType === 'left-portrait' ? 720 : 500;
-            const nextHeight = Math.max(minH, Math.ceil(entry.contentRect.height));
+            // Hidden mobile panels report zero; retain the last measured size.
+            if (entry.contentRect.height <= 0) return;
+            const nextHeight = Math.ceil(entry.contentRect.height);
             setCardHeight(previousHeight => previousHeight === nextHeight ? previousHeight : nextHeight);
         });
 
@@ -67,9 +73,25 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
             <main
                 id="main-content"
                 aria-labelledby="page-title"
-                className="flex-1 w-full flex flex-col items-center justify-start py-6 md:py-12 px-4 transition-colors duration-200"
+                className="flex-1 w-full flex flex-col items-center justify-start py-6 md:py-10 px-4 transition-colors duration-200"
             >
-                <h1 id="page-title" className="sr-only">{i18n[lang].layout.headerTitle}</h1>
+                <div className="mb-6 flex w-full max-w-[1300px] flex-col gap-3 md:mb-8 md:flex-row md:items-end md:justify-between">
+                    <div>
+                        <h1 id="page-title" className="text-2xl font-semibold tracking-tight md:text-4xl">{t.studioTitle}</h1>
+                        <p className="mt-2 max-w-xl text-sm leading-6 text-[var(--text-secondary)]">{t.studioDescription}</p>
+                    </div>
+                    <p className="text-xs text-[var(--text-muted)]">{t.localOnly}</p>
+                </div>
+                <div className="mb-3 grid w-full grid-cols-2 border border-[var(--border-default)] p-1 md:hidden" role="group" aria-label={t.title}>
+                    {(['editor', 'preview'] as const).map(panel => (
+                        <button key={panel} type="button" aria-pressed={mobilePanel === panel} aria-controls={panel === 'editor' ? 'editor-panel' : 'preview-panel'}
+                            onClick={() => setMobilePanel(panel)}
+                            className={`flex min-h-11 items-center justify-center gap-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 ${mobilePanel === panel ? 'bg-[var(--primary)] text-[var(--primary-foreground)]' : 'text-[var(--text-secondary)]'}`}>
+                            {panel === 'editor' ? <PanelLeft size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+                            {panel === 'editor' ? t.editor : t.livePreview}
+                        </button>
+                    ))}
+                </div>
                 <div className="w-full flex flex-col items-center justify-start">
                 
                 <div 
@@ -82,11 +104,13 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
                 >
                     {/* ── Sidebar (Inside Widget) ───────────────────────────── */}
                     <aside
-                        className="order-1 md:order-1 w-full md:w-[400px] xl:w-[440px] z-30 flex-shrink-0 flex flex-col transition-colors duration-200 border-t md:border-t-0 md:border-r"
+                        id="editor-panel"
+                        aria-label={t.editor}
+                        className={`${mobilePanel === 'editor' ? 'flex' : 'hidden'} md:flex order-1 w-full md:w-[340px] xl:w-[400px] z-30 flex-shrink-0 flex-col transition-colors duration-200 md:border-r`}
                         style={{ backgroundColor: 'var(--surface-50)', borderColor: 'var(--border-subtle)' }}
                     >
                         {/* Height constraint: Scrolling on desktop, natural flow on mobile */}
-                        <div className="md:h-[80vh] md:max-h-[900px] md:min-h-[700px] flex flex-col w-full h-auto md:h-full">
+                        <div className="flex flex-col w-full h-auto md:h-[min(76vh,860px)] md:min-h-[620px]">
                             <div className="flex-1 overflow-hidden flex flex-col h-full">
                                 {form}
                             </div>
@@ -94,12 +118,16 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
                     </aside>
 
                     {/* ── Right Content Area (Canvas + Footer) ──────────────── */}
-                    <div className="order-2 md:order-2 flex-1 flex flex-col min-w-0 relative items-center justify-center py-6 px-0 md:py-10 md:px-10" style={{ backgroundColor: 'var(--surface-100)' }}>
+                    <section id="preview-panel" aria-label={t.livePreview} className={`${mobilePanel === 'preview' || isExporting ? 'flex' : 'hidden'} md:flex order-2 flex-1 flex-col min-w-0 relative items-center`}>
+                        <div className="flex w-full items-center justify-between gap-3 border-b border-[var(--border-subtle)] bg-[var(--surface-50)] px-5 py-4">
+                            <span className="flex items-center gap-2 text-xs font-semibold"><Eye size={15} aria-hidden="true" />{t.livePreview}</span>
+                            <span className="text-[11px] tabular-nums text-[var(--text-muted)]">{targetWidth} × {cardHeight}</span>
+                        </div>
                         
                         {/* Canvas Panel */}
                         <div
                             ref={containerRef}
-                            className="w-full flex-1 flex flex-col items-center justify-center overflow-hidden md:overflow-x-clip transition-colors duration-200"
+                            className="preview-workspace w-full flex-1 flex flex-col items-center justify-center overflow-hidden py-8 md:py-10 transition-colors duration-200"
                         >
                             <div
                                 className="self-center relative flex justify-center overflow-visible"
@@ -110,7 +138,7 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
                             >
                                 <div
                                     ref={cardWrapperRef}
-                                    className="absolute top-0 origin-top will-change-transform [backface-visibility:hidden] transform-gpu transition-transform duration-300 ease-out"
+                                    className="preview-sheet absolute top-0 origin-top [backface-visibility:hidden] transform-gpu"
                                     style={{
                                         transform: `scale(${scale}) translateZ(0)`,
                                         width: layoutType === 'left-portrait' ? 800 : 700,
@@ -120,7 +148,9 @@ export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }
                                 </div>
                             </div>
                         </div>
-                    </div>
+                        <p className="flex w-full items-center justify-center gap-2 border-t border-[var(--border-subtle)] bg-[var(--surface-50)] px-4 py-3 text-center text-xs leading-5 text-[var(--text-muted)]"><Image size={14} aria-hidden="true" />{t.previewHint}</p>
+                        <div className="w-full border-t border-[var(--border-subtle)] bg-[var(--surface-50)] p-4 md:hidden">{previewAction}</div>
+                    </section>
                 </div>
                 
                 </div>

@@ -64,12 +64,16 @@ function clamp(value: number, min: number, max: number): number {
 
 function normalizeStickers(value: unknown): Sticker[] {
     if (!Array.isArray(value)) return [];
+    const ids = new Set<string>();
 
     return value.flatMap((candidate, index) => {
         if (!isRecord(candidate) || typeof candidate.url !== 'string' || candidate.url.length === 0) return [];
+        let id = stringValue(candidate.id) || `migrated-sticker-${index}`;
+        while (ids.has(id)) id = `${id}-${index}`;
+        ids.add(id);
 
         return [{
-            id: stringValue(candidate.id, `migrated-sticker-${index}`),
+            id,
             url: candidate.url,
             x: Number(clamp(finiteNumber(candidate.x, 50), 0, 100).toFixed(1)),
             y: Number(clamp(finiteNumber(candidate.y, 50), 0, 100).toFixed(1)),

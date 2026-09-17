@@ -38,7 +38,7 @@ export function LanguageSelector({ currentLang, onLanguageChange }: LanguageSele
                                     color: 'var(--text-primary)',
                                     border: '1px solid var(--border-medium)',
                                 }
-                                : { color: 'var(--text-muted)', border: '1px solid transparent' }
+                                : { color: 'var(--text-primary)', border: '1px solid transparent' }
                         }
                     >
                         {lang.label}

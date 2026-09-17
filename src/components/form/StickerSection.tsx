@@ -52,7 +52,7 @@ async function prepareStickerImage(file: File): Promise<string> {
 }
 
 export function StickerSection() {
-    const { playerInfo, updatePlayerField, selectedStickerId, setSelectedStickerId, removeSticker } = usePlayer();
+    const { playerInfo, setPlayerInfo, updatePlayerField, selectedStickerId, setSelectedStickerId, removeSticker } = usePlayer();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const lang = playerInfo.language;
     const t = i18n[lang].form;
@@ -61,6 +61,7 @@ export function StickerSection() {
 
     const handleAddSticker = async (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
+        e.target.value = '';
         setUploadError('');
 
         if (file) {
@@ -72,17 +73,16 @@ export function StickerSection() {
                 try {
                     const url = await prepareStickerImage(file);
                     const newSticker: Sticker = {
-                        id: Math.random().toString(36).substr(2, 9),
+                        id: crypto.randomUUID(),
                         url,
                         x: 50, y: 50, scale: 0.5, rotation: 0,
                     };
-                    updatePlayerField('stickers', [...stickers, newSticker]);
+                    setPlayerInfo(current => ({ ...current, stickers: [...(current.stickers ?? []), newSticker] }));
                 } catch {
                     setUploadError(t.stickerUploadError);
                 }
             }
         }
-        if (e.target) e.target.value = '';
     };
 
     const updateSticker = (id: string, updates: Partial<Sticker>) => {

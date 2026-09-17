@@ -39,7 +39,12 @@ export default async function getCroppedImg(
   const ctx = canvas.getContext('2d')
 
   if (!ctx) {
-    return null
+    throw new Error('Canvas is unavailable')
+  }
+
+  if (![pixelCrop.x, pixelCrop.y, pixelCrop.width, pixelCrop.height, rotation].every(Number.isFinite)
+    || pixelCrop.width <= 0 || pixelCrop.height <= 0) {
+    throw new Error('Invalid crop dimensions')
   }
 
   const rotRad = getRadianAngle(rotation)
@@ -51,33 +56,19 @@ export default async function getCroppedImg(
     rotation
   )
 
-  // set canvas size to match the bounding box
-  canvas.width = bBoxWidth
-  canvas.height = bBoxHeight
+  // Draw directly into the crop instead of allocating a full rotated canvas
+  // and an additional RGBA ImageData copy (up to tens of MB per upload).
+  canvas.width = Math.max(1, Math.round(pixelCrop.width))
+  canvas.height = Math.max(1, Math.round(pixelCrop.height))
 
   // translate canvas context to a central location to allow rotating and flipping around the center
-  ctx.translate(bBoxWidth / 2, bBoxHeight / 2)
+  ctx.translate(bBoxWidth / 2 - pixelCrop.x, bBoxHeight / 2 - pixelCrop.y)
   ctx.rotate(rotRad)
   ctx.scale(flip.horizontal ? -1 : 1, flip.vertical ? -1 : 1)
   ctx.translate(-image.width / 2, -image.height / 2)
 
   // draw rotated image
   ctx.drawImage(image, 0, 0)
-
-  // extracted cropped image
-  const data = ctx.getImageData(
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height
-  )
-
-  // set canvas width to final desired crop size - this will clear existing context
-  canvas.width = pixelCrop.width
-  canvas.height = pixelCrop.height
-
-  // paste generated rotate image at the top left corner
-  ctx.putImageData(data, 0, 0)
 
   // As compressed WebP string (reduces size by 80-90% allowing localStorage saves and faster renders)
   // Fallbacks to PNG on unsupported older browsers automatically.

@@ -350,12 +350,10 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                             onPointerCancel={handlePointerCancel}
                         >
                             <span id={`sticker-keyboard-help-${index}`} className="sr-only">{t.stickerKeyboardHelp}</span>
-                            <div className={`relative ${isSelected ? 'ring-2 ring-[#0071e3] ring-offset-2 ring-offset-white dark:ring-offset-[#1d1d1f] rounded export-ignore' : ''}`}>
+                            <div className="relative">
                                 <img
                                     src={sticker.url}
                                     alt=""
-                                    width={96}
-                                    height={96}
                                     draggable={false}
                                     className="max-w-none pointer-events-none cursor-move drop-shadow-sm"
                                     style={{ width: 'auto', height: 'auto' }}
@@ -365,7 +363,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
 
                         {/* 선택 시 조작 UI: 삭제(X) 및 트랜스폼(핸들) */}
                         {isSelected && (
-                            <div className="absolute inset-0 pointer-events-none export-ignore">
+                            <div className="absolute inset-0 pointer-events-none ring-2 ring-[#0071e3] ring-offset-2 ring-offset-white dark:ring-offset-[#1d1d1f] rounded export-ignore">
                                     {/* 삭제 버튼 (우상단) - Inverse Scaling */}
                                     <button
                                         type="button"

@@ -14,13 +14,14 @@ import { DetailsSection } from './form/DetailsSection';
 import { StickerSection } from './form/StickerSection';
 import { SlotSection } from './form/SlotSection';
 
-import { usePlayer } from '../contexts/PlayerContext';
+import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
 import { ImageFileError, readImageFile } from '../utils/imageFile';
 
 type TabId = 'basic' | 'job' | 'style' | 'design' | 'slot';
 
 export function CardForm() {
-    const { playerInfo, setPlayerInfo, updateImage: onImageChange } = usePlayer();
+    const playerInfo = usePlayerSelector(snapshot => snapshot.playerInfo);
+    const { setPlayerInfo, updateImage: onImageChange } = usePlayerActions();
     const fontRef = useRef<HTMLDivElement>(null);
     const fontTriggerRef = useRef<HTMLButtonElement>(null);
     const fontOptionRefs = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});

@@ -30,6 +30,7 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
         if (!constraintsRef.current || (!draggingId && !transformingId)) return;
 
         const rect = interactionRectRef.current ?? constraintsRef.current.getBoundingClientRect();
+        if (rect.width <= 0 || rect.height <= 0) return;
         const px = e.clientX - rect.left;
         const py = e.clientY - rect.top;
 
@@ -126,7 +127,7 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
         setTransformStart({
             scale: sticker.scale,
             rot: sticker.rotation,
-            dist: Math.hypot(px - cx, py - cy),
+            dist: Math.max(1, Math.hypot(px - cx, py - cy)),
             angle: Math.atan2(py - cy, px - cx),
         });
     }, [beginInteraction, constraintsRef]);

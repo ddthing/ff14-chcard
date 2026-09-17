@@ -317,6 +317,16 @@ button:not(:disabled),
 
 
 /* ===== Custom Scrollbar ===== */
+.preview-workspace {
+  background-color: var(--muted);
+  background-image: radial-gradient(var(--border-medium) 0.6px, transparent 0.6px);
+  background-size: 20px 20px;
+}
+
+.preview-sheet {
+  box-shadow: 0 0 0 1px var(--border-default), 0 12px 32px var(--shadow-color-1);
+}
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {

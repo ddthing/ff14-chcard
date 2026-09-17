@@ -119,15 +119,15 @@ function createPlayerStore(): PlayerStore {
     };
 
     const updatePlayerField = <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => {
-        setPlayerInfo(prev => ({ ...prev, [field]: value }));
+        setPlayerInfo(prev => Object.is(prev[field], value) ? prev : { ...prev, [field]: value });
     };
 
     const updateLanguage = (language: Language) => {
-        setPlayerInfo(prev => ({ ...prev, language }));
+        updatePlayerField('language', language);
     };
 
     const updateImage = (image: string | undefined) => {
-        setPlayerInfo(prev => ({ ...prev, image }));
+        updatePlayerField('image', image);
     };
 
     const setSelectedStickerId = (id: string | null) => {
@@ -207,20 +207,32 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         let timeoutId: number | undefined;
 
+        const flushPersistence = () => {
+            if (timeoutId === undefined) return;
+            window.clearTimeout(timeoutId);
+            timeoutId = undefined;
+            store.setPersistenceStatus(persistPlayerInfo(store.getSnapshot().playerInfo));
+        };
+
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'hidden') flushPersistence();
+        };
+
         const schedulePersistence = () => {
             if (timeoutId !== undefined) window.clearTimeout(timeoutId);
-            timeoutId = window.setTimeout(() => {
-                timeoutId = undefined;
-                store.setPersistenceStatus(persistPlayerInfo(store.getSnapshot().playerInfo));
-            }, 250);
+            timeoutId = window.setTimeout(flushPersistence, 250);
         };
 
         schedulePersistence();
         const unsubscribe = store.subscribePlayerInfo(schedulePersistence);
+        window.addEventListener('pagehide', flushPersistence);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
 
         return () => {
             unsubscribe();
-            if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+            window.removeEventListener('pagehide', flushPersistence);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+            flushPersistence();
         };
     }, [store]);
 
