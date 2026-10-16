@@ -1,0 +1,5 @@
+Reconstructed from recorded requirements after the previous execution environment became unavailable.
+The original ZIP and original local commit history through 70a4613 were not recovered.
+Cotton-paper and print-ink assets are newly generated replacements; the Beastmaster SVG is retraced from the same game glyph.
+This source is based on upstream commit 6477264504aed863296d1c5d91f8febc55b29838.
+See README.md for features, verification and limitations.

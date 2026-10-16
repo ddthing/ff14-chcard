@@ -97,7 +97,7 @@ export function DetailsSection() {
                     aria-describedby="profile-comment-count"
                     value={playerInfo.comment}
                     onChange={(e) => handleChange('comment', e.target.value)}
-                    className={`${inputClass} h-20 resize-none`}
+                    className={`${inputClass} min-h-24 resize-y`}
                     placeholder={t.commentPlaceholder}
                     maxLength={200}
                 />

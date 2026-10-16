@@ -11,7 +11,8 @@ import { useState, useEffect, type RefObject } from 'react';
 export function useWindowScale(
     containerRef: RefObject<HTMLDivElement | null>,
     targetWidth: number,
-    padding: number = 32
+    padding: number = 32,
+    targetHeight?: number,
 ) {
     const [scale, setScale] = useState(1);
 
@@ -19,23 +20,23 @@ export function useWindowScale(
         const container = containerRef.current;
         if (!container) return;
 
-        const calculateScale = (containerWidth: number) => {
-            const isMobile = window.innerWidth < 768;
+        const calculateScale = () => {
+            const containerWidth = container.clientWidth;
+            const isMobile = window.innerWidth < 960;
             const availableWidth = isMobile
                 ? Math.min(containerWidth - padding, window.innerWidth - padding)
                 : containerWidth - (padding * 2);
-            const nextScale = Math.max(0.1, Math.min(1, availableWidth / targetWidth));
+            const heightScale = !isMobile && targetHeight ? (container.clientHeight - padding * 2) / targetHeight : 1;
+            const nextScale = Math.max(0.001, Math.min(1, availableWidth / targetWidth, heightScale));
             setScale(previousScale => previousScale === nextScale ? previousScale : nextScale);
         };
 
-        calculateScale(container.getBoundingClientRect().width);
-        const observer = new ResizeObserver(([entry]) => {
-            if (entry) calculateScale(entry.contentRect.width);
-        });
+        calculateScale();
+        const observer = new ResizeObserver(calculateScale);
         observer.observe(container);
 
         return () => observer.disconnect();
-    }, [containerRef, targetWidth, padding]);
+    }, [containerRef, targetWidth, targetHeight, padding]);
 
     return scale;
 }

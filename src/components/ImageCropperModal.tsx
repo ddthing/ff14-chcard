@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom';
 import { useState, useCallback, useEffect, useId, useRef, type KeyboardEvent as ReactKeyboardEvent, type RefObject } from 'react';
 import Cropper from 'react-easy-crop';
 import getCroppedImg, { createImage } from '../utils/cropImage';
@@ -32,6 +33,9 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
 
     useEffect(() => {
         const previousBodyOverflow = document.body.style.overflow;
+        const root = document.getElementById('root');
+        const previousInert = root?.inert;
+        if (root) root.inert = true;
         const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         const focusReturnTarget = returnFocusRef?.current;
         document.body.style.overflow = 'hidden';
@@ -78,6 +82,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
             document.body.style.overflow = previousBodyOverflow;
+            if (root) root.inert = previousInert ?? false;
             const focusTarget = focusReturnTarget ?? previousFocus;
             if (focusTarget instanceof HTMLElement && focusTarget.isConnected) {
                 focusTarget.focus();
@@ -165,8 +170,8 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
     const t = i18n[lang].preview;
     const form = i18n[lang].form;
 
-    return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} aria-busy={isProcessing}>
+    return createPortal(
+        <div className="fixed inset-0 z-[180] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} aria-busy={isProcessing}>
             <div 
                 ref={dialogRef}
                 className="w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col h-[80vh] sm:h-[600px] animate-in zoom-in-[0.98] duration-300"
@@ -278,5 +283,5 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                 </div>
             </div>
         </div>
-    );
+    , document.body);
 }

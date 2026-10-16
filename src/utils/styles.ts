@@ -77,15 +77,22 @@ export function getContrastRatio(foreground: string, background: string): number
     return (lighter + 0.05) / (darker + 0.05);
 }
 
-/** Darken a valid color just enough to reach normal-text contrast on white. */
-export function getAccessiblePointColor(hexColor: string, minimumRatio = 4.5): string {
+/** Preserve the accent hue while meeting contrast on the actual surface. */
+export function getAccessibleAccentColor(hexColor: string, surfaceColor: string, minimumRatio = 3): string {
     const rgb = hexToRgb(hexColor);
-    if (!rgb) return '#595959';
-    if ((getContrastRatio(hexColor, '#ffffff') ?? 0) >= minimumRatio) return hexColor.toLowerCase();
-
-    for (let factor = 0.95; factor >= 0; factor -= 0.05) {
-        const candidate = `#${rgb.map(value => Math.round(value * factor).toString(16).padStart(2, '0')).join('')}`;
-        if ((getContrastRatio(candidate, '#ffffff') ?? 0) >= minimumRatio) return candidate;
+    const target = getContrastColor(surfaceColor);
+    if (!rgb) return target;
+    if ((getContrastRatio(hexColor, surfaceColor) ?? 0) >= minimumRatio) return hexColor;
+    const channelTarget = target === '#ffffff' ? 255 : 0;
+    for (let step = 1; step <= 50; step++) {
+        const color = `#${rgb.map(value => Math.round(value + (channelTarget - value) * step / 50).toString(16).padStart(2, '0')).join('')}`;
+        if ((getContrastRatio(color, surfaceColor) ?? 0) >= minimumRatio) return color;
     }
-    return '#000000';
+    return target;
+}
+
+export function getAccentSurface(hexColor: string, surfaceColor: string): string {
+    const accent = hexToRgb(hexColor) ?? [87, 83, 78];
+    const surface = hexToRgb(surfaceColor) ?? [255, 255, 255];
+    return `#${surface.map((value, index) => Math.round(value * 0.92 + accent[index] * 0.08).toString(16).padStart(2, '0')).join('')}`;
 }

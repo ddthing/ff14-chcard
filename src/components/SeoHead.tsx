@@ -1,7 +1,7 @@
 import { Helmet } from 'react-helmet-async';
 import type { PageMeta } from '../utils/pageMeta';
 
-export const SITE_ORIGIN = 'https://ff14-chcard.pages.dev';
+export const SITE_ORIGIN = 'https://ccard.ffxiv.world';
 const SITE_NAME = 'FF14 캐릭터 카드 생성기';
 const OG_IMAGE_URL = `${SITE_ORIGIN}/og-image.png`;
 

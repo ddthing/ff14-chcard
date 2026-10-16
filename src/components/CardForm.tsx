@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react';
 import type { PlayerInfo } from '../types';
-import { ChevronDown, Check, ContactRound, Swords, Tags, Paintbrush, ImagePlus, X, Save } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronDown, Check, ContactRound, Swords, Tags, Paintbrush, ImagePlus, X, Save } from 'lucide-react';
 import { i18n, getFonts } from '../utils/i18n';
-import { getAccessiblePointColor, getContrastRatio, inputClass } from '../utils/styles';
-import { ImageCropperModal } from './ImageCropperModal';
+import { getAccessibleAccentColor, getAccentSurface, inputClass } from '../utils/styles';
+import { DesignPresets } from './DesignPresets';
+import { BackgroundEffectsSection } from './form/BackgroundEffectsSection';
+const ImageCropperModal = lazy(() => import('./ImageCropperModal').then(module => ({ default: module.ImageCropperModal })));
 
 // ─── Form Section Sub-Components ─────────────────────────────────────────────
 import { Section } from './form/Section';
@@ -14,13 +16,15 @@ import { DetailsSection } from './form/DetailsSection';
 import { StickerSection } from './form/StickerSection';
 import { SlotSection } from './form/SlotSection';
 
-import { usePlayer } from '../contexts/PlayerContext';
+import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
 import { ImageFileError, readImageFile } from '../utils/imageFile';
 
 type TabId = 'basic' | 'job' | 'style' | 'design' | 'slot';
 
 export function CardForm() {
-    const { playerInfo, setPlayerInfo, updateImage: onImageChange } = usePlayer();
+    const playerInfo = usePlayerSelector(s => s.playerInfo);
+    const { setPlayerInfo, updateImage: onImageChange } = usePlayerActions();
+    const panelRef = useRef<HTMLDivElement>(null);
     const fontRef = useRef<HTMLDivElement>(null);
     const fontTriggerRef = useRef<HTMLButtonElement>(null);
     const fontOptionRefs = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
@@ -37,11 +41,9 @@ export function CardForm() {
     const lang = playerInfo.language || 'ko';
     const t = i18n[lang].form;
     const tp = i18n[lang].preview;
+    const studio = i18n[lang].studio;
     const fontsOptions = getFonts(lang);
     const isPointColorValid = /^#[0-9a-f]{6}$/i.test(playerInfo.pointColor);
-    const pointColorContrast = isPointColorValid ? getContrastRatio(playerInfo.pointColor, '#ffffff') : null;
-    const hasSafePointColorContrast = pointColorContrast !== null && pointColorContrast >= 4.5;
-
     // 폰트 드롭다운 외부 클릭 닫기
     useEffect(() => {
         function handleClickOutside(event: MouseEvent) {
@@ -53,11 +55,14 @@ export function CardForm() {
         return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
+    useEffect(() => { if (isFontOpen) fontOptionRefs.current[playerInfo.font]?.focus(); }, [isFontOpen, playerInfo.font]);
+
     const handleChange = <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => {
         setPlayerInfo(prev => ({ ...prev, [field]: value }));
     };
 
     const handleFontTriggerKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); setIsFontOpen(true); }
         if (event.key === 'Escape' && isFontOpen) {
             event.preventDefault();
             setIsFontOpen(false);
@@ -86,23 +91,17 @@ export function CardForm() {
         }
     };
 
-    // 이미지 파일 선택 → 크롭 모달 열기
-    const handleFileChange = useCallback(async (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        e.target.value = '';
-        if (!file) return;
-
+    const openImage = useCallback(async (file: File) => {
         setImageError(null);
-        try {
-            setCropImageSrc(await readImageFile(file));
-        } catch (error) {
-            setImageError(error instanceof ImageFileError && error.code === 'too-large'
-                ? t.imageFileTooLarge
-                : error instanceof ImageFileError && error.code === 'invalid-type'
-                    ? t.imageInvalidType
-                    : t.imageUploadError);
+        try { setCropImageSrc(await readImageFile(file)); }
+        catch (error) {
+            setImageError(error instanceof ImageFileError && error.code === 'too-large' ? t.imageFileTooLarge : error instanceof ImageFileError && error.code === 'invalid-type' ? t.imageInvalidType : t.imageUploadError);
         }
     }, [t.imageFileTooLarge, t.imageInvalidType, t.imageUploadError]);
+    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]; event.target.value = '';
+        if (file) void openImage(file);
+    };
 
     const handleCropApply = useCallback((croppedBase64: string) => {
         onImageChange(croppedBase64);
@@ -147,6 +146,13 @@ export function CardForm() {
         return () => observer.disconnect();
     }, [lang, updateTabScrollState]);
 
+    const selectTab = (id: TabId, focusTab = false) => {
+        setActiveTab(id); setIsFontOpen(false); panelRef.current?.scrollTo({ top: 0 });
+        const tab = tabRefs.current[id], list = tabListRef.current;
+        if (focusTab) tab?.focus({ preventScroll: true });
+        if (tab && list) list.scrollTo({ left: tab.offsetLeft - (list.clientWidth - tab.offsetWidth) / 2 });
+    };
+
     const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, currentIndex: number) => {
         const key = event.key;
         if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(key)) return;
@@ -158,8 +164,7 @@ export function CardForm() {
                 ? tabs.length - 1
                 : (currentIndex + (key === 'ArrowRight' ? 1 : -1) + tabs.length) % tabs.length;
         const nextTab = tabs[nextIndex];
-        setActiveTab(nextTab.id);
-        tabRefs.current[nextTab.id]?.focus();
+        selectTab(nextTab.id, true);
     };
 
     return (
@@ -167,14 +172,14 @@ export function CardForm() {
 
             {/* ───── Crop Modal ─────────────────────────────────────────────── */}
             {cropImageSrc && (
-                <ImageCropperModal
+                <Suspense fallback={null}><ImageCropperModal
                     imageSrc={cropImageSrc}
                     onApply={handleCropApply}
                     onCancel={() => setCropImageSrc(null)}
                     returnFocusRef={imageTriggerRef}
                     lang={lang}
                     aspectRatio={playerInfo.layout === 'left-portrait' ? 2 / 4.5 : 700 / 280}
-                />
+                /></Suspense>
             )}
 
             {/* Hidden file input — triggered programmatically from image UI */}
@@ -205,7 +210,7 @@ export function CardForm() {
                         <button
                             key={tab.id}
                             type="button"
-                            onClick={() => setActiveTab(tab.id)}
+                            onClick={() => selectTab(tab.id)}
                             ref={element => { tabRefs.current[tab.id] = element; }}
                             id={`profile-tab-${tab.id}`}
                             role="tab"
@@ -246,14 +251,15 @@ export function CardForm() {
                 )}
             </div>
 
-            <div className="flex shrink-0 items-center justify-between px-4 py-2 text-[10px] font-semibold" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--surface-50)' }}>
-                <span>{tabs[activeTabIndex].label}</span>
+            <div className="studio-tab-intro" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--surface-50)' }}>
+                <span>{studio.stepHints[activeTabIndex]}</span>
                 <span className="tabular-nums">{activeTabIndex + 1} / {tabs.length}</span>
             </div>
 
             {/* ───── Tab Content ────────────────────────────────────────────── */}
             <div
-                className="flex-1 overflow-y-auto scrollbar-hide flex flex-col p-4 pb-10"
+                ref={panelRef}
+                className="studio-tab-content flex-1 overflow-y-auto flex flex-col"
                 style={{ backgroundColor: 'var(--surface-100)' }}
                 id={`profile-panel-${activeTab}`}
                 role="tabpanel"
@@ -277,7 +283,7 @@ export function CardForm() {
                          * tap targets are small, so we keep a dedicated upload affordance
                          * for a smooth first-run experience.
                          */}
-                        <div className="block md:hidden">
+                        <div onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); const file = event.dataTransfer.files[0]; if (file) void openImage(file); }}>
                             <Section title={t.uploadImage}>
                                                 {playerInfo.image ? (
                                     /* Uploaded state: thumbnail + change / remove actions */
@@ -346,6 +352,7 @@ export function CardForm() {
                                         {t.uploadImage}
                                     </button>
                                 )}
+                            <p className="studio-drop-hint">{studio.dropHint}</p>
                             </Section>
                         </div>
 
@@ -406,8 +413,7 @@ export function CardForm() {
                 {/* ── Tab 4: Design ──────────────────────────────────────────── */}
                 {activeTab === 'design' && (
                     <div className="space-y-5 animate-tab-in relative z-20">
-                        {/* Sticker Manager */}
-                        <StickerSection />
+                        <DesignPresets />
 
                         {/* Point Color ──────────────────────────────────────── */}
                         <Section title={t.pointColor}>
@@ -452,28 +458,18 @@ export function CardForm() {
                                         maxLength={7}
                                     />
                                 </div>
-                                <div id="point-color-status" className="flex items-center justify-between gap-3 text-[10px]" role="status" aria-live="polite">
-                                    <span style={{ color: isPointColorValid && !hasSafePointColorContrast ? 'var(--destructive)' : 'var(--text-muted)' }}>
-                                        {!isPointColorValid
-                                            ? t.pointColorInvalid
-                                            : t.pointColorContrast(pointColorContrast?.toFixed(2) ?? '0.00', hasSafePointColorContrast)}
-                                    </span>
-                                    {isPointColorValid && !hasSafePointColorContrast && (
-                                        <button
-                                            type="button"
-                                            onClick={() => handleChange('pointColor', getAccessiblePointColor(playerInfo.pointColor))}
-                                            className="shrink-0 font-semibold underline underline-offset-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                            style={{ color: 'var(--text-primary)' }}
-                                        >
-                                            {t.adjustToSafeColor}
-                                        </button>
-                                    )}
-                                </div>
+                                <div id="point-color-status" className="text-[11px] leading-relaxed" role="status" aria-live="polite" style={{ color: isPointColorValid ? 'var(--text-secondary)' : 'var(--destructive)' }}>{isPointColorValid ? t.pointColorAuto : t.pointColorInvalid}</div>
+                                {isPointColorValid && <div className="studio-accent-previews" role="group" aria-label={t.pointColorPreview}>
+                                    {[{ surface: '#ffffff', label: t.lightPreview }, { surface: '#252b24', label: t.darkPreview }].map(({ surface, label }) => {
+                                        const background = getAccentSurface(playerInfo.pointColor, surface);
+                                        return <div key={surface} style={{ backgroundColor: background, color: getAccessibleAccentColor(playerInfo.pointColor, background, 4.5) }}><strong aria-hidden="true">Aa</strong><span>{label}</span></div>;
+                                    })}
+                                </div>}
                                 <div className="space-y-1.5">
                                     <p className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>
                                         {t.colorPresets}
                                     </p>
-                                    <div className="grid grid-cols-6 gap-2" role="group" aria-label={t.colorPresets}>
+                                    <div className="studio-color-presets grid grid-cols-6 gap-2" role="group" aria-label={t.colorPresets}>
                                         {['#e44c21', '#0071e3', '#30d158', '#ff375f', '#bf5af2', '#ffd60a'].map(color => (
                                             <button
                                                 key={color}
@@ -545,6 +541,7 @@ export function CardForm() {
                                                      ref={element => { fontOptionRefs.current[font.id] = element; }}
                                                      type="button"
                                                      role="option"
+                                                     tabIndex={isSelected ? 0 : -1}
                                                      aria-selected={isSelected}
                                                      onKeyDown={event => handleFontOptionKeyDown(event, index)}
                                                      onClick={() => {
@@ -569,6 +566,7 @@ export function CardForm() {
                                 )}
                             </div>
                         </Section>
+                        <BackgroundEffectsSection /><StickerSection />
                     </div>
                 )}
 
@@ -579,6 +577,10 @@ export function CardForm() {
                     </div>
                 )}
 
+                <div className="studio-step-nav">
+                    <button type="button" disabled={activeTabIndex === 0} onClick={() => selectTab(tabs[activeTabIndex - 1].id, true)}><ChevronLeft size={14} aria-hidden="true" />{studio.previous}</button>
+                    <button type="button" disabled={activeTabIndex === tabs.length - 1} onClick={() => selectTab(tabs[activeTabIndex + 1].id, true)}>{studio.next}<ChevronRight size={14} aria-hidden="true" /></button>
+                </div>
             </div>
         </div>
     );

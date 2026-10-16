@@ -1,132 +1,90 @@
-import { type ReactNode, useEffect, useRef, useState } from 'react';
-import { type Language } from '../types';
+import { type ReactNode, type KeyboardEvent, useRef, useState } from 'react';
+import { Check, Eye, Focus, PenLine, ZoomIn, Undo2, Redo2, MoveHorizontal } from 'lucide-react';
+import type { Language } from '../types';
 import { useWindowScale } from '../hooks/useWindowScale';
+import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
 import { GlobalHeader } from './GlobalHeader';
 import { Footer } from './Footer';
 import { i18n } from '../utils/i18n';
 
-
-/**
- * Main Layout Component (Floating App Widget Design)
- */
 interface MainLayoutProps {
-    /** 폼 사이드바 콘텐츠 */
-    form: ReactNode;
-    /** 카드 미리보기 콘텐츠 */
-    preview: ReactNode;
-    /** 현재 언어 */
-    lang: Language;
-    /** 카드 레이아웃 타입 */
-    layoutType: 'header' | 'left-portrait';
-    /** 언어 변경 콜백 */
-    onLanguageChange: (lang: Language) => void;
+    form: ReactNode; preview: ReactNode; exportControls: ReactNode; mobileDownload: ReactNode;
+    lang: Language; layoutType: 'header' | 'left-portrait';
+    cardSize: { width: number; height: number }; onLanguageChange: (lang: Language) => void;
 }
-
-export function MainLayout({ form, preview, lang, layoutType, onLanguageChange }: MainLayoutProps) {
+function HistoryControls({ lang }: { lang: Language }) {
+    const canUndo = usePlayerSelector(s => s.canUndo);
+    const canRedo = usePlayerSelector(s => s.canRedo);
+    const { undo, redo } = usePlayerActions();
+    const t = i18n[lang].studio;
+    return <div className="studio-history" role="group" aria-label={t.history}>
+        <button type="button" onClick={undo} disabled={!canUndo} aria-label={t.undo} title={t.undoHint} aria-keyshortcuts="Control+Z Meta+Z"><Undo2 size={16} aria-hidden="true" /></button>
+        <button type="button" onClick={redo} disabled={!canRedo} aria-label={t.redo} title={t.redoHint} aria-keyshortcuts="Control+Shift+Z Meta+Shift+Z Control+Y"><Redo2 size={16} aria-hidden="true" /></button>
+    </div>;
+}
+function DraftStatus({ lang }: { lang: Language }) {
+    const persistenceStatus = usePlayerSelector(s => s.persistenceStatus);
+    const t = i18n[lang].studio;
+    return <span className={'studio-draft' + (persistenceStatus ? ' studio-draft-warning' : '')}><Check size={13} aria-hidden="true" />{persistenceStatus ? t.draftWarning : t.localDraft}</span>;
+}
+export function MainLayout({ form, preview, exportControls, mobileDownload, lang, layoutType, cardSize, onLanguageChange }: MainLayoutProps) {
     const containerRef = useRef<HTMLDivElement>(null);
-    const cardWrapperRef = useRef<HTMLDivElement>(null);
-
-
-    const targetWidth = layoutType === 'left-portrait' ? 800 : 700;
-    const scale = useWindowScale(containerRef, targetWidth);
-
-    const [cardHeight, setCardHeight] = useState(layoutType === 'left-portrait' ? 720 : 500);
-
-    // Use ResizeObserver to track the actual height of the card
-    useEffect(() => {
-        const wrapper = cardWrapperRef.current;
-        if (!wrapper) return;
-
-        const observer = new ResizeObserver((entries) => {
-            const entry = entries[0];
-            if (!entry) return;
-
-            const minH = layoutType === 'left-portrait' ? 720 : 500;
-            const nextHeight = Math.max(minH, Math.ceil(entry.contentRect.height));
-            setCardHeight(previousHeight => previousHeight === nextHeight ? previousHeight : nextHeight);
-        });
-
-        const frame = requestAnimationFrame(() => {
-            observer.observe(wrapper.firstElementChild ?? wrapper);
-        });
-
-        return () => {
-            cancelAnimationFrame(frame);
-            observer.disconnect();
-        };
-    }, [layoutType]);
-
-    return (
-        <div className="min-h-screen flex flex-col transition-colors duration-200" style={{ backgroundColor: 'var(--surface-200)', color: 'var(--text-primary)' }}>
-            <a href="#main-content" className="skip-link">{i18n[lang].layout.skipToContent}</a>
-
-            {/* ── Global Header ───────────────────────────────────────────── */}
-            <GlobalHeader lang={lang} onLanguageChange={onLanguageChange} pageTitle={i18n[lang].layout.headerTitle} />
-
-            {/* ── Floating App Widget Wrapper ─────────────────────────────── */}
-            <main
-                id="main-content"
-                aria-labelledby="page-title"
-                className="flex-1 w-full flex flex-col items-center justify-start py-6 md:py-12 px-4 transition-colors duration-200"
-            >
-                <h1 id="page-title" className="sr-only">{i18n[lang].layout.headerTitle}</h1>
-                <div className="w-full flex flex-col items-center justify-start">
-                
-                <div 
-                    className="w-full max-w-[1300px] flex flex-col md:flex-row items-stretch rounded-xl md:rounded-2xl overflow-hidden relative transition-[background-color,border-color,box-shadow] duration-300"
-                    style={{ 
-                        backgroundColor: 'var(--surface-100)', 
-                        border: '1px solid var(--border-subtle)',
-                        boxShadow: 'none'
-                    }}
-                >
-                    {/* ── Sidebar (Inside Widget) ───────────────────────────── */}
-                    <aside
-                        className="order-1 md:order-1 w-full md:w-[400px] xl:w-[440px] z-30 flex-shrink-0 flex flex-col transition-colors duration-200 border-t md:border-t-0 md:border-r"
-                        style={{ backgroundColor: 'var(--surface-50)', borderColor: 'var(--border-subtle)' }}
-                    >
-                        {/* Height constraint: Scrolling on desktop, natural flow on mobile */}
-                        <div className="md:h-[80vh] md:max-h-[900px] md:min-h-[700px] flex flex-col w-full h-auto md:h-full">
-                            <div className="flex-1 overflow-hidden flex flex-col h-full">
-                                {form}
-                            </div>
-                        </div>
-                    </aside>
-
-                    {/* ── Right Content Area (Canvas + Footer) ──────────────── */}
-                    <div className="order-2 md:order-2 flex-1 flex flex-col min-w-0 relative items-center justify-center py-6 px-0 md:py-10 md:px-10" style={{ backgroundColor: 'var(--surface-100)' }}>
-                        
-                        {/* Canvas Panel */}
-                        <div
-                            ref={containerRef}
-                            className="w-full flex-1 flex flex-col items-center justify-center overflow-hidden md:overflow-x-clip transition-colors duration-200"
-                        >
-                            <div
-                                className="self-center relative flex justify-center overflow-visible"
-                                style={{
-                                    width: (layoutType === 'left-portrait' ? 800 : 700) * scale,
-                                    height: cardHeight * scale,
-                                }}
-                            >
-                                <div
-                                    ref={cardWrapperRef}
-                                    className="absolute top-0 origin-top will-change-transform [backface-visibility:hidden] transform-gpu transition-transform duration-300 ease-out"
-                                    style={{
-                                        transform: `scale(${scale}) translateZ(0)`,
-                                        width: layoutType === 'left-portrait' ? 800 : 700,
-                                    }}
-                                >
-                                    {preview}
-                                </div>
-                            </div>
+    const targetWidth = layoutType === 'left-portrait' ? 880 : 700;
+    const [zoom, setZoom] = useState<'fit' | 'width' | 'actual'>('fit');
+    const fitScale = useWindowScale(containerRef, targetWidth, 24, zoom === 'fit' ? cardSize.height : undefined);
+    const scale = zoom === 'actual' ? 1 : fitScale;
+    const t = i18n[lang].studio;
+    const { undo, redo } = usePlayerActions();
+    const handleHistoryKey = (event: KeyboardEvent<HTMLDivElement>) => {
+        if (event.defaultPrevented || event.nativeEvent.isComposing || event.altKey || !(event.metaKey || event.ctrlKey)) return;
+        const target = event.target;
+        if (target instanceof HTMLElement && (target.isContentEditable || target.closest('input, textarea, select, [role="dialog"], [role="slider"], [inert]'))) return;
+        const key = event.key.toLowerCase();
+        if (key !== 'z' && !(key === 'y' && event.ctrlKey)) return;
+        event.preventDefault();
+        if (event.shiftKey || key === 'y') redo(); else undo();
+    };
+    const changeZoom = (value: 'fit' | 'width' | 'actual') => { setZoom(value); containerRef.current?.scrollTo({ top: 0, left: 0 }); };
+    const jumpTo = (id: string) => {
+        const target = document.getElementById(id);
+        target?.focus({ preventScroll: true });
+        target?.scrollIntoView({ behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth', block: 'start' });
+    };
+    return <div className="studio-page" onKeyDown={handleHistoryKey}>
+        <a href="#main-content" className="skip-link">{i18n[lang].layout.skipToContent}</a>
+        <GlobalHeader lang={lang} onLanguageChange={onLanguageChange} />
+        <main id="main-content" aria-labelledby="page-title" className="studio-main">
+            <h1 id="page-title" className="sr-only">{t.workspace}</h1>
+            <div className="studio-workspace" aria-label={t.workspace}>
+                <section id="editor-panel" tabIndex={-1} aria-labelledby="editor-title" className="studio-editor">
+                    <div className="studio-panel-heading"><div className="flex items-center gap-3"><span className="studio-section-number" aria-hidden="true">01</span><h2 id="editor-title">{t.editor}</h2></div><HistoryControls lang={lang} /></div>
+                    <div className="studio-form">{form}</div>
+                    <div className="studio-editor-footer"><DraftStatus lang={lang} /><span aria-hidden="true">FF XIV</span></div>
+                </section>
+                <section id="preview-panel" tabIndex={-1} aria-labelledby="preview-title" className="studio-preview">
+                    <div className="studio-preview-toolbar">
+                        <div className="flex items-center gap-3"><span className="studio-section-number" aria-hidden="true">02</span><h2 id="preview-title">{t.preview}</h2><span className="studio-live"><span />{t.live}</span></div>
+                        <div className="studio-zoom" role="group" aria-label={t.zoom}>
+                            <button type="button" aria-pressed={zoom === 'fit'} onClick={() => changeZoom('fit')} title={t.fit} aria-label={t.fit}><Focus size={15} aria-hidden="true" /></button>
+                            <button type="button" aria-pressed={zoom === 'width'} onClick={() => changeZoom('width')} title={t.fitWidth} aria-label={t.fitWidth}><MoveHorizontal size={15} aria-hidden="true" /></button>
+                            <span className="tabular-nums" aria-hidden="true">{Math.round(scale * 100)}%</span>
+                            <button type="button" aria-pressed={zoom === 'actual'} onClick={() => changeZoom('actual')} title={t.actualSize} aria-label={t.actualSize}><ZoomIn size={15} aria-hidden="true" /></button>
                         </div>
                     </div>
-                </div>
-                
-                </div>
-            </main>
-
-            <Footer />
-        </div>
-    );
+                    <div ref={containerRef} className="studio-canvas" role="region" aria-label={t.canvas} tabIndex={0}>
+                        <div className="studio-artboard" style={{ width: targetWidth * scale, height: cardSize.height * scale }}>
+                            <div className="studio-card-wrapper" style={{ width: targetWidth, transform: 'scale(' + scale + ')' }}>{preview}</div>
+                        </div>
+                    </div>
+                    <div className="studio-export-bar">{exportControls}</div>
+                </section>
+            </div>
+        </main>
+        <Footer />
+        <nav className="studio-mobile-nav" aria-label={t.workspace}>
+            <button type="button" onClick={() => jumpTo('editor-panel')}><PenLine size={17} aria-hidden="true" />{t.edit}</button>
+            <button type="button" onClick={() => jumpTo('preview-panel')}><Eye size={17} aria-hidden="true" />{t.preview}</button>
+            {mobileDownload}
+        </nav>
+    </div>;
 }

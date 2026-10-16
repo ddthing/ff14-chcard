@@ -39,6 +39,8 @@ export interface PlayerInfo {
     layout?: 'header' | 'left-portrait';
     language: Language;
     pointColor: string;
+    cornerWash?: boolean;
+    jobWatermark?: boolean;
     stickers?: Sticker[];
     version?: string; // App version to track data compatibility
 }
