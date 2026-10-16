@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
 import { Swords, Hammer, Leaf, ChevronDown, Check, RotateCcw } from 'lucide-react';
-import { JOBS } from '../../data/jobs';
+import { JOBS, getJobMaxLevel } from '../../data/jobs';
 import { i18n } from '../../utils/i18n';
 import { inputClass } from '../../utils/styles';
 import { usePlayer } from '../../contexts/PlayerContext';
@@ -126,7 +126,7 @@ export function JobSelectionSection() {
         setPlayerInfo(prev => {
             const newJobs = Array.from(new Set([...prev.jobs, ...targetJobs]));
             const newLevels = { ...prev.jobLevels };
-            targetJobs.forEach(id => { newLevels[id] = id === 'BLU' ? Math.min(level, 80) : level; });
+            targetJobs.forEach(id => { newLevels[id] = Math.min(level, getJobMaxLevel(id)); });
             return { ...prev, jobs: newJobs, jobLevels: newLevels, mainJob: prev.mainJob || targetJobs[0] };
         });
     };
@@ -147,7 +147,7 @@ export function JobSelectionSection() {
                 ...prev,
                 jobs: next,
                 mainJob: isFirst ? jobId : prev.mainJob,
-                jobLevels: { ...prev.jobLevels, [jobId]: jobId === 'BLU' ? 80 : 100 },
+                jobLevels: { ...prev.jobLevels, [jobId]: getJobMaxLevel(jobId) },
             }));
         }
     };
@@ -155,7 +155,7 @@ export function JobSelectionSection() {
     const handleLevelChange = (jobId: string, level: number) => {
         setPlayerInfo(prev => ({
             ...prev,
-            jobLevels: { ...prev.jobLevels, [jobId]: Math.min(jobId === 'BLU' ? 80 : 100, Math.max(1, level)) },
+            jobLevels: { ...prev.jobLevels, [jobId]: Math.min(getJobMaxLevel(jobId), Math.max(1, level)) },
         }));
     };
 
@@ -459,8 +459,8 @@ export function JobSelectionSection() {
                                                 name={`job-level-${job.id}`}
                                                 aria-label={`${jobName} ${t.jobLevel}`}
                                                 min={1}
-                                                max={job.id === 'BLU' ? 80 : 100}
-                                                value={playerInfo.jobLevels[job.id] || 100}
+                                                max={getJobMaxLevel(job.id)}
+                                                value={playerInfo.jobLevels[job.id] || getJobMaxLevel(job.id)}
                                                 onChange={e => handleLevelChange(job.id, parseInt(e.target.value) || 1)}
                                                 className="w-8 rounded border-none bg-transparent p-0 text-center text-[11px] font-bold outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                                                 style={{ color: 'var(--text-primary)' }}

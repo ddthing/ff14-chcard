@@ -7,12 +7,12 @@
     "dev": "vite",
     "build": "tsc -b && vite build && vite build --ssr src/entry-server.tsx --outDir .prerender && node scripts/prerender.mjs",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@ff14-glamour/design-system": "file:./packages/design-system",
     "clsx": "^2.1.1",
-    "framer-motion": "^12.34.2",
     "html-to-image": "^1.11.13",
     "lucide-react": "^0.574.0",
     "react": "^19.2.0",
@@ -23,7 +23,9 @@
     "tailwind-merge": "^3.5.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@eslint/js": "^9.39.1",
+    "@playwright/test": "^1.64.1",
     "@tailwindcss/vite": "^4.2.0",
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",

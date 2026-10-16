@@ -1,0 +1,44 @@
+import { expect, type Page } from '@playwright/test';
+import { JOBS, getJobMaxLevel } from '../src/data/jobs';
+export const profile = {
+    name: '세리안', region: 'KR', server: '초코보', dataCenter: '한국', mainJob: 'BST',
+    jobs: JOBS.map(job => job.id), jobLevels: Object.fromEntries(JOBS.map(job => [job.id, getJobMaxLevel(job.id)])),
+    playstyles: ['스샷/룩덕', '라이트/즐겜', '하우징'], activeTime: '평일 저녁 / 주말 상시',
+    comment: '느긋하게, 오래도록 함께할 모험을 좋아해요.\n에오르제아 어딘가에서 만나요.',
+    pointColor: '#7c3aed', language: 'ko', font: 'font-pretendard', isSprout: true, cornerWash: true, jobWatermark: true,
+};
+export async function seed(page: Page, extra: Record<string, unknown> = {}) {
+    await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
+    await page.addInitScript(data => {
+        if (localStorage.getItem('ff14-playerInfo')) return;
+        const canvas = document.createElement('canvas'); canvas.width = 700; canvas.height = 280;
+        const ctx = canvas.getContext('2d')!; ctx.fillStyle = '#1c4638'; ctx.fillRect(0, 0, 700, 280);
+        localStorage.setItem('ff14-playerInfo', JSON.stringify({ image: canvas.toDataURL(), ...data }));
+    }, { ...profile, ...extra });
+    await page.goto('/');
+    await expect(page.locator('#card-preview')).toBeVisible();
+}
+export async function nativeSize(page: Page) {
+    return page.locator('#card-preview').evaluate(card => ({ width: (card as HTMLElement).offsetWidth, height: (card as HTMLElement).offsetHeight }));
+}
+export async function exportPng(page: Page) {
+    const pending = page.waitForEvent('download');
+    const save = page.getByRole('button', { name: /^(이미지 저장|Save Image|画像を保存)$/ }).first();
+    await save.click();
+    const download = await pending;
+    const stream = await download.createReadStream();
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream!) chunks.push(Buffer.from(chunk));
+    const png = Buffer.concat(chunks);
+    await expect(save).toBeEnabled();
+    return { png, filename: download.suggestedFilename(), width: png.readUInt32BE(16), height: png.readUInt32BE(20) };
+}
+export async function pixels(page: Page, png: Buffer, points: { x: number; y: number; width: number; height: number }[]) {
+    return page.evaluate(async ({ encoded, points }) => {
+        const bitmap = await createImageBitmap(new Blob([Uint8Array.from(atob(encoded), c => c.charCodeAt(0))], { type: 'image/png' }));
+        const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+        const ctx = canvas.getContext('2d')!; ctx.drawImage(bitmap, 0, 0);
+        return points.map(({ x, y, width, height }) => Array.from(ctx.getImageData(Math.round(x), Math.round(y), width, height).data));
+    }, { encoded: png.toString('base64'), points });
+}
+export const changed = (before: number[], after: number[]) => before.reduce((count, value, index) => count + (index % 4 !== 3 && value !== after[index] ? 1 : 0), 0);

@@ -30,7 +30,7 @@ npm run preview
 
 ### Cloudflare Pages 배포 (현재 사용 환경)
 
-현재 이 프로젝트는 `https://ff14-chcard.pages.dev/` 로 배포되어 있습니다. Cloudflare Pages를 통해 GitHub 레포지토리 자동 배포를 이용하시면 됩니다.
+현재 이 프로젝트는 `https://ccard.ffxiv.world/` 로 배포되어 있습니다. Cloudflare Pages를 통해 GitHub 레포지토리 자동 배포를 이용하시면 됩니다.
 
 1. [Cloudflare 대시보드](https://dash.cloudflare.com/) 로그인 후 "Pages" 이동
 2. "Connect to Git" → GitHub 레포지토리 연동

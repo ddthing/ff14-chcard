@@ -50,7 +50,7 @@ export function PlaystyleSection() {
                             onClick={() => togglePlaystyle(tagKo)}
                             className="flex min-h-[40px] items-center justify-center rounded-[8px] border px-2 py-2 text-center text-[11px] font-semibold leading-tight transition-[color,background-color,border-color,box-shadow,transform] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                             style={isSelected
-                                ? { backgroundColor: `${playerInfo.pointColor}10`, color: playerInfo.pointColor, borderColor: `${playerInfo.pointColor}30` }
+                                ? { backgroundColor: 'var(--secondary)', color: 'var(--text-primary)', borderColor: 'var(--border-strong)' }
                                 : { backgroundColor: 'var(--surface-200)', borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }
                             }
                             title={displayTag}

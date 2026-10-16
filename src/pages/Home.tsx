@@ -1,10 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useRef, useEffect, type MouseEvent } from 'react';
 import { MainLayout } from '../components/MainLayout';
 import { CardForm } from '../components/CardForm';
 import { CardPreview } from '../components/CardPreview';
 import { Download } from 'lucide-react';
 import { i18n } from '../utils/i18n';
-import { usePlayer } from '../contexts/PlayerContext';
+import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
 import { useImageExport } from '../hooks/useImageExport';
 import { useToast } from '../hooks/useToast';
 import { ToastNotification } from '../components/common/ToastNotification';
@@ -13,126 +13,55 @@ import { pageMeta } from '../utils/pageMeta';
 import { SeoHead } from '../components/SeoHead';
 import { StickerUndoNotice } from '../components/common/StickerUndoNotice';
 import { PersistenceNotice } from '../components/common/PersistenceNotice';
-
+import { useCardDimensions } from '../hooks/useCardDimensions';
+import { getExportDimensions } from '../utils/exportDimensions';
 export function Home() {
-  const { playerInfo, updateImage, updateLanguage } = usePlayer();
-  const meta = pageMeta[playerInfo.language].home;
-
-  // ─── Image export — two-pass, cross-browser stable ─────────────────────────
-  const [pixelRatio, setPixelRatio] = useState(() => (
-    typeof window !== 'undefined' && window.innerWidth < 768 ? 1.5 : 2
-  ));
-
-  // Set pixelRatio dynamically based on window width to prevent OOM on mobile
-  useEffect(() => {
-    const updateRatio = () => {
-      const nextRatio = window.innerWidth < 768 ? 1.5 : 2;
-      setPixelRatio(previousRatio => previousRatio === nextRatio ? previousRatio : nextRatio);
+    const language = usePlayerSelector(s => s.playerInfo.language);
+    const layout = usePlayerSelector(s => s.playerInfo.layout ?? 'header');
+    const name = usePlayerSelector(s => s.playerInfo.name);
+    const { updateImage, updateLanguage } = usePlayerActions();
+    const t = i18n[language].studio;
+    const [pixelRatio, setPixelRatio] = useState(2);
+    const [isRendering, setIsRendering] = useState(false);
+    const renderingRef = useRef(false);
+    const returnFocusRef = useRef<HTMLButtonElement | null>(null);
+    const { toast, showToast, dismissToast } = useToast();
+    const { exportRef, download } = useImageExport({
+        filename: 'ff14-' + (name || 'sheet'), pixelRatio,
+        errorCopy: { cors: i18n[language].layout.exportErrorCors, generic: i18n[language].layout.exportErrorGeneric, details: i18n[language].layout.errorDetails },
+        onError: message => showToast(message, 'error'),
+    });
+    const cardSize = useCardDimensions(exportRef);
+    const outputSize = getExportDimensions(cardSize.width, cardSize.height, pixelRatio);
+    useEffect(() => {
+        if (!isRendering && returnFocusRef.current) { returnFocusRef.current.focus({ preventScroll: true }); returnFocusRef.current = null; }
+    }, [isRendering]);
+    const handleDownload = async (event: MouseEvent<HTMLButtonElement>) => {
+        if (renderingRef.current) return;
+        returnFocusRef.current = event.currentTarget; renderingRef.current = true; setIsRendering(true);
+        try { if (await download()) showToast(t.exported, 'success'); }
+        finally { renderingRef.current = false; setIsRendering(false); }
     };
-    updateRatio();
-    window.addEventListener('resize', updateRatio);
-    return () => window.removeEventListener('resize', updateRatio);
-  }, []);
-
-  // ─── Toast Notifications ───────────────────────────────────────────────────
-  const { toast, showToast, dismissToast } = useToast();
-
-  const { exportRef, download } = useImageExport({
-    filename: `ff14-${playerInfo.name || 'sheet'}`,
-    pixelRatio,
-    errorCopy: {
-      cors: i18n[playerInfo.language].layout.exportErrorCors,
-      generic: i18n[playerInfo.language].layout.exportErrorGeneric,
-      details: i18n[playerInfo.language].layout.errorDetails,
-    },
-    onError: (msg) => showToast(msg, 'error'),
-  });
-
-  const [isRendering, setIsRendering] = useState(false);
-
-  const handleDownload = async () => {
-    setIsRendering(true);
-    try {
-      await download();
-    } finally {
-      setIsRendering(false);
-    }
-  };
-
-  return (
-    <>
-      <SeoHead meta={meta} path="/" />
-
-      <ToastNotification toast={toast} onDismiss={dismissToast} />
-      <StickerUndoNotice />
-      <PersistenceNotice />
-
-      {/* Rendering Modal */}
-      {isRendering && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm animate-in fade-in duration-200" role="status" aria-live="polite" aria-atomic="true" aria-busy="true" aria-label={i18n[playerInfo.language].layout.renderingTitle}>
-              <div
-                  className="w-full max-w-[340px] rounded-2xl flex flex-col overflow-hidden animate-in zoom-in-[0.98] duration-300"
-                  style={{
-                      backgroundColor: 'var(--surface-50)',
-                      border: '1px solid var(--border-medium)',
-                  }}
-              >
-                  <div className="p-6 flex flex-col items-center justify-center text-center gap-4">
-                      {/* Spinner */}
-                      <div className="h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" aria-hidden="true" style={{ borderColor: 'var(--text-primary)', borderTopColor: 'transparent' }}></div>
-                      
-                      <div className="space-y-1">
-                          <p className="text-sm font-bold" style={{ color: 'var(--text-primary)' }}>{i18n[playerInfo.language].layout.renderingTitle}</p>
-                          <p className="text-[11px] font-medium" style={{ color: 'var(--text-muted)' }}>{i18n[playerInfo.language].layout.renderingDesc}</p>
-                      </div>
-                      
-                  </div>
-              </div>
-          </div>
-      )}
-
-      <div inert={isRendering ? true : undefined} aria-hidden={isRendering || undefined}>
-      <MainLayout
-        lang={playerInfo.language}
-        layoutType={playerInfo.layout || 'header'}
-        onLanguageChange={updateLanguage}
-        form={
-          <div className="flex flex-col h-full relative overflow-hidden" style={{ backgroundColor: 'transparent' }}>
-            {/* Form scrollable area */}
-            <div className="flex-1 flex flex-col overflow-hidden pb-[130px] md:pb-0">
-              <CardForm />
+    const form = useMemo(() => <CardForm />, []);
+    const preview = useMemo(() => <CardPreview ref={exportRef} onImageChange={updateImage} id="card-preview" />, [exportRef, updateImage]);
+    const downloadButton = <Button onClick={handleDownload} disabled={isRendering} aria-busy={isRendering} size="lg" className="studio-download"><Download size={16} aria-hidden="true" />{i18n[language].layout.saveImage}</Button>;
+    return <>
+        <SeoHead meta={pageMeta[language].home} path="/" />
+        <ToastNotification toast={toast} onDismiss={dismissToast} /><StickerUndoNotice /><PersistenceNotice />
+        {isRendering && <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" role="status" aria-live="polite" aria-atomic="true" aria-label={i18n[language].layout.renderingTitle}>
+            <div className="flex w-full max-w-[340px] flex-col items-center gap-4 rounded-2xl border p-6 text-center" style={{ backgroundColor: 'var(--surface-50)', borderColor: 'var(--border-medium)' }}>
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" aria-hidden="true" style={{ borderColor: 'var(--text-primary)', borderTopColor: 'transparent' }} />
+                <p className="text-sm font-bold">{i18n[language].layout.renderingTitle}</p>
+                <p className="text-xs text-text-secondary">{i18n[language].layout.renderingDesc}</p>
             </div>
-
-            {/* Save Button Bar — pinned to bottom */}
-            <div
-              className="sticky bottom-0 left-0 right-0 shrink-0 p-4 z-[60] transition-colors duration-200"
-              style={{
-                 backgroundColor: 'var(--surface-50)',
-                 borderTop: '1px solid var(--border-subtle)',
-               }}
-             >
-               <Button
-                onClick={handleDownload}
-                disabled={isRendering}
-                aria-busy={isRendering}
-                size="lg"
-                className="w-full active:scale-[0.98]"
-              >
-                <Download size={15} aria-hidden="true" />
-                {i18n[playerInfo.language].layout.saveImage}
-              </Button>
-            </div>
-          </div>
-        }
-        preview={
-          <CardPreview
-            ref={exportRef}
-            onImageChange={updateImage}
-            id="card-preview"
-          />
-        }
-      />
-      </div>
-    </>
-  );
+        </div>}
+        <div inert={isRendering ? true : undefined} aria-hidden={isRendering || undefined}>
+            <MainLayout lang={language} layoutType={layout} cardSize={cardSize} onLanguageChange={updateLanguage} form={form} preview={preview} mobileDownload={downloadButton} exportControls={<>
+                <div className="studio-quality"><label htmlFor="export-quality">{t.quality}</label><select id="export-quality" value={pixelRatio} onChange={event => setPixelRatio(Number(event.target.value))}>
+                    <option value={1}>{t.standard}</option><option value={2}>{t.high}</option><option value={3}>{t.ultra}</option>
+                </select></div>
+                <div className="studio-export-action"><div className="studio-output-info"><output className="studio-output-size" aria-label={t.outputSize}>{outputSize.width} × {outputSize.height} px</output><span>{outputSize.limited ? t.exportLimited : t.exportHint}</span></div>{downloadButton}</div>
+            </>} />
+        </div>
+    </>;
 }

@@ -1,5 +1,5 @@
 import { PROFILE_SCHEMA_VERSION } from '../constants/storage';
-import { JOBS } from '../data/jobs';
+import { JOBS, getJobMaxLevel } from '../data/jobs';
 import type { Language, PlayerInfo, Region, Sticker } from '../types';
 
 const JOB_IDS = new Set(JOBS.map(job => job.id));
@@ -38,6 +38,8 @@ export const DEFAULT_PLAYER_INFO: PlayerInfo = {
     layout: 'header',
     language: 'ko',
     pointColor: '#e44c21',
+    cornerWash: false,
+    jobWatermark: false,
     stickers: [],
     version: PROFILE_SCHEMA_VERSION,
 };
@@ -87,7 +89,7 @@ export function normalizePlayerInfo(value: unknown): PlayerInfo {
         : [];
     const jobLevelsSource = isRecord(source.jobLevels) ? source.jobLevels : {};
     const jobLevels = Object.fromEntries(jobs.map(jobId => {
-        const maxLevel = jobId === 'BLU' ? 80 : 100;
+        const maxLevel = getJobMaxLevel(jobId);
         return [jobId, Math.round(clamp(finiteNumber(jobLevelsSource[jobId], maxLevel), 1, maxLevel))];
     }));
     const mainJob = typeof source.mainJob === 'string' && jobs.includes(source.mainJob)
@@ -123,6 +125,8 @@ export function normalizePlayerInfo(value: unknown): PlayerInfo {
         layout: source.layout === 'left-portrait' ? 'left-portrait' : 'header',
         language,
         pointColor,
+        cornerWash: booleanValue(source.cornerWash),
+        jobWatermark: booleanValue(source.jobWatermark),
         stickers: normalizeStickers(source.stickers),
         version: PROFILE_SCHEMA_VERSION,
     };

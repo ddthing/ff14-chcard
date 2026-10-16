@@ -27,6 +27,10 @@ interface PlayerContextType {
     dismissStickerUndo: () => void;
     persistenceStatus: 'image-omitted' | 'failed' | null;
     dismissPersistenceStatus: () => void;
+    canUndo: boolean;
+    canRedo: boolean;
+    undo: () => void;
+    redo: () => void;
 }
 
 interface PlayerStoreSnapshot {
@@ -34,6 +38,8 @@ interface PlayerStoreSnapshot {
     selectedStickerId: string | null;
     removedSticker: { sticker: Sticker; index: number } | null;
     persistenceStatus: 'image-omitted' | 'failed' | null;
+    canUndo: boolean;
+    canRedo: boolean;
 }
 
 interface PlayerStore {
@@ -50,11 +56,14 @@ interface PlayerStore {
     dismissStickerUndo: () => void;
     setPersistenceStatus: (status: PlayerStoreSnapshot['persistenceStatus']) => void;
     dismissPersistenceStatus: () => void;
+    undo: () => void;
+    redo: () => void;
 }
 
-type PlayerActions = Omit<PlayerContextType, 'playerInfo' | 'selectedStickerId' | 'removedSticker' | 'persistenceStatus'>;
+type PlayerActions = Omit<PlayerContextType, 'playerInfo' | 'selectedStickerId' | 'removedSticker' | 'persistenceStatus' | 'canUndo' | 'canRedo'>;
 
 const STORAGE_KEY = 'ff14-playerInfo';
+const CONTINUOUS_EDIT_FIELDS = new Set<keyof PlayerInfo>(['name', 'activeTime', 'comment', 'pointColor', 'jobLevels', 'stickers']);
 
 function loadPlayerInfo(): PlayerInfo {
     try {
@@ -88,7 +97,12 @@ function createPlayerStore(): PlayerStore {
         selectedStickerId: null,
         removedSticker: null,
         persistenceStatus: null,
+        canUndo: false,
+        canRedo: false,
     };
+    const past: PlayerInfo[] = [];
+    const future: PlayerInfo[] = [];
+    let lastEdit: { field: keyof PlayerInfo; time: number } | null = null;
     const listeners = new Set<Listener>();
     const playerInfoListeners = new Set<Listener>();
 
@@ -106,21 +120,53 @@ function createPlayerStore(): PlayerStore {
         return () => playerInfoListeners.delete(listener);
     };
 
+    const recordHistory = (next: PlayerInfo) => {
+        const previous = snapshot.playerInfo;
+        const changed = (Object.keys(next) as (keyof PlayerInfo)[]).filter(key => !Object.is(previous[key], next[key]));
+        if (changed.length === 0) return false;
+        const field = changed.length === 1 && CONTINUOUS_EDIT_FIELDS.has(changed[0]) ? changed[0] : null;
+        const time = Date.now();
+        if (!field || !lastEdit || field !== lastEdit.field || time - lastEdit.time > 700 || future.length > 0) {
+            past.push(previous);
+            if (past.length > 30) past.shift();
+        }
+        future.length = 0;
+        lastEdit = field ? { field, time } : null;
+        return true;
+    };
+
     const setPlayerInfo = (nextInfo: PlayerInfoUpdater) => {
         const playerInfo = typeof nextInfo === 'function'
             ? nextInfo(snapshot.playerInfo)
             : nextInfo;
 
-        if (Object.is(playerInfo, snapshot.playerInfo)) return;
+        if (Object.is(playerInfo, snapshot.playerInfo) || !recordHistory(playerInfo)) return;
 
-        snapshot = { ...snapshot, playerInfo };
+        snapshot = { ...snapshot, playerInfo, canUndo: past.length > 0, canRedo: false };
         notify(listeners);
         notify(playerInfoListeners);
     };
 
     const updatePlayerField = <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => {
+        if (Object.is(snapshot.playerInfo[field], value)) return;
         setPlayerInfo(prev => ({ ...prev, [field]: value }));
     };
+
+    const restoreHistory = (direction: 'undo' | 'redo') => {
+        const source = direction === 'undo' ? past : future;
+        const destination = direction === 'undo' ? future : past;
+        const playerInfo = source.pop();
+        if (!playerInfo) return;
+        destination.push(snapshot.playerInfo);
+        lastEdit = null;
+        snapshot = { ...snapshot, playerInfo, removedSticker: null,
+            selectedStickerId: playerInfo.stickers?.some(sticker => sticker.id === snapshot.selectedStickerId) ? snapshot.selectedStickerId : null,
+            canUndo: past.length > 0, canRedo: future.length > 0 };
+        notify(listeners);
+        notify(playerInfoListeners);
+    };
+    const undo = () => restoreHistory('undo');
+    const redo = () => restoreHistory('redo');
 
     const updateLanguage = (language: Language) => {
         setPlayerInfo(prev => ({ ...prev, language }));
@@ -142,9 +188,14 @@ function createPlayerStore(): PlayerStore {
         const index = stickers.findIndex(sticker => sticker.id === id);
         if (index < 0) return;
 
+        const playerInfo = { ...snapshot.playerInfo, stickers: stickers.filter(sticker => sticker.id !== id) };
+        lastEdit = null;
+        recordHistory(playerInfo);
+
         snapshot = {
             ...snapshot,
-            playerInfo: { ...snapshot.playerInfo, stickers: stickers.filter(sticker => sticker.id !== id) },
+            playerInfo,
+            canUndo: past.length > 0, canRedo: false,
             selectedStickerId: snapshot.selectedStickerId === id ? null : snapshot.selectedStickerId,
             removedSticker: { sticker: stickers[index], index },
         };
@@ -157,9 +208,13 @@ function createPlayerStore(): PlayerStore {
         const { sticker, index } = snapshot.removedSticker;
         const stickers = [...(snapshot.playerInfo.stickers ?? [])];
         stickers.splice(Math.min(index, stickers.length), 0, sticker);
+        const playerInfo = { ...snapshot.playerInfo, stickers };
+        lastEdit = null;
+        recordHistory(playerInfo);
         snapshot = {
             ...snapshot,
-            playerInfo: { ...snapshot.playerInfo, stickers },
+            playerInfo,
+            canUndo: past.length > 0, canRedo: false,
             selectedStickerId: sticker.id,
             removedSticker: null,
         };
@@ -195,6 +250,8 @@ function createPlayerStore(): PlayerStore {
         dismissStickerUndo,
         setPersistenceStatus,
         dismissPersistenceStatus,
+        undo,
+        redo,
     };
 }
 
@@ -215,12 +272,23 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             }, 250);
         };
 
+        const flushPersistence = () => {
+            if (timeoutId === undefined) return;
+            window.clearTimeout(timeoutId);
+            timeoutId = undefined;
+            store.setPersistenceStatus(persistPlayerInfo(store.getSnapshot().playerInfo));
+        };
+        const handleVisibility = () => { if (document.visibilityState === 'hidden') flushPersistence(); };
         schedulePersistence();
         const unsubscribe = store.subscribePlayerInfo(schedulePersistence);
+        window.addEventListener('pagehide', flushPersistence);
+        document.addEventListener('visibilitychange', handleVisibility);
 
         return () => {
             unsubscribe();
-            if (timeoutId !== undefined) window.clearTimeout(timeoutId);
+            window.removeEventListener('pagehide', flushPersistence);
+            document.removeEventListener('visibilitychange', handleVisibility);
+            flushPersistence();
         };
     }, [store]);
 
@@ -263,6 +331,8 @@ export function usePlayerActions(): PlayerActions {
         undoStickerRemoval: store.undoStickerRemoval,
         dismissStickerUndo: store.dismissStickerUndo,
         dismissPersistenceStatus: store.dismissPersistenceStatus,
+        undo: store.undo,
+        redo: store.redo,
     }), [store]);
 }
 
@@ -281,6 +351,10 @@ export function usePlayer() {
         selectedStickerId: snapshot.selectedStickerId,
         removedSticker: snapshot.removedSticker,
         persistenceStatus: snapshot.persistenceStatus,
+        canUndo: snapshot.canUndo,
+        canRedo: snapshot.canRedo,
+        undo: store.undo,
+        redo: store.redo,
         setSelectedStickerId: store.setSelectedStickerId,
         removeSticker: store.removeSticker,
         undoStickerRemoval: store.undoStickerRemoval,

@@ -1,28 +1,9 @@
-import { usePlayer } from '../../contexts/PlayerContext';
-import { playstyleTranslate } from '../../utils/i18n';
-import { i18n } from '../../utils/i18n';
-
+import { usePlayerSelector } from '../../contexts/PlayerContext';
+import { playstyleTranslate, i18n } from '../../utils/i18n';
 export function CardPlaystyles() {
-    const { playerInfo } = usePlayer();
-    const { playstyles, language: lang } = playerInfo;
-    const t = i18n[lang].preview;
-
-    if (!playstyles || playstyles.length === 0) return null;
-
-    return (
-        <div className="pl-4">
-            <div className="text-[10px] text-neutral-400 dark:text-[#86868b] font-semibold uppercase tracking-wider mb-2">{t.playstyle}</div>
-            <div className="flex flex-wrap gap-1.5">
-                {playstyles.map(tag => (
-                    <span 
-                        key={tag} 
-                        className="px-2.5 py-1 rounded-full text-xs font-medium"
-                        style={{ backgroundColor: `${playerInfo.pointColor}15`, color: 'var(--text-primary)' }}
-                    >
-                        {playstyleTranslate(tag, lang)}
-                    </span>
-                ))}
-            </div>
-        </div>
-    );
+    const { playstyles, language: lang } = usePlayerSelector(s => s.playerInfo);
+    if (!playstyles.length) return null;
+    return <section aria-label={i18n[lang].preview.playstyle}><h3 className="sheet-label">{i18n[lang].preview.playstyle}</h3><div className="sheet-tags">
+        {playstyles.map(tag => <span key={tag}><i className="sheet-paper-texture" aria-hidden="true" />{playstyleTranslate(tag, lang)}</span>)}
+    </div></section>;
 }

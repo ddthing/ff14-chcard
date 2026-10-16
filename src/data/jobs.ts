@@ -36,6 +36,7 @@ export const JOBS: Job[] = [
     { id: 'RDM', name: 'Red Mage', nameKr: '적마도사', nameEn: 'RDM', nameJa: '赤魔道士', role: 'Magical Ranged', iconUrl: '/icons/RDM.svg' },
     { id: 'PCT', name: 'Pictomancer', nameKr: '픽토맨서', nameEn: 'PCT', nameJa: 'ピクトマンサー', role: 'Magical Ranged', iconUrl: '/icons/PCT.svg' },
     { id: 'BLU', name: 'Blue Mage', nameKr: '청마도사', nameEn: 'BLU', nameJa: '青魔道士', role: 'Limited', iconUrl: '/icons/BLU.svg' },
+    { id: 'BST', name: 'Beastmaster', nameKr: '마수조련사', nameEn: 'BST', nameJa: '魔獣使い', role: 'Limited', iconUrl: '/icons/BST.svg' },
 
     // ========== CRAFTING (Disciples of the Hand) ==========
     { id: 'CRP', name: 'Carpenter', nameKr: '목수', nameEn: 'CRP', nameJa: '木工師', role: 'Crafting', iconUrl: '/icons/CRP.svg' },
@@ -52,3 +53,6 @@ export const JOBS: Job[] = [
     { id: 'BTN', name: 'Botanist', nameKr: '원예가', nameEn: 'BTN', nameJa: '園芸師', role: 'Gathering', iconUrl: '/icons/BTN.svg' },
     { id: 'FSH', name: 'Fisher', nameKr: '어부', nameEn: 'FSH', nameJa: '漁師', role: 'Gathering', iconUrl: '/icons/FSH.svg' },
 ];
+
+const LIMITED_JOB_LEVEL_CAPS: Readonly<Record<string, number>> = { BLU: 80, BST: 50 };
+export function getJobMaxLevel(jobId: string): number { return LIMITED_JOB_LEVEL_CAPS[jobId] ?? 100; }

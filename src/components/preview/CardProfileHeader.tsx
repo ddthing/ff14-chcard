@@ -1,59 +1,20 @@
 import { Sprout, Crown } from 'lucide-react';
-import { usePlayer } from '../../contexts/PlayerContext';
-import { getContrastColor } from '../../utils/styles';
-import { activeTimeTranslate } from '../../utils/i18n';
-import { i18n } from '../../utils/i18n';
-
+import { usePlayerSelector } from '../../contexts/PlayerContext';
+import { activeTimeTranslate, i18n } from '../../utils/i18n';
 export function CardProfileHeader() {
-    const { playerInfo } = usePlayer();
-    const { name, server, region, isSprout, isMentor, isNicknameChanged, activeTime, language: lang } = playerInfo;
+    const { name, server, region, isSprout, isMentor, isNicknameChanged, activeTime, language: lang } = usePlayerSelector(s => s.playerInfo);
     const t = i18n[lang].preview;
-
-    return (
-        <div className="flex items-end justify-between border-b border-neutral-100 px-4 pb-5 dark:border-[#3a3a3c]">
-            <div>
-                {(name || isSprout || isMentor || isNicknameChanged) && (
-                    <div className="flex items-center gap-2">
-                        {name && (
-                            <div className="text-3xl font-bold tracking-tight leading-none whitespace-nowrap">
-                                {name}
-                            </div>
-                        )}
-                        {isSprout && (
-                            <span style={{ color: 'var(--text-primary)' }} title={t.sprout} aria-label={t.sprout}>
-                                <Sprout size={22} aria-hidden="true" />
-                            </span>
-                        )}
-                        {isMentor && (
-                            <span style={{ color: 'var(--text-primary)' }} title={t.mentor} aria-label={t.mentor}>
-                                <Crown size={22} aria-hidden="true" />
-                            </span>
-                        )}
-                        {isNicknameChanged && (
-                            <span
-                                className="text-[10px] px-2 py-0.5 rounded-full font-bold whitespace-nowrap"
-                                style={{ backgroundColor: playerInfo.pointColor, color: getContrastColor(playerInfo.pointColor) }}
-                            >
-                                {t.diffIngame}
-                            </span>
-                        )}
-                    </div>
-                )}
-                {server && (
-                    <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-sm text-neutral-500 dark:text-[#a1a1a6] font-medium whitespace-nowrap">{server}</span>
-                        <span className="text-[10px] px-1.5 py-0.5 rounded bg-neutral-100 dark:bg-[#3a3a3c] text-neutral-400 dark:text-[#86868b] font-semibold whitespace-nowrap">{region}</span>
-                    </div>
-                )}
-            </div>
-            {activeTime && (
-                <div className="text-right">
-                   <p className="text-[10px] font-bold text-neutral-400 dark:text-[#86868b] uppercase tracking-[0.2em] mb-0.5" style={{ fontFamily: 'inherit' }}>{t.activeTime}</p>
-                   <span className="text-xs text-neutral-400 dark:text-[#86868b] font-medium whitespace-nowrap">
-                       {activeTimeTranslate(activeTime, lang)}
-                   </span>
-                </div>
-            )}
+    if (!name && !server && !activeTime && !isSprout && !isMentor && !isNicknameChanged) return null;
+    return <div className="sheet-profile">
+        <div className="sheet-identity">
+            {server && <p className="sheet-world"><span className="sheet-world-mark" aria-hidden="true" />{server}<span className="sheet-region">{region}</span></p>}
+            {name && <h2 className="sheet-name">{name}</h2>}
+            {(isSprout || isMentor || isNicknameChanged) && <div className="sheet-statuses">
+                {isSprout && <span><Sprout size={13} aria-hidden="true" />{t.sprout}</span>}
+                {isMentor && <span><Crown size={13} aria-hidden="true" />{t.mentor}</span>}
+                {isNicknameChanged && <span>{t.diffIngame}</span>}
+            </div>}
         </div>
-    );
+        {activeTime && <div className="sheet-active"><p className="sheet-label">{t.activeTime}</p><p className="sheet-active-value">{activeTimeTranslate(activeTime, lang)}</p></div>}
+    </div>;
 }

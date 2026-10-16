@@ -30,7 +30,7 @@ export function ThemeToggle({ lang }: { lang: Language }) {
         }
         const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
         if (themeColor) {
-            themeColor.content = theme === 'dark' ? '#252525' : '#ffffff';
+            themeColor.content = theme === 'dark' ? '#1e211e' : '#f2f1ed';
         }
         try {
             localStorage.setItem('theme', theme);
