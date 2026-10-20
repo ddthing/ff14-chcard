@@ -1,6 +1,6 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
 import type { PlayerInfo } from '../types';
-import { ChevronLeft, ChevronRight, ContactRound, Swords, Tags, Paintbrush, ImagePlus, X, Save } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ContactRound, Swords, Tags, Paintbrush, ImagePlus, X, Archive, Layers } from 'lucide-react';
 import { i18n } from '../utils/i18n';
 import { ColorPalettePicker } from './ColorPalettePicker';
 import { FontPicker } from './FontPicker';
@@ -31,6 +31,7 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
     const playerInfo = usePlayerSelector(s => s.playerInfo);
     const { setPlayerInfo, updateImage: onImageChange } = usePlayerActions();
     const panelRef = useRef<HTMLDivElement>(null);
+    const scrollPositionsRef = useRef<Partial<Record<EditorTabId, number>>>({});
     const imageTriggerRef = useRef<HTMLButtonElement>(null);
     const [internalActiveTab, setInternalActiveTab] = useState<EditorTabId>('basic');
     const activeTab = controlledTab ?? internalActiveTab;
@@ -67,7 +68,10 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
         readFailed: t.imageUploadError,
     };
     const isPointColorValid = /^#[0-9a-f]{6}$/i.test(playerInfo.pointColor);
-    useEffect(() => { panelRef.current?.scrollTo({ top: 0 }); }, [activeTab]);
+    useLayoutEffect(() => {
+        const panel = panelRef.current;
+        if (panel) panel.scrollTop = scrollPositionsRef.current[activeTab] ?? 0;
+    }, [activeTab]);
 
     const handleChange = <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => {
         setPlayerInfo(prev => ({ ...prev, [field]: value }));
@@ -85,7 +89,8 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
         { id: 'job',    label: t.tabJob,    icon: <Swords       size={13} /> },
         { id: 'style',  label: t.tabStyle,  icon: <Tags         size={13} /> },
         { id: 'design', label: t.tabDesign, icon: <Paintbrush   size={13} /> },
-        { id: 'slot',   label: t.tabSlot,   icon: <Save         size={13} /> },
+        { id: 'stickers', label: t.tabStickers, icon: <Layers size={13} /> },
+        { id: 'slot', label: t.tabSlot, icon: <Archive size={13} /> },
     ];
 
     const activeTabIndex = Math.max(0, tabs.findIndex(tab => tab.id === activeTab));
@@ -218,6 +223,7 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
             {/* ───── Tab Content ────────────────────────────────────────────── */}
             <div
                 ref={panelRef}
+                onScroll={event => { scrollPositionsRef.current[activeTab] = event.currentTarget.scrollTop; }}
                 className="studio-tab-content flex-1 overflow-y-auto flex flex-col"
                 style={{ backgroundColor: 'var(--surface-100)' }}
                 id={`profile-panel-${activeTab}`}
@@ -406,10 +412,12 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                         <Section title={t.font}>
                             <FontPicker value={playerInfo.font} onChange={font => handleChange('font', font)} lang={lang} active={activeTab === 'design'} />
                         </Section>
-                        <BackgroundEffectsSection /><StickerSection />
+                        <BackgroundEffectsSection />
                 </div>
 
-                {/* ── Tab 5: Slot ─────────────────────────────────────────────── */}
+                {activeTab === 'stickers' && <div data-tour="stickers-section"><StickerSection /></div>}
+
+                {/* ── Tab 6: Slot ─────────────────────────────────────────────── */}
                 {activeTab === 'slot' && (
                     <div className="animate-tab-in flex-1 flex flex-col" data-tour="slot-section">
                         <SlotSection />

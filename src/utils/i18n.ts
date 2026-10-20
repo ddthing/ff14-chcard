@@ -2,6 +2,9 @@ import type { Language } from '../types';
 
 export const i18n = {
     ko: {
+        workspace: {"tools":"편집 도구","editPanel":"편집 설정","collapsed":"접힘","half":"절반","full":"전체","changeHeight":"편집 패널 높이 바꾸기","expand":"편집 패널 펼치기","collapse":"편집 패널 접기","archive":"보관함"},
+        layers: {"title":"레이어","front":"맨 앞","back":"맨 뒤","selected":"선택됨","empty":"스티커를 추가하면 여기에 표시됩니다.","actions":"스티커 작업","order":"앞에서 뒤 순서","properties":"선택한 스티커","select":"스티커 {number} 선택","moveToFront":"맨 앞으로","moveToBack":"맨 뒤로"},
+        exportMenu: {compactQuality: { original: '원본', standard: '1×', high: '2×', ultra: '3×' }, "options":"출력 옵션","saveLabel":"{quality} PNG 저장","format":"PNG · 배경 포함"},
         notifications: { region: '알림', expand: '알림 펼치기', collapse: '알림 접기' },
         tour: {
             start: '사용방법', label: '카드 만들기 안내', skip: '닫기', previous: '이전', next: '다음', finish: '완료', progress: '{current} / {total}',
@@ -10,9 +13,10 @@ export const i18n = {
                 basic: { title: '이름과 서버', description: '캐릭터 이름과 서버를 입력하세요. 새싹·멘토 표시도 여기에서 바꿀 수 있습니다.' },
                 job: { title: '직업과 레벨', description: '표시할 직업을 고르고 주 직업을 지정하세요. 레벨은 직업별로 바꿀 수 있습니다.' },
                 style: { title: '플레이 스타일', description: '즐겨 하는 활동과 접속 시간을 골라주세요. 자기소개도 적을 수 있습니다.' },
-                design: { title: '색과 폰트', description: '팔레트에서 포인트색을 고르세요. 마음에 드는 색을 잠그고 나머지만 다시 섞을 수 있습니다. 폰트와 스티커도 이곳에서 바꿉니다.' },
+                design: { title: '색과 폰트', description: '팔레트에서 포인트색을 고르세요. 마음에 드는 색을 잠그고 나머지만 다시 섞을 수 있습니다. 폰트와 배경 효과도 이곳에서 바꿉니다.' },
+                stickers: { title: '스티커 배치', description: '스티커를 추가하고 목록에서 선택하세요. 카드에서 직접 움직이거나 크기와 회전을 조절할 수 있고, 점 세 개 메뉴에서 앞뒤 순서를 바꿀 수 있습니다.' },
                 preview: { title: '미리보기 확인', description: '화면에 맞춤으로 카드 전체를 확인하세요. 실제 크기로 바꾸면 사진과 글자를 확대해 볼 수 있습니다.' },
-                export: { title: 'PNG로 저장', description: '출력 크기를 확인한 뒤 이미지 저장을 누르세요. 원본 해상도는 사진의 세부 묘사를 유지하고, 1·2·3배 저장도 선택할 수 있습니다.' },
+                export: { title: 'PNG로 저장', description: '도구줄의 출력 크기를 확인한 뒤 PNG 저장을 누르세요. 옆 화살표에서 저장 품질을 고를 수 있습니다. 원본 해상도는 사진의 세부 묘사를 유지하고, 1·2·3배 저장도 선택할 수 있습니다.' },
             },
         },
         palette: {
@@ -60,6 +64,7 @@ export const i18n = {
                 "즐겨 하는 직업과 레벨을 골라보세요.",
                 "플레이 스타일과 소개를 더해보세요.",
                 "컬러와 폰트로 당신만의 분위기를.",
+                "스티커를 선택하고 배치를 조절하세요.",
                 "프로필을 보관하고 백업하세요."
             ],
             "dropHint": "이미지를 끌어놓거나 선택 · 원본 해상도 유지",
@@ -156,7 +161,8 @@ export const i18n = {
             tabJob: '직업',
             tabStyle: '스타일',
             tabDesign: '꾸미기',
-            tabSlot: '저장',
+            tabStickers: '스티커',
+            tabSlot: '보관함',
             stickers: '스티커',
             addSticker: '스티커 추가',
             stickerHint: 'PNG, JPG, GIF 등 2MB 이하 이미지를 추가하세요. 카드에서 위치와 크기를 조절할 수 있습니다.',
@@ -268,6 +274,9 @@ export const i18n = {
         },
     },
     en: {
+        workspace: {"tools":"Editing tools","editPanel":"Edit settings","collapsed":"Collapsed","half":"Half","full":"Full","changeHeight":"Change editor height","expand":"Expand editor","collapse":"Collapse editor","archive":"Library"},
+        layers: {"title":"Layers","front":"Front","back":"Back","selected":"Selected","empty":"Add a sticker to see it here.","actions":"Sticker actions","order":"Front to back","properties":"Selected sticker","select":"Select sticker {number}","moveToFront":"Bring to front","moveToBack":"Send to back"},
+        exportMenu: {compactQuality: { original: 'Original', standard: '1×', high: '2×', ultra: '3×' }, "options":"Export options","saveLabel":"Save {quality} PNG","format":"PNG · Includes background"},
         notifications: { region: 'Notifications', expand: 'Expand notifications', collapse: 'Collapse notifications' },
         tour: {
             start: 'How to use', label: 'Create a character card', skip: 'Close', previous: 'Back', next: 'Next', finish: 'Done', progress: '{current} / {total}',
@@ -276,9 +285,10 @@ export const i18n = {
                 basic: { title: 'Name and world', description: 'Enter your character name and world. You can also set the sprout and mentor badges here.' },
                 job: { title: 'Jobs and levels', description: 'Choose which jobs to show and select your main job. You can set each job’s level.' },
                 style: { title: 'Playstyle', description: 'Choose your favorite activities and usual playtimes, then add a short introduction.' },
-                design: { title: 'Colors and fonts', description: 'Pick an accent from the palette. Lock colors you like and shuffle the rest. Fonts and stickers are here too.' },
+                design: { title: 'Colors and fonts', description: 'Pick an accent from the palette. Lock colors you like and shuffle the rest. Fonts and background effects are here too.' },
+                stickers: { title: 'Arrange stickers', description: 'Add a sticker and select it from the layer list. Drag, resize or rotate it on the card, and use its menu to change the layer order.' },
                 preview: { title: 'Check your card', description: 'Fit to view shows the whole card. Actual size lets you inspect the image and text more closely.' },
-                export: { title: 'Save a PNG', description: 'Check the output dimensions, then select Save Image. Original resolution keeps photo detail; 1×, 2× and 3× exports are also available.' },
+                export: { title: 'Save a PNG', description: 'Check the toolbar output dimensions, then save the PNG. Use the arrow beside it to choose export quality. Original resolution keeps photo detail; 1×, 2× and 3× exports are also available.' },
             },
         },
         palette: {
@@ -326,6 +336,7 @@ export const i18n = {
                 "Choose your favorite jobs and levels.",
                 "Add your playstyle and introduction.",
                 "Make it yours with color and type.",
+                "Select a sticker and adjust its placement.",
                 "Keep your profiles and backups together."
             ],
             "dropHint": "Drop an image or choose a file · Original resolution retained",
@@ -422,7 +433,8 @@ export const i18n = {
             tabJob: 'Jobs',
             tabStyle: 'Style',
             tabDesign: 'Design',
-            tabSlot: 'Save',
+            tabStickers: 'Stickers',
+            tabSlot: 'Library',
             stickers: 'Stickers',
             addSticker: 'Add Sticker',
             stickerHint: 'Add a PNG, JPG, or GIF up to 2 MB. Adjust its position and size on the card.',
@@ -533,6 +545,9 @@ export const i18n = {
         },
     },
     ja: {
+        workspace: {"tools":"編集ツール","editPanel":"編集設定","collapsed":"折りたたみ","half":"半分","full":"全体","changeHeight":"編集パネルの高さを変更","expand":"編集パネルを開く","collapse":"編集パネルを閉じる","archive":"保管庫"},
+        layers: {"title":"レイヤー","front":"最前面","back":"最背面","selected":"選択中","empty":"ステッカーを追加するとここに表示されます。","actions":"ステッカー操作","order":"手前から奥の順","properties":"選択したステッカー","select":"ステッカー {number}を選択","moveToFront":"最前面へ","moveToBack":"最背面へ"},
+        exportMenu: {compactQuality: { original: '元の解像度', standard: '1×', high: '2×', ultra: '3×' }, "options":"出力オプション","saveLabel":"{quality} PNGを保存","format":"PNG · 背景を含む"},
         notifications: { region: '通知', expand: '通知を展開', collapse: '通知を折りたたむ' },
         tour: {
             start: '使い方', label: 'キャラクターカードの作り方', skip: '閉じる', previous: '戻る', next: '次へ', finish: '完了', progress: '{current} / {total}',
@@ -541,9 +556,10 @@ export const i18n = {
                 basic: { title: '名前とワールド', description: 'キャラクター名とワールドを入力します。若葉・メンターマークもここで設定できます。' },
                 job: { title: 'ジョブとレベル', description: '表示するジョブとメインジョブを選びます。レベルはジョブごとに設定できます。' },
                 style: { title: 'プレイスタイル', description: '好きな遊び方やログイン時間を選び、自己紹介を添えましょう。' },
-                design: { title: '色とフォント', description: 'パレットからアクセントカラーを選びます。好きな色をロックし、残りをシャッフルできます。フォントやステッカーもここで変更します。' },
+                design: { title: '色とフォント', description: 'パレットからアクセントカラーを選びます。好きな色をロックし、残りをシャッフルできます。フォントや背景効果もここで変更します。' },
+                stickers: { title: 'ステッカーを配置', description: 'ステッカーを追加し、リストから選択します。カード上で移動・拡大縮小・回転ができ、メニューから重なり順を変更できます。' },
                 preview: { title: '仕上がりを確認', description: '画面に合わせるとカード全体を確認できます。実際のサイズにすると写真や文字を詳しく見られます。' },
-                export: { title: 'PNGで保存', description: '出力サイズを確認し、画像を保存します。元の解像度なら写真の細部を維持でき、1・2・3倍での保存も選べます。' },
+                export: { title: 'PNGで保存', description: 'ツールバーで出力サイズを確認し、PNGを保存します。横の矢印から保存品質を選べます。元の解像度なら写真の細部を維持でき、1・2・3倍での保存も選べます。' },
             },
         },
         palette: {
@@ -591,6 +607,7 @@ export const i18n = {
                 "お気に入りのジョブとレベルを選択。",
                 "プレイスタイルと自己紹介を追加。",
                 "カラーとフォントであなたらしく。",
+                "ステッカーを選んで配置を調整。",
                 "プロフィールの保存とバックアップ。"
             ],
             "dropHint": "画像をドロップ、または選択 · 元の解像度を維持",
@@ -687,7 +704,8 @@ export const i18n = {
             tabJob: 'ジョブ',
             tabStyle: 'スタイル',
             tabDesign: 'デザイン',
-            tabSlot: '保存',
+            tabStickers: 'ステッカー',
+            tabSlot: '保管庫',
             stickers: 'ステッカー',
             addSticker: 'ステッカー追加',
             stickerHint: 'PNG・JPG・GIFなど、2MB以下の画像を追加してください。カード上で位置とサイズを調整できます。',

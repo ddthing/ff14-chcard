@@ -15,11 +15,15 @@ FF14 Character Card는 파이널 판타지 XIV 플레이어가 자신의 캐릭�
 - 캐릭터 스크린샷 업로드, 자르기, 위치·크기 조정
 - 실제 파일 읽기 진행·취소·재시도, 새 파일 선택 시 이전 읽기 취소. [Lucian UX/UI #032](https://lucianlabs.dev/uxui-prompt/#032)을 브라우저의 이미지 처리에 연결했습니다.
 - 스티커의 이동·확대·축소·회전과 키보드 미세 조정
+- [Lucian UX/UI #122](https://lucianlabs.dev/uxui-prompt/#122) 기반 스티커 레이어와 선택한 항목의 설정. 선택 자체는 쌓임 순서를 바꾸지 않습니다.
+- 선택한 스티커의 ⋯ 또는 우클릭으로 앞뒤 순서·가운데 정렬·변형 초기화·삭제를 실행하는 [Lucian UX/UI #038](https://lucianlabs.dev/uxui-prompt/#038) 메뉴
 - 색상, 폰트, 테마, 다크 모드를 활용한 카드 디자인
 - 한국어, English, 日本語 인터페이스와 카드 콘텐츠
-- 편집·미리보기 공간을 넓힌 스튜디오, 모바일 편집·미리보기·저장 바로가기
+- 공통 도구줄의 실행 취소·자동 저장 상태·PNG 저장과, 설정 옆에 미리보기를 유지하는 데스크톱 작업 화면
+- 모바일에서 미리보기를 보며 접힘·절반·전체 높이로 펼치는 편집 패널. [Lucian UX/UI #336](https://lucianlabs.dev/uxui-prompt/#336)의 끌기·키보드 높이 조절을 실제 편집 폼에 연결했습니다.
+- 기본·직업·스타일·꾸미기·스티커·보관함을 분리하고 편집 항목별 스크롤 위치를 기억합니다.
 - 접고 펼칠 수 있는 편집 레일과 좁은 화면의 가로 메뉴. [Lucian UX/UI #040](https://lucianlabs.dev/uxui-prompt/#040)을 실제 편집 항목에 연결했습니다.
-- ‘사용방법’을 누르면 사진·기본 정보·직업·스타일·꾸미기·미리보기·저장을 실제 화면에서 따라가는 7단계 안내가 열립니다. [Lucian UX/UI #197](https://lucianlabs.dev/uxui-prompt/#197) 기반이며, Esc나 닫기로 끝내면 원래 편집 항목으로 돌아옵니다.
+- ‘사용방법’을 누르면 사진·기본 정보·직업·스타일·꾸미기·스티커·미리보기·저장을 실제 화면에서 따라가는 8단계 안내가 열립니다. [Lucian UX/UI #197](https://lucianlabs.dev/uxui-prompt/#197) 기반이며, Esc나 닫기로 끝내면 원래 편집 항목으로 돌아옵니다.
 - 기존 사진 배치를 유지한 가로형 700px·세로형 880px 카드. 높이는 내용에 따라 늘어납니다.
 - 주 직업은 포인트 색을 입힌 아이콘, 이름과 레벨로 강조하며, 전투 직업의 마수조련사는 마지막에 표시합니다. 마수조련사 최대 레벨 50·청마도사 80·나머지 직업 100을 지원합니다.
 - 직업 목록은 아이콘·레벨만 조밀하게 배열하고, 직업명은 툴팁과 스크린 리더에 제공합니다.
@@ -29,6 +33,7 @@ FF14 Character Card는 파이널 판타지 XIV 플레이어가 자신의 캐릭�
 - 폰트 목록의 방향키·Home/End·글자 입력 탐색과 확정 선택. [Lucian UX/UI #031](https://lucianlabs.dev/uxui-prompt/#031)을 세 언어의 폰트 목록에 연결했습니다.
 - 저장 진행·완료·오류와 색상 복사 결과를 모아 보여주는 [Lucian UX/UI #070](https://lucianlabs.dev/uxui-prompt/#070) 알림. 알림을 펼치거나 개별로 닫을 수 있고, 마우스를 올리거나 초점을 두면 자동 닫힘이 멈춥니다.
 - 전체 카드 보기·너비 맞춤·실제 크기 미리보기, 원본 해상도·1×·2×·3× PNG 저장과 실제 출력 해상도 표시
+- 출력 배율과 저장을 묶은 [Lucian UX/UI #010](https://lucianlabs.dev/uxui-prompt/#010) 분할 버튼. 화살표에서 옵션을 고르고 주 버튼으로 PNG를 저장합니다.
 - 30단계 실행 취소·다시 실행. 연속 입력을 묶고 색상 선택을 되돌리며, 입력칸 밖에서 Ctrl/⌘ Z·Ctrl/⌘ Shift Z를 지원합니다. 기록은 현재 세션에만 보관됩니다.
 - 데스크톱과 모바일 화면에 맞춰지는 반응형 편집 화면
 - 키보드 탐색, 포커스 관리, 스크린 리더용 상태 안내를 포함한 접근성 기능
@@ -37,8 +42,8 @@ FF14 Character Card는 파이널 판타지 XIV 플레이어가 자신의 캐릭�
 
 1. 캐릭터 기본 정보와 직업 정보를 입력합니다.
 2. 스크린샷과 스티커를 배치하고 카드의 분위기를 조정합니다.
-3. 오른쪽 미리보기에서 결과를 확인합니다.
-4. 저장 품질과 해상도를 확인하고 **이미지 저장**을 눌러 PNG 파일로 내려받습니다. 기본 ‘원본 해상도’는 카드 안 사진의 원래 픽셀 밀도에 맞춰 전체 카드를 저장합니다. 1·2·3배 저장도 선택할 수 있으며, 이 배율 옵션의 큰 출력만 1,200만 픽셀·한 변 16,384px 이내로 자동 조정됩니다.
+3. 미리보기에서 결과를 확인합니다. 모바일에서는 편집 패널의 손잡이로 높이를 바꿔 카드를 보면서 조절할 수 있습니다.
+4. 도구줄에서 출력 해상도를 확인하고 PNG 저장 버튼을 누릅니다. 옆 화살표를 열면 저장 품질을 고를 수 있습니다. 기본 ‘원본 해상도’는 카드 안 사진의 원래 픽셀 밀도에 맞춰 전체 카드를 저장합니다. 1·2·3배 저장도 선택할 수 있으며, 이 배율 옵션의 큰 출력만 1,200만 픽셀·한 변 16,384px 이내로 자동 조정됩니다.
 
 카드 생성과 이미지 변환은 모두 사용자의 브라우저에서 수행됩니다.
 
@@ -152,7 +157,7 @@ public/
 | html-to-image | 카드의 PNG 변환 | MIT | [bubkoo/html-to-image](https://github.com/bubkoo/html-to-image) |
 | react-easy-crop | 이미지 자르기 | MIT | [ValentinH/react-easy-crop](https://github.com/ValentinH/react-easy-crop) |
 | react-helmet-async | 문서 메타데이터 | Apache-2.0 | [staylor/react-helmet-async](https://github.com/staylor/react-helmet-async) |
-| Lucian UX/UI Prompt | 팔레트·편집 레일·화면 안내·업로드·알림·폰트 선택 요소 | MIT · Copyright 2026 Seokwoooo | [Lucian UX/UI](https://lucianlabs.dev/uxui-prompt/) · [고지](./LICENSES/lucian-uxui.txt) |
+| Lucian UX/UI Prompt | 팔레트·편집 레일·화면 안내·업로드·알림·폰트 선택·모바일 패널·레이어·컨텍스트 메뉴·출력 버튼 | MIT · Copyright 2026 Seokwoooo | [Lucian UX/UI](https://lucianlabs.dev/uxui-prompt/) · [고지](./LICENSES/lucian-uxui.txt) |
 | Lucide React | 인터페이스 아이콘 | ISC | [lucide-icons/lucide](https://github.com/lucide-icons/lucide) |
 | `clsx` | 조건부 클래스 조합 | MIT | [lukeed/clsx](https://github.com/lukeed/clsx) |
 | `tailwind-merge` | Tailwind 클래스 병합 | MIT | [dcastil/tailwind-merge](https://github.com/dcastil/tailwind-merge) |

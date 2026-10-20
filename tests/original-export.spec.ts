@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { exportPng, pixels, seed } from './helpers';
+import { exportPng, pixels, seed, chooseQuality } from './helpers';
 
 test.beforeEach(async ({ page }) => {
     await page.route('https://cdn.jsdelivr.net/**', route => route.abort());
@@ -30,8 +30,7 @@ test('original quality exports the full photo pixel resolution above the legacy 
         name: 'Original export',
         stickers: [{ id: 'photo-overlay', url: sticker, x: 50, y: 10, scale: 1, rotation: 0 }],
     });
-    const quality = page.getByLabel('저장 품질', { exact: true });
-    await expect(quality).toHaveValue('original');
+    await chooseQuality(page, 'original');
     const photo = page.locator('#card-preview .sheet-image > img');
     await expect.poll(() => photo.evaluate(image => (image as HTMLImageElement).naturalWidth)).toBe(4_000);
 
@@ -53,7 +52,7 @@ test('original quality exports the full photo pixel resolution above the legacy 
         return [color, color, color, 255];
     })).flat(2));
     const stickerCenter = await page.locator('#card-preview').evaluate(card => {
-        const sticker = card.querySelector<HTMLElement>('[role="group"][aria-label="스티커 1"]')!;
+        const sticker = card.querySelector<HTMLElement>('[data-testid="card-sticker"][data-sticker-id="photo-overlay"]')!;
         const cardRect = card.getBoundingClientRect();
         const stickerRect = sticker.getBoundingClientRect();
         const scaleX = (card as HTMLElement).offsetWidth / cardRect.width;

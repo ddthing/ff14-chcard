@@ -23,6 +23,7 @@ interface PlayerContextType {
     setSelectedStickerId: (id: string | null) => void;
     removedSticker: { sticker: Sticker; index: number } | null;
     removeSticker: (id: string) => void;
+    commitStickerChange: (update: (stickers: Sticker[]) => Sticker[]) => void;
     undoStickerRemoval: () => void;
     dismissStickerUndo: () => void;
     persistenceStatus: 'image-omitted' | 'failed' | null;
@@ -52,6 +53,7 @@ interface PlayerStore {
     updateImage: (image: string | undefined) => void;
     setSelectedStickerId: (id: string | null) => void;
     removeSticker: (id: string) => void;
+    commitStickerChange: (update: (stickers: Sticker[]) => Sticker[]) => void;
     undoStickerRemoval: () => void;
     dismissStickerUndo: () => void;
     setPersistenceStatus: (status: PlayerStoreSnapshot['persistenceStatus']) => void;
@@ -168,6 +170,16 @@ function createPlayerStore(): PlayerStore {
     const undo = () => restoreHistory('undo');
     const redo = () => restoreHistory('redo');
 
+    const commitStickerChange = (update: (stickers: Sticker[]) => Sticker[]) => {
+        const current = snapshot.playerInfo.stickers ?? [];
+        const next = update(current);
+        if (next === current) return;
+        // Menu commands are single undo steps, separate from continuous dragging.
+        lastEdit = null;
+        updatePlayerField('stickers', next);
+        lastEdit = null;
+    };
+
     const updateLanguage = (language: Language) => {
         setPlayerInfo(prev => ({ ...prev, language }));
     };
@@ -246,6 +258,7 @@ function createPlayerStore(): PlayerStore {
         updateImage,
         setSelectedStickerId,
         removeSticker,
+        commitStickerChange,
         undoStickerRemoval,
         dismissStickerUndo,
         setPersistenceStatus,
@@ -328,6 +341,7 @@ export function usePlayerActions(): PlayerActions {
         updateImage: store.updateImage,
         setSelectedStickerId: store.setSelectedStickerId,
         removeSticker: store.removeSticker,
+        commitStickerChange: store.commitStickerChange,
         undoStickerRemoval: store.undoStickerRemoval,
         dismissStickerUndo: store.dismissStickerUndo,
         dismissPersistenceStatus: store.dismissPersistenceStatus,
@@ -357,6 +371,7 @@ export function usePlayer() {
         redo: store.redo,
         setSelectedStickerId: store.setSelectedStickerId,
         removeSticker: store.removeSticker,
+        commitStickerChange: store.commitStickerChange,
         undoStickerRemoval: store.undoStickerRemoval,
         dismissStickerUndo: store.dismissStickerUndo,
         dismissPersistenceStatus: store.dismissPersistenceStatus,
