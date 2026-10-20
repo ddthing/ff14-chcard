@@ -50,6 +50,86 @@ for (const layout of ['header', 'left-portrait'] as const) {
         console.log(layout + ': native ' + size.width + ' × ' + size.height + ', 6 export combinations passed');
     });
 
+    test(layout + ': Korean status and playstyle text stays inside its boxes in preview and export clone', async ({ page }) => {
+        await seed(page, {
+            layout,
+            font: 'font-seogung',
+            isSprout: true,
+            isMentor: true,
+            isNicknameChanged: true,
+            playstyles: [
+                '초보/새싹', '복귀 유저', '하드코어/레이드', '절 레이드',
+                '라이트/즐겜', '스샷/룩덕', '하우징', '제작/채집', '터주',
+                'RP(롤플레잉)', 'PVP', '업적작', '마작', '골드소서', '지도/보물고',
+                '디스코드 가능', '트위터 교류', '인게임 위주',
+            ],
+        });
+
+        const textBounds = await page.locator('#card-preview').evaluate(async card => {
+            const measureText = (container: Element) => {
+                const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
+                const ranges: DOMRect[] = [];
+                while (walker.nextNode()) {
+                    const node = walker.currentNode;
+                    if (!node.textContent?.trim()) continue;
+                    const range = document.createRange();
+                    range.selectNodeContents(node);
+                    ranges.push(...Array.from(range.getClientRects()));
+                }
+                const bounds = container.getBoundingClientRect();
+                return {
+                    text: container.textContent?.trim(),
+                    lineCount: ranges.length,
+                    inside: ranges.every(rect => rect.left >= bounds.left - 1
+                        && rect.right <= bounds.right + 1
+                        && rect.top >= bounds.top - 1
+                        && rect.bottom <= bounds.bottom + 1),
+                };
+            };
+            const selectors = '.sheet-statuses > span, .sheet-tags > span';
+            const preview = [...card.querySelectorAll(selectors)].map(measureText);
+
+            // Exercise html-to-image's own DOM clone. Its copied font sizing and
+            // computed styles can make CJK text wrap differently from preview.
+            const { toSvg } = await import('/node_modules/html-to-image/es/index.js');
+            const root = card as HTMLElement;
+            const svgUrl = await toSvg(root, {
+                width: root.offsetWidth,
+                height: root.offsetHeight,
+                pixelRatio: 1,
+                style: { boxShadow: 'none', transform: 'none' },
+                filter: (element: HTMLElement) => !element.classList?.contains('export-ignore'),
+            });
+            const svg = new DOMParser().parseFromString(decodeURIComponent(svgUrl.slice(svgUrl.indexOf(',') + 1)), 'image/svg+xml');
+            const clonedCard = svg.querySelector('foreignObject')?.firstElementChild;
+            if (!clonedCard) throw new Error('html-to-image did not produce a foreignObject card clone');
+            const sandbox = document.createElement('div');
+            sandbox.style.cssText = 'position:fixed;left:-10000px;top:0;visibility:hidden';
+            document.body.appendChild(sandbox);
+            sandbox.appendChild(document.importNode(clonedCard, true));
+            const exported = [...sandbox.querySelectorAll(selectors)].map(measureText);
+            sandbox.remove();
+            return { preview, exported };
+        });
+        expect(textBounds.preview).toHaveLength(21);
+        expect(textBounds.exported).toHaveLength(21);
+        for (const item of [...textBounds.preview, ...textBounds.exported]) {
+            expect(item.lineCount, item.text).toBe(1);
+            expect(item.inside, item.text).toBe(true);
+        }
+
+        // The image has a flat, known color, so sampling the former inset frame
+        // in the downloaded PNG catches regressions that only appear on export.
+        await page.getByLabel('저장 품질', { exact: true }).selectOption('1');
+        const output = await exportPng(page);
+        const [topFrame, leftFrame] = await pixels(page, output.png, [
+            { x: 30, y: 12, width: 1, height: 1 },
+            { x: 12, y: 30, width: 1, height: 1 },
+        ]);
+        expect(topFrame).toEqual([28, 70, 56, 255]);
+        expect(leftFrame).toEqual([28, 70, 56, 255]);
+    });
+
     test(layout + ': wash and watermark export independently, preserve photo and persist', async ({ page }) => {
         await seed(page, { layout, cornerWash: false, jobWatermark: false });
         await page.getByLabel('저장 품질', { exact: true }).selectOption('1');
