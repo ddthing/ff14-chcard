@@ -80,11 +80,9 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
         try {
             setCropImageSrc(await readImageFile(file));
         } catch (error) {
-            setImageError(error instanceof ImageFileError && error.code === 'too-large'
-                ? i18n[lang].form.imageFileTooLarge
-                : error instanceof ImageFileError && error.code === 'invalid-type'
-                    ? i18n[lang].form.imageInvalidType
-                    : i18n[lang].form.imageUploadError);
+            setImageError(error instanceof ImageFileError && error.code === 'invalid-type'
+                ? i18n[lang].form.imageInvalidType
+                : i18n[lang].form.imageUploadError);
         }
     };
 

@@ -1,7 +1,8 @@
-export const MAX_CHARACTER_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_CHARACTER_IMAGE_DIMENSION = 3000;
+// This only decides whether to keep an already-compressed source as-is; it never rejects an upload.
+const MAX_RETAINED_IMAGE_BYTES = 10 * 1024 * 1024;
 
-export type ImageFileErrorCode = 'invalid-type' | 'too-large' | 'read-failed';
+export type ImageFileErrorCode = 'invalid-type' | 'read-failed';
 
 export class ImageFileError extends Error {
     code: ImageFileErrorCode;
@@ -24,30 +25,41 @@ function readAsDataUrl(file: File): Promise<string> {
     });
 }
 
-function decodeImage(dataUrl: string): Promise<HTMLImageElement> {
-    return new Promise((resolve, reject) => {
-        const image = new Image();
-        image.onload = () => resolve(image);
-        image.onerror = () => reject(new ImageFileError('read-failed'));
-        image.src = dataUrl;
-    });
+async function decodeImage(file: File): Promise<HTMLImageElement> {
+    const objectUrl = URL.createObjectURL(file);
+    try {
+        return await new Promise((resolve, reject) => {
+            const image = new Image();
+            image.onload = () => resolve(image);
+            image.onerror = () => reject(new ImageFileError('read-failed'));
+            image.src = objectUrl;
+        });
+    } finally {
+        URL.revokeObjectURL(objectUrl);
+    }
 }
 
-export async function readImageFile(file: File, maxBytes = MAX_CHARACTER_IMAGE_BYTES): Promise<string> {
+export async function readImageFile(file: File): Promise<string> {
     if (!file.type.startsWith('image/')) throw new ImageFileError('invalid-type');
-    if (file.size > maxBytes) throw new ImageFileError('too-large');
 
-    const dataUrl = await readAsDataUrl(file);
-    const image = await decodeImage(dataUrl);
+    const image = await decodeImage(file);
+    if (image.naturalWidth === 0 || image.naturalHeight === 0) throw new ImageFileError('read-failed');
     const longestSide = Math.max(image.naturalWidth, image.naturalHeight);
-    if (longestSide <= MAX_CHARACTER_IMAGE_DIMENSION) return dataUrl;
+    const shouldDownscale = longestSide > MAX_CHARACTER_IMAGE_DIMENSION;
+    if (!shouldDownscale && file.size <= MAX_RETAINED_IMAGE_BYTES) return readAsDataUrl(file);
 
-    const scale = MAX_CHARACTER_IMAGE_DIMENSION / longestSide;
+    const scale = shouldDownscale ? MAX_CHARACTER_IMAGE_DIMENSION / longestSide : 1;
     const canvas = document.createElement('canvas');
     canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
     canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
     const context = canvas.getContext('2d');
     if (!context) throw new ImageFileError('read-failed');
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL('image/webp', 0.9);
+    try {
+        // Normalize uncropped metadata in a lossless working copy. The existing
+        // 3000px reduction for very large sources keeps its WebP quality target.
+        return shouldDownscale ? canvas.toDataURL('image/webp', 0.9) : canvas.toDataURL('image/png');
+    } catch {
+        throw new ImageFileError('read-failed');
+    }
 }
