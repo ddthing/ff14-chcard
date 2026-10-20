@@ -9,6 +9,7 @@ import {
 } from 'react';
 import type { PlayerInfo, Language, Sticker } from '../types';
 import { normalizePlayerInfo } from '../utils/playerData';
+import { readStoredValue, writeStoredValue } from '../utils/profileStorage';
 
 type PlayerInfoUpdater = PlayerInfo | ((prev: PlayerInfo) => PlayerInfo);
 type Listener = () => void;
@@ -26,6 +27,8 @@ interface PlayerContextType {
     commitStickerChange: (update: (stickers: Sticker[]) => Sticker[]) => void;
     undoStickerRemoval: () => void;
     dismissStickerUndo: () => void;
+    isHydrated: boolean;
+    isPersisting: boolean;
     persistenceStatus: 'image-omitted' | 'failed' | null;
     dismissPersistenceStatus: () => void;
     canUndo: boolean;
@@ -38,6 +41,8 @@ interface PlayerStoreSnapshot {
     playerInfo: PlayerInfo;
     selectedStickerId: string | null;
     removedSticker: { sticker: Sticker; index: number } | null;
+    isHydrated: boolean;
+    isPersisting: boolean;
     persistenceStatus: 'image-omitted' | 'failed' | null;
     canUndo: boolean;
     canRedo: boolean;
@@ -56,48 +61,225 @@ interface PlayerStore {
     commitStickerChange: (update: (stickers: Sticker[]) => Sticker[]) => void;
     undoStickerRemoval: () => void;
     dismissStickerUndo: () => void;
+    hydrate: () => Promise<void>;
+    persistCurrentPlayerInfo: () => Promise<void>;
     setPersistenceStatus: (status: PlayerStoreSnapshot['persistenceStatus']) => void;
     dismissPersistenceStatus: () => void;
     undo: () => void;
     redo: () => void;
 }
 
-type PlayerActions = Omit<PlayerContextType, 'playerInfo' | 'selectedStickerId' | 'removedSticker' | 'persistenceStatus' | 'canUndo' | 'canRedo'>;
+type PlayerActions = Omit<PlayerContextType, 'playerInfo' | 'selectedStickerId' | 'removedSticker' | 'isHydrated' | 'isPersisting' | 'persistenceStatus' | 'canUndo' | 'canRedo'>;
 
 const STORAGE_KEY = 'ff14-playerInfo';
+const CURRENT_PROFILE_KEY = 'currentProfile';
+const STORAGE_REVISION_KEY = '__ff14StorageRevision';
+const PENDING_WRITE_KEY = '__ff14PendingIndexedDbWrite';
+const IMAGE_OMITTED_KEY = '__ff14ImageOmittedFromFallback';
+const STICKER_URLS_OMITTED_KEY = '__ff14StickerUrlsOmittedFromFallback';
+const CANONICAL_READ_FAILED_KEY = '__ff14CanonicalReadFailed';
 const CONTINUOUS_EDIT_FIELDS = new Set<keyof PlayerInfo>(['name', 'activeTime', 'comment', 'pointColor', 'jobLevels', 'stickers']);
+let lastStorageRevisionTime = 0;
 
-function loadPlayerInfo(): PlayerInfo {
+interface LegacyPlayerInfo {
+    playerInfo: PlayerInfo;
+    rawPlayerInfo: Record<string, unknown>;
+    hasPendingWrite: boolean;
+    pendingRevision?: string;
+    storageRevision?: string;
+    imageOmitted: boolean;
+    stickerUrlsOmitted: boolean;
+    canonicalReadFailed: boolean;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function createStorageRevision(): string {
+    lastStorageRevisionTime = Math.max(Date.now(), lastStorageRevisionTime + 1);
+    return `${lastStorageRevisionTime.toString(36)}-${Math.random().toString(36).slice(2)}`;
+}
+
+function observeStorageRevision(revision?: string): void {
+    if (!revision) return;
+    const revisionTime = Number.parseInt(revision.split('-')[0], 36);
+    if (Number.isFinite(revisionTime)) lastStorageRevisionTime = Math.max(lastStorageRevisionTime, revisionTime);
+}
+
+function isPendingFallbackNewer(legacy: LegacyPlayerInfo, indexedDbRevision?: string): boolean {
+    if (!legacy.hasPendingWrite) return false;
+    if (!legacy.pendingRevision || legacy.pendingRevision === indexedDbRevision) return !legacy.pendingRevision;
+    if (!indexedDbRevision) return true;
+
+    const pendingTime = Number.parseInt(legacy.pendingRevision.split('-')[0], 36);
+    const indexedDbTime = Number.parseInt(indexedDbRevision.split('-')[0], 36);
+    return !Number.isFinite(pendingTime) || !Number.isFinite(indexedDbTime) || pendingTime >= indexedDbTime;
+}
+
+function loadLegacyPlayerInfo(): LegacyPlayerInfo | undefined {
     try {
         const raw = localStorage.getItem(STORAGE_KEY);
-        return normalizePlayerInfo(raw ? JSON.parse(raw) : undefined);
+        if (!raw) return undefined;
+        const parsed: unknown = JSON.parse(raw);
+        if (!isRecord(parsed)) return undefined;
+        const pendingWrite = parsed[PENDING_WRITE_KEY];
+        return {
+            playerInfo: normalizePlayerInfo(parsed),
+            rawPlayerInfo: parsed,
+            hasPendingWrite: pendingWrite === true || typeof pendingWrite === 'string',
+            pendingRevision: typeof pendingWrite === 'string' ? pendingWrite : undefined,
+            storageRevision: typeof parsed[STORAGE_REVISION_KEY] === 'string' ? parsed[STORAGE_REVISION_KEY] : undefined,
+            imageOmitted: parsed[IMAGE_OMITTED_KEY] === true,
+            stickerUrlsOmitted: parsed[STICKER_URLS_OMITTED_KEY] === true,
+            canonicalReadFailed: parsed[CANONICAL_READ_FAILED_KEY] === true,
+        };
     } catch {
-        return normalizePlayerInfo(undefined);
+        return undefined;
     }
 }
 
-function persistPlayerInfo(playerInfo: PlayerInfo): PlayerStoreSnapshot['persistenceStatus'] {
+interface LegacyWriteMetadata {
+    storageRevision?: string;
+    pendingRevision?: string;
+    imageOmitted?: boolean;
+    stickerUrlsOmitted?: boolean;
+    canonicalReadFailed?: boolean;
+}
+
+function writeLegacyPlayerInfo(playerInfo: PlayerInfo, metadata: LegacyWriteMetadata = {}): boolean {
     try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(playerInfo));
-        return null;
+        const value: Record<string, unknown> = { ...playerInfo };
+        if (metadata.storageRevision) value[STORAGE_REVISION_KEY] = metadata.storageRevision;
+        if (metadata.pendingRevision) value[PENDING_WRITE_KEY] = metadata.pendingRevision;
+        if (metadata.imageOmitted) value[IMAGE_OMITTED_KEY] = true;
+        if (metadata.stickerUrlsOmitted) value[STICKER_URLS_OMITTED_KEY] = true;
+        if (metadata.canonicalReadFailed) value[CANONICAL_READ_FAILED_KEY] = true;
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(value));
+        return true;
     } catch {
-        // Fallback: If quota is exceeded, keep the text and layout data but omit the image.
-        try {
-            const rest = { ...playerInfo };
-            delete rest.image;
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(rest));
-            return 'image-omitted';
-        } catch {
-            return 'failed';
+        return false;
+    }
+}
+
+function hasProfileMedia(playerInfo: PlayerInfo): boolean {
+    return Boolean(playerInfo.image) || Boolean(playerInfo.stickers?.some(sticker => sticker.url.length > 0));
+}
+
+function writeLightweightLegacyPlayerInfo(
+    playerInfo: PlayerInfo,
+    storageRevision?: string,
+    pendingRevision?: string,
+    canonicalReadFailed = false,
+): boolean {
+    const lightweightPlayerInfo: PlayerInfo = {
+        ...playerInfo,
+        image: undefined,
+        stickers: (playerInfo.stickers ?? []).map(sticker => ({ ...sticker, url: '' })),
+    };
+    return writeLegacyPlayerInfo(lightweightPlayerInfo, {
+        storageRevision,
+        pendingRevision,
+        imageOmitted: Boolean(playerInfo.image),
+        stickerUrlsOmitted: Boolean(playerInfo.stickers?.some(sticker => sticker.url.length > 0)),
+        canonicalReadFailed,
+    });
+}
+
+function mergeOmittedLegacyMedia(legacy: LegacyPlayerInfo, indexedDbValue: unknown, preserveUnknownMedia = false): PlayerInfo {
+    if (!legacy.imageOmitted && !legacy.stickerUrlsOmitted && !preserveUnknownMedia) return legacy.playerInfo;
+
+    const canonicalPlayerInfo = normalizePlayerInfo(indexedDbValue);
+    const image = legacy.imageOmitted || (preserveUnknownMedia && !legacy.playerInfo.image)
+        ? canonicalPlayerInfo.image
+        : legacy.playerInfo.image;
+    const canonicalStickers = new Map((canonicalPlayerInfo.stickers ?? []).map(sticker => [sticker.id, sticker]));
+    const legacyStickers = Array.isArray(legacy.rawPlayerInfo.stickers) ? legacy.rawPlayerInfo.stickers : [];
+    const stickers = legacy.stickerUrlsOmitted || preserveUnknownMedia
+        ? legacyStickers.flatMap((candidate, index) => {
+            if (!isRecord(candidate)) return [];
+            const url = typeof candidate.url === 'string' && candidate.url.length > 0
+                ? candidate.url
+                : canonicalStickers.get(typeof candidate.id === 'string' ? candidate.id : '')?.url;
+            if (!url) return [];
+            return [{ ...candidate, id: typeof candidate.id === 'string' ? candidate.id : `migrated-sticker-${index}`, url }];
+        })
+        : legacy.playerInfo.stickers ?? [];
+    if (preserveUnknownMedia) {
+        const existingIds = new Set(stickers.map(sticker => isRecord(sticker) && typeof sticker.id === 'string' ? sticker.id : undefined));
+        for (const sticker of canonicalPlayerInfo.stickers ?? []) {
+            if (!existingIds.has(sticker.id)) stickers.push(sticker);
         }
     }
+
+    return normalizePlayerInfo({ ...legacy.rawPlayerInfo, image, stickers });
+}
+
+async function writeIndexedDbPlayerInfo(playerInfo: PlayerInfo, existingRevision?: string): Promise<string> {
+    const storageRevision = existingRevision ?? createStorageRevision();
+    await writeStoredValue(CURRENT_PROFILE_KEY, { ...playerInfo, [STORAGE_REVISION_KEY]: storageRevision });
+    return storageRevision;
+}
+
+interface PersistResult {
+    status: PlayerStoreSnapshot['persistenceStatus'];
+    indexedDbCommitted: boolean;
+    fullFallbackCommitted: boolean;
+    compactFallbackCommitted: boolean;
+}
+
+async function persistPlayerInfo(
+    playerInfo: PlayerInfo,
+    indexedDbReadSucceeded: boolean,
+    canDiscardExistingLegacyMedia: boolean,
+    canonicalReadFailed: boolean,
+): Promise<PersistResult> {
+    if (indexedDbReadSucceeded) {
+        const storageRevision = createStorageRevision();
+        try {
+            await writeIndexedDbPlayerInfo(playerInfo, storageRevision);
+            writeLightweightLegacyPlayerInfo(playerInfo, storageRevision);
+            return { status: null, indexedDbCommitted: true, fullFallbackCommitted: false, compactFallbackCommitted: false };
+        } catch {
+            // Preserve the newer localStorage fallback with a revision marker for next hydration.
+            if (writeLegacyPlayerInfo(playerInfo, { storageRevision, pendingRevision: storageRevision })) {
+                return { status: null, indexedDbCommitted: false, fullFallbackCommitted: true, compactFallbackCommitted: false };
+            }
+            if (!canDiscardExistingLegacyMedia) {
+                return { status: 'failed', indexedDbCommitted: false, fullFallbackCommitted: false, compactFallbackCommitted: false };
+            }
+            if (writeLightweightLegacyPlayerInfo(playerInfo, storageRevision, storageRevision)) {
+                return {
+                    status: hasProfileMedia(playerInfo) ? 'image-omitted' : null,
+                    indexedDbCommitted: false,
+                    fullFallbackCommitted: false,
+                    compactFallbackCommitted: true,
+                };
+            }
+            return { status: 'failed', indexedDbCommitted: false, fullFallbackCommitted: false, compactFallbackCommitted: false };
+        }
+    }
+
+    const storageRevision = createStorageRevision();
+    if (writeLegacyPlayerInfo(playerInfo, { storageRevision, pendingRevision: storageRevision, canonicalReadFailed })) {
+        return { status: 'failed', indexedDbCommitted: false, fullFallbackCommitted: true, compactFallbackCommitted: false };
+    }
+    if (!canDiscardExistingLegacyMedia) {
+        return { status: 'failed', indexedDbCommitted: false, fullFallbackCommitted: false, compactFallbackCommitted: false };
+    }
+    if (!writeLightweightLegacyPlayerInfo(playerInfo, storageRevision, storageRevision, canonicalReadFailed)) {
+        return { status: 'failed', indexedDbCommitted: false, fullFallbackCommitted: false, compactFallbackCommitted: false };
+    }
+    return { status: 'failed', indexedDbCommitted: false, fullFallbackCommitted: false, compactFallbackCommitted: true };
 }
 
 function createPlayerStore(): PlayerStore {
     let snapshot: PlayerStoreSnapshot = {
-        playerInfo: loadPlayerInfo(),
+        playerInfo: normalizePlayerInfo(undefined),
         selectedStickerId: null,
         removedSticker: null,
+        isHydrated: false,
+        isPersisting: false,
         persistenceStatus: null,
         canUndo: false,
         canRedo: false,
@@ -107,6 +289,13 @@ function createPlayerStore(): PlayerStore {
     let lastEdit: { field: keyof PlayerInfo; time: number } | null = null;
     const listeners = new Set<Listener>();
     const playerInfoListeners = new Set<Listener>();
+    let playerInfoVersion = 0;
+    let hydrationPromise: Promise<void> | undefined;
+    let persistenceQueue: Promise<void> = Promise.resolve();
+    let persistenceRequestVersion = 0;
+    let indexedDbReadState: 'pending' | 'present' | 'missing' | 'failed' = 'pending';
+    let indexedDbCanonicalReady = false;
+    let preserveExistingLegacyMedia = false;
 
     const notify = (subscribers: Set<Listener>) => {
         subscribers.forEach(listener => listener());
@@ -144,7 +333,8 @@ function createPlayerStore(): PlayerStore {
 
         if (Object.is(playerInfo, snapshot.playerInfo) || !recordHistory(playerInfo)) return;
 
-        snapshot = { ...snapshot, playerInfo, canUndo: past.length > 0, canRedo: false };
+        playerInfoVersion += 1;
+        snapshot = { ...snapshot, playerInfo, isPersisting: true, canUndo: past.length > 0, canRedo: false };
         notify(listeners);
         notify(playerInfoListeners);
     };
@@ -161,7 +351,8 @@ function createPlayerStore(): PlayerStore {
         if (!playerInfo) return;
         destination.push(snapshot.playerInfo);
         lastEdit = null;
-        snapshot = { ...snapshot, playerInfo, removedSticker: null,
+        playerInfoVersion += 1;
+        snapshot = { ...snapshot, playerInfo, isPersisting: true, removedSticker: null,
             selectedStickerId: playerInfo.stickers?.some(sticker => sticker.id === snapshot.selectedStickerId) ? snapshot.selectedStickerId : null,
             canUndo: past.length > 0, canRedo: future.length > 0 };
         notify(listeners);
@@ -203,10 +394,12 @@ function createPlayerStore(): PlayerStore {
         const playerInfo = { ...snapshot.playerInfo, stickers: stickers.filter(sticker => sticker.id !== id) };
         lastEdit = null;
         recordHistory(playerInfo);
+        playerInfoVersion += 1;
 
         snapshot = {
             ...snapshot,
             playerInfo,
+            isPersisting: true,
             canUndo: past.length > 0, canRedo: false,
             selectedStickerId: snapshot.selectedStickerId === id ? null : snapshot.selectedStickerId,
             removedSticker: { sticker: stickers[index], index },
@@ -223,9 +416,11 @@ function createPlayerStore(): PlayerStore {
         const playerInfo = { ...snapshot.playerInfo, stickers };
         lastEdit = null;
         recordHistory(playerInfo);
+        playerInfoVersion += 1;
         snapshot = {
             ...snapshot,
             playerInfo,
+            isPersisting: true,
             canUndo: past.length > 0, canRedo: false,
             selectedStickerId: sticker.id,
             removedSticker: null,
@@ -248,6 +443,146 @@ function createPlayerStore(): PlayerStore {
 
     const dismissPersistenceStatus = () => setPersistenceStatus(null);
 
+    const hydrate = () => {
+        if (hydrationPromise) return hydrationPromise;
+
+        const initialPlayerInfoVersion = playerInfoVersion;
+        const hydrationWork = (async () => {
+            let indexedDbValue: unknown;
+            try {
+                indexedDbValue = await readStoredValue<unknown>(CURRENT_PROFILE_KEY);
+                indexedDbReadState = indexedDbValue === undefined ? 'missing' : 'present';
+            } catch {
+                indexedDbReadState = 'failed';
+            }
+
+            const legacy = loadLegacyPlayerInfo();
+            observeStorageRevision(legacy?.storageRevision);
+            observeStorageRevision(legacy?.pendingRevision);
+            if (isRecord(indexedDbValue) && typeof indexedDbValue[STORAGE_REVISION_KEY] === 'string') {
+                observeStorageRevision(indexedDbValue[STORAGE_REVISION_KEY] as string);
+            }
+            indexedDbCanonicalReady = indexedDbReadState === 'present' || (indexedDbReadState === 'missing' && !legacy);
+            preserveExistingLegacyMedia = indexedDbReadState !== 'present'
+                && Boolean(legacy && !legacy.imageOmitted && !legacy.stickerUrlsOmitted && hasProfileMedia(legacy.playerInfo));
+            let playerInfo: PlayerInfo | undefined;
+            let persistenceStatus: PlayerStoreSnapshot['persistenceStatus'] = null;
+            let shouldMigrateLegacy = false;
+            let storageRevision: string | undefined;
+
+            if (indexedDbReadState === 'present') {
+                const indexedDbRecord = isRecord(indexedDbValue) ? indexedDbValue : undefined;
+                const indexedDbRevision = indexedDbRecord && typeof indexedDbRecord[STORAGE_REVISION_KEY] === 'string'
+                    ? indexedDbRecord[STORAGE_REVISION_KEY] as string
+                    : undefined;
+                const hasNewerPendingFallback = legacy ? isPendingFallbackNewer(legacy, indexedDbRevision) : false;
+
+                if (hasNewerPendingFallback && legacy) {
+                    playerInfo = mergeOmittedLegacyMedia(legacy, indexedDbValue, legacy.canonicalReadFailed);
+                    persistenceStatus = legacy.canonicalReadFailed
+                        ? 'failed'
+                        : legacy.imageOmitted || legacy.stickerUrlsOmitted ? 'image-omitted' : null;
+                    shouldMigrateLegacy = true;
+                } else {
+                    playerInfo = normalizePlayerInfo(indexedDbValue);
+                    storageRevision = indexedDbRevision;
+                }
+            } else if (legacy) {
+                playerInfo = legacy.playerInfo;
+                if (indexedDbReadState === 'failed') {
+                    // An unreadable database could contain newer or larger media than this fallback.
+                    persistenceStatus = 'failed';
+                } else if (legacy.canonicalReadFailed) {
+                    persistenceStatus = 'failed';
+                } else if (legacy.imageOmitted || legacy.stickerUrlsOmitted) {
+                    persistenceStatus = 'image-omitted';
+                }
+                shouldMigrateLegacy = indexedDbReadState === 'missing';
+            }
+
+            if (playerInfo && playerInfoVersion === initialPlayerInfoVersion) {
+                snapshot = { ...snapshot, playerInfo, persistenceStatus };
+                notify(listeners);
+                notify(playerInfoListeners);
+            }
+
+            if (playerInfoVersion !== initialPlayerInfoVersion) return;
+
+            if (shouldMigrateLegacy && playerInfo) {
+                // Only a resolved missing/readable key authorizes a migration write. A failed
+                // read must never replace an unreadable canonical profile with a compact copy.
+                try {
+                    storageRevision = await writeIndexedDbPlayerInfo(playerInfo, legacy?.hasPendingWrite ? legacy.pendingRevision : undefined);
+                    indexedDbCanonicalReady = true;
+                    preserveExistingLegacyMedia = false;
+                    if (legacy?.canonicalReadFailed) {
+                        persistenceStatus = legacy.imageOmitted || legacy.stickerUrlsOmitted ? 'image-omitted' : null;
+                        setPersistenceStatus(persistenceStatus);
+                    }
+                } catch {
+                    // Leave the original or marked pending localStorage value available.
+                    return;
+                }
+            }
+
+            if (indexedDbReadState === 'present' && !shouldMigrateLegacy) {
+                // A committed IndexedDB profile safely backs this lightweight localStorage copy.
+                writeLightweightLegacyPlayerInfo(playerInfo ?? normalizePlayerInfo(indexedDbValue), storageRevision);
+            } else if (shouldMigrateLegacy && playerInfo && storageRevision) {
+                // Replace the old full localStorage value only after the IndexedDB commit.
+                writeLightweightLegacyPlayerInfo(playerInfo, storageRevision);
+            }
+        })();
+
+        hydrationPromise = hydrationWork.catch(() => undefined).then(() => {
+            if (!snapshot.isHydrated) {
+                snapshot = { ...snapshot, isHydrated: true };
+                notify(listeners);
+            }
+        });
+
+        return hydrationPromise;
+    };
+
+    const persistCurrentPlayerInfo = () => {
+        if (!snapshot.isPersisting) return persistenceQueue;
+
+        const requestVersion = ++persistenceRequestVersion;
+        const queuedWrite = persistenceQueue.then(async () => {
+            const savePlayerInfoVersion = playerInfoVersion;
+            let persistenceResult: PersistResult;
+            try {
+                persistenceResult = await persistPlayerInfo(
+                    snapshot.playerInfo,
+                    indexedDbReadState === 'present' || indexedDbReadState === 'missing',
+                    indexedDbCanonicalReady || !preserveExistingLegacyMedia,
+                    indexedDbReadState === 'failed',
+                );
+            } catch {
+                persistenceResult = {
+                    status: 'failed',
+                    indexedDbCommitted: false,
+                    fullFallbackCommitted: false,
+                    compactFallbackCommitted: false,
+                };
+            }
+
+            if (requestVersion !== persistenceRequestVersion || savePlayerInfoVersion !== playerInfoVersion) return;
+            if (persistenceResult.indexedDbCommitted) {
+                indexedDbCanonicalReady = true;
+                preserveExistingLegacyMedia = false;
+            } else if (persistenceResult.fullFallbackCommitted) {
+                preserveExistingLegacyMedia = !indexedDbCanonicalReady && hasProfileMedia(snapshot.playerInfo);
+            } else if (persistenceResult.compactFallbackCommitted) {
+                preserveExistingLegacyMedia = false;
+            }
+            snapshot = { ...snapshot, isPersisting: false, persistenceStatus: persistenceResult.status };
+            notify(listeners);
+        });
+        persistenceQueue = queuedWrite.catch(() => undefined);
+        return persistenceQueue;
+    };
+
     return {
         getSnapshot: () => snapshot,
         subscribe,
@@ -261,6 +596,8 @@ function createPlayerStore(): PlayerStore {
         commitStickerChange,
         undoStickerRemoval,
         dismissStickerUndo,
+        hydrate,
+        persistCurrentPlayerInfo,
         setPersistenceStatus,
         dismissPersistenceStatus,
         undo,
@@ -272,16 +609,27 @@ const PlayerContext = createContext<PlayerStore | undefined>(undefined);
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
     const [store] = useState<PlayerStore>(() => createPlayerStore());
+    const hydrated = useSyncExternalStore(
+        store.subscribe,
+        () => store.getSnapshot().isHydrated,
+        () => false,
+    );
+
+    useEffect(() => {
+        void store.hydrate();
+    }, [store]);
 
     // Debounced persistence keeps typing, sliders, and sticker movement off the hot path.
     useEffect(() => {
+        if (!hydrated) return;
+
         let timeoutId: number | undefined;
 
         const schedulePersistence = () => {
             if (timeoutId !== undefined) window.clearTimeout(timeoutId);
             timeoutId = window.setTimeout(() => {
                 timeoutId = undefined;
-                store.setPersistenceStatus(persistPlayerInfo(store.getSnapshot().playerInfo));
+                void store.persistCurrentPlayerInfo();
             }, 250);
         };
 
@@ -289,11 +637,11 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             if (timeoutId === undefined) return;
             window.clearTimeout(timeoutId);
             timeoutId = undefined;
-            store.setPersistenceStatus(persistPlayerInfo(store.getSnapshot().playerInfo));
+            void store.persistCurrentPlayerInfo();
         };
         const handleVisibility = () => { if (document.visibilityState === 'hidden') flushPersistence(); };
-        schedulePersistence();
         const unsubscribe = store.subscribePlayerInfo(schedulePersistence);
+        if (store.getSnapshot().isPersisting) schedulePersistence();
         window.addEventListener('pagehide', flushPersistence);
         document.addEventListener('visibilitychange', handleVisibility);
 
@@ -303,13 +651,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             document.removeEventListener('visibilitychange', handleVisibility);
             flushPersistence();
         };
-    }, [store]);
+    }, [hydrated, store]);
 
-    return (
-        <PlayerContext.Provider value={store}>
-            {children}
-        </PlayerContext.Provider>
-    );
+    return <PlayerContext.Provider value={store}>{children}</PlayerContext.Provider>;
 }
 
 function usePlayerStore() {
@@ -369,6 +713,8 @@ export function usePlayer() {
         canRedo: snapshot.canRedo,
         undo: store.undo,
         redo: store.redo,
+        isHydrated: snapshot.isHydrated,
+        isPersisting: snapshot.isPersisting,
         setSelectedStickerId: store.setSelectedStickerId,
         removeSticker: store.removeSticker,
         commitStickerChange: store.commitStickerChange,

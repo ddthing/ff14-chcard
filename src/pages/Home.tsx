@@ -9,7 +9,6 @@ import { useToast } from '../hooks/useToast';
 import { pageMeta } from '../utils/pageMeta';
 import { SeoHead } from '../components/SeoHead';
 import { StickerUndoNotice } from '../components/common/StickerUndoNotice';
-import { PersistenceNotice } from '../components/common/PersistenceNotice';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { getExportDimensions, type ExportQuality } from '../utils/exportDimensions';
 import { useOriginalImageRatio } from '../hooks/useOriginalImageRatio';
@@ -20,6 +19,15 @@ import type { EditorTabId } from '../components/editorTabs';
 import type { GuidedTourStep } from '../components/GuidedTour';
 const GuidedTour = lazy(() => import('../components/GuidedTour').then(module => ({ default: module.GuidedTour })));
 export function Home() {
+    const hydrated = usePlayerSelector(state => state.isHydrated);
+    const language = usePlayerSelector(state => state.playerInfo.language);
+    if (!hydrated) return <div className="min-h-screen flex items-center justify-center" style={{ backgroundColor: 'var(--surface-200)' }} role="status" aria-live="polite">
+        <span className="text-sm" style={{ color: 'var(--text-secondary)' }}>{i18n[language].layout.loading}</span>
+    </div>;
+    return <EditorHome />;
+}
+
+function EditorHome() {
     const language = usePlayerSelector(s => s.playerInfo.language);
     const layout = usePlayerSelector(s => s.playerInfo.layout ?? 'header');
     const name = usePlayerSelector(s => s.playerInfo.name);
@@ -91,11 +99,11 @@ export function Home() {
     const preview = useMemo(() => <CardPreview ref={exportRef} onImageChange={updateImage} onStickerEdit={editSticker} id="card-preview" />, [exportRef, updateImage, editSticker]);
     return <>
         <SeoHead meta={pageMeta[language].home} path="/" />
-        <StickerUndoNotice /><PersistenceNotice />
+        <StickerUndoNotice />
         {tourOpen && <Suspense fallback={null}><GuidedTour open={tourOpen} lang={language} steps={tourSteps} onClose={closeTour} /></Suspense>}
         {isRendering && <div className="fixed inset-0 z-[100] cursor-wait bg-black/10" aria-hidden="true" />}
         <div inert={isRendering ? true : undefined} aria-hidden={isRendering || undefined}>
-            <MainLayout lang={language} layoutType={layout} cardSize={cardSize} onLanguageChange={updateLanguage} form={form} preview={preview} mobileEditorRef={mobileEditorRef} navigation={<EditorRail activeTab={activeTab} onTabChange={selectEditorTab} lang={language} />} editorTitle={editorTitle} onStartTour={startTour} exportControls={<ExportSplitButton lang={language} quality={pixelRatio} onQualityChange={setPixelRatio} onDownload={handleDownload} isRendering={isRendering} outputSize={outputSize} />} />
+            <MainLayout lang={language} layoutType={layout} cardSize={cardSize} onLanguageChange={updateLanguage} form={form} preview={preview} mobileEditorRef={mobileEditorRef} onOpenLibrary={() => selectEditorTab('slot')} navigation={<EditorRail activeTab={activeTab} onTabChange={selectEditorTab} lang={language} />} editorTitle={editorTitle} onStartTour={startTour} exportControls={<ExportSplitButton lang={language} quality={pixelRatio} onQualityChange={setPixelRatio} onDownload={handleDownload} isRendering={isRendering} outputSize={outputSize} />} />
         </div>
     </>;
 }

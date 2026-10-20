@@ -121,6 +121,96 @@ test('palette labels and actions are translated in Korean, English and Japanese'
     }
 });
 
+test('shuffle action keeps readable text and icon across themes, widths, locales and disabled state', async ({ page }) => {
+    await seed(page);
+    const locales = [
+        { button: 'EN 언어', shuffle: 'Shuffle', design: 'Design', dark: 'Switch to dark mode', light: 'Switch to light mode' },
+        { button: 'JA language', shuffle: 'シャッフル', design: 'デザイン', dark: 'ダークモードに変更', light: 'ライトモードに変更' },
+        { button: 'KR 言語', shuffle: '새로 섞기', design: '꾸미기', dark: '다크 모드로 변경', light: '라이트 모드로 변경' },
+    ];
+    const contrast = async (button: import('@playwright/test').Locator) => button.evaluate(element => {
+        const parse = (value: string) => value.match(/[\d.]+/g)!.slice(0, 3).map(Number).map(channel => {
+            const normalized = value.startsWith('color(srgb') ? channel : channel / 255;
+            return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+        });
+        const luminance = (value: string) => {
+            const [red, green, blue] = parse(value);
+            return 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+        };
+        const style = getComputedStyle(element);
+        const foreground = style.color;
+        const ratio = (Math.max(luminance(foreground), luminance(style.backgroundColor)) + 0.05)
+            / (Math.min(luminance(foreground), luminance(style.backgroundColor)) + 0.05);
+        const icon = element.querySelector('svg');
+        const label = element.querySelector('span');
+        const buttonRect = element.getBoundingClientRect();
+        const iconRect = icon?.getBoundingClientRect();
+        const labelRect = label?.getBoundingClientRect();
+        return {
+            ratio,
+            opacity: style.opacity,
+            foreground,
+            background: style.backgroundColor,
+            iconColor: icon ? getComputedStyle(icon).color : null,
+            textColor: label ? getComputedStyle(label).color : null,
+            geometryFits: Boolean(iconRect && labelRect
+                && iconRect.left >= buttonRect.left && iconRect.right <= buttonRect.right
+                && labelRect.left >= buttonRect.left && labelRect.right <= buttonRect.right
+                && labelRect.width > 0 && labelRect.height > 0),
+        };
+    });
+
+    for (const locale of locales) {
+        await page.getByRole('button', { name: locale.button, exact: true }).click();
+        await page.getByRole('tab', { name: locale.design, exact: true }).click();
+        const shuffle = page.getByRole('button', { name: locale.shuffle, exact: true });
+        await expect(shuffle).toBeVisible();
+
+        for (const dark of [false, true]) {
+            if (dark) await page.getByRole('button', { name: locale.dark, exact: true }).click();
+            for (const width of [320, 375]) {
+                await page.setViewportSize({ width, height: 844 });
+                await expect(shuffle).toBeVisible();
+                await shuffle.hover();
+                const hovered = await contrast(shuffle);
+                expect(hovered.opacity).toBe('1');
+                expect(hovered.iconColor).toBe(hovered.textColor);
+                expect(hovered.geometryFits).toBe(true);
+                expect(hovered.ratio, `${locale.shuffle} ${dark ? 'dark' : 'light'} hover at ${width}px`).toBeGreaterThanOrEqual(4.5);
+                await page.locator('.color-palette__swatch').first().focus();
+                await page.keyboard.press('Shift+Tab');
+                await expect(shuffle).toBeFocused();
+                expect(await shuffle.evaluate(element => element.matches(':focus-visible'))).toBe(true);
+                const focused = await contrast(shuffle);
+                expect(focused.iconColor).toBe(focused.textColor);
+                expect(focused.geometryFits).toBe(true);
+                expect(focused.ratio).toBeGreaterThanOrEqual(4.5);
+            }
+
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.getByRole('tab', { name: locale.design, exact: true }).click();
+            const locks = page.locator('.color-palette__lock');
+            for (let index = 0; index < 5; index++) {
+                if (await locks.nth(index).getAttribute('aria-pressed') !== 'true') await locks.nth(index).click();
+            }
+            await expect(shuffle).toBeDisabled();
+            for (const width of [320, 375]) {
+                await page.setViewportSize({ width, height: 844 });
+                const disabled = await contrast(shuffle);
+                expect(disabled.opacity).toBe('1');
+                expect(disabled.iconColor).toBe(disabled.textColor);
+                expect(disabled.geometryFits).toBe(true);
+                expect(disabled.ratio, `${locale.shuffle} ${dark ? 'dark' : 'light'} disabled at ${width}px: ${JSON.stringify(disabled)}`).toBeGreaterThanOrEqual(4.5);
+            }
+            await page.setViewportSize({ width: 390, height: 844 });
+            for (const lock of await locks.all()) {
+                if (await lock.getAttribute('aria-pressed') === 'true') await lock.click();
+            }
+            if (dark) await page.getByRole('button', { name: locale.light, exact: true }).click();
+        }
+    }
+});
+
 test('copy reports clipboard success and failure', async ({ page }) => {
     await seed(page);
     await page.locator('#profile-tab-design').click();

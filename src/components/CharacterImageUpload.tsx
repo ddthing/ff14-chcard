@@ -20,7 +20,7 @@ interface CharacterImageUploadProps {
     ariaLabel: string;
     triggerRef?: Ref<HTMLButtonElement>;
     messages: CharacterImageUploadCopy;
-    mode?: 'dropzone' | 'status-only';
+    mode?: 'dropzone' | 'compact' | 'status-only';
     className?: string;
 }
 
@@ -49,7 +49,7 @@ export function CharacterImageUpload({ inputRef, job, openPicker, handleFileChan
 
     return (
         <div
-            className={`ux u032 ${mode === 'status-only' ? 'u032--status-only' : ''} ${isOver ? 'is-over' : ''} ${className}`.trim()}
+            className={`ux u032 ${mode === 'status-only' ? 'u032--status-only' : ''} ${mode === 'compact' ? 'u032--compact' : ''} ${mode === 'compact' && job ? 'u032--has-job' : ''} ${isOver ? 'is-over' : ''} ${className}`.trim()}
             aria-busy={isBusy || undefined}
             onDragEnter={mode === 'dropzone' ? onDragEnter : undefined}
             onDragOver={mode === 'dropzone' ? event => event.preventDefault() : undefined}

@@ -31,6 +31,7 @@ interface CharacterImageUploadOptions {
 
 interface ActiveUploadSession {
     owner: symbol;
+    requestId: number;
     controller: AbortController;
     invalidate: () => void;
 }
@@ -45,12 +46,14 @@ export interface CharacterImageUploadController {
     handleDrop: (event: DragEvent<HTMLElement>) => void;
     cancel: () => void;
     retry: () => void;
+    dismissCompleted: () => void;
 }
 
 export function useCharacterImageUpload({ onImageReady, onSelectionStart }: CharacterImageUploadOptions): CharacterImageUploadController {
     const inputRef = useRef<HTMLInputElement>(null);
     const ownerRef = useRef(Symbol('character-image-upload'));
     const requestIdRef = useRef(0);
+    const completedRequestIdRef = useRef<number | null>(null);
     const controllerRef = useRef<AbortController | null>(null);
     const onImageReadyRef = useRef(onImageReady);
     const onSelectionStartRef = useRef(onSelectionStart);
@@ -71,6 +74,7 @@ export function useCharacterImageUpload({ onImageReady, onSelectionStart }: Char
         }
 
         controllerRef.current?.abort();
+        completedRequestIdRef.current = null;
         onSelectionStartRef.current?.();
 
         const requestId = ++requestIdRef.current;
@@ -92,9 +96,10 @@ export function useCharacterImageUpload({ onImageReady, onSelectionStart }: Char
                 controllerRef.current = null;
                 setJob(null);
             }
+            if (completedRequestIdRef.current === requestId) completedRequestIdRef.current = null;
             onSelectionStartRef.current?.();
         };
-        activeUploadSession = { owner: ownerRef.current, controller, invalidate };
+        activeUploadSession = { owner: ownerRef.current, requestId, controller, invalidate };
 
         void readImageFile(file, {
             signal: controller.signal,
@@ -108,9 +113,8 @@ export function useCharacterImageUpload({ onImageReady, onSelectionStart }: Char
             },
         }).then(dataUrl => {
             if (controller.signal.aborted || requestIdRef.current !== requestId) return;
-            setJob(current => current?.id === requestId
-                ? { ...current, phase: 'ready', loaded: file.size, total: file.size }
-                : current);
+            completedRequestIdRef.current = requestId;
+            setJob(current => current?.id === requestId ? null : current);
             onImageReadyRef.current(dataUrl);
         }).catch(error => {
             if (controller.signal.aborted || requestIdRef.current !== requestId) return;
@@ -140,12 +144,25 @@ export function useCharacterImageUpload({ onImageReady, onSelectionStart }: Char
         controllerRef.current?.abort();
         if (activeUploadSession?.owner === ownerRef.current) activeUploadSession = null;
         controllerRef.current = null;
+        completedRequestIdRef.current = null;
         setJob(null);
         onSelectionStartRef.current?.();
     }, [job?.phase]);
     const retry = useCallback(() => {
         if (job?.phase === 'error') startFile(job.file);
     }, [job, startFile]);
+    const dismissCompleted = useCallback(() => {
+        const requestId = completedRequestIdRef.current;
+        if (requestId === null) return;
+
+        completedRequestIdRef.current = null;
+        const session = activeUploadSession;
+        if (session?.owner === ownerRef.current && session.requestId === requestId) {
+            activeUploadSession = null;
+            if (controllerRef.current === session.controller) controllerRef.current = null;
+        }
+        setJob(current => current?.id === requestId && current.phase === 'ready' ? null : current);
+    }, []);
 
     useEffect(() => () => {
         if (activeUploadSession?.owner === ownerRef.current) {
@@ -156,5 +173,5 @@ export function useCharacterImageUpload({ onImageReady, onSelectionStart }: Char
         requestIdRef.current++;
     }, []);
 
-    return { setInputRef, job, openPicker, handleFileChange, handleDrop, cancel, retry };
+    return { setInputRef, job, openPicker, handleFileChange, handleDrop, cancel, retry, dismissCompleted };
 }
