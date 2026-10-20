@@ -128,11 +128,14 @@ test('copy reports clipboard success and failure', async ({ page }) => {
         Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async () => undefined } });
     });
     await page.getByRole('button', { name: /HEX 복사:/ }).first().click();
-    await expect(page.getByRole('status', { name: '팔레트 상태' })).toContainText('색상 코드를 복사했습니다');
+    const stack = page.getByRole('region', { name: '알림', exact: true });
+    await expect(stack.locator('[data-testid="toast-card"]').first()).toHaveAttribute('data-type', 'success');
+    await expect(stack.locator('.u070-live').first()).toContainText('색상 코드를 복사했습니다');
 
     await page.evaluate(() => {
         Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new Error('clipboard denied'); } } });
     });
     await page.getByRole('button', { name: /HEX 복사:/ }).first().click();
-    await expect(page.getByRole('status', { name: '팔레트 상태' })).toContainText('복사하지 못했습니다');
+    await expect(stack.locator('[data-testid="toast-card"]').first()).toHaveAttribute('data-type', 'error');
+    await expect(stack.locator('.u070-live').first()).toContainText('복사하지 못했습니다');
 });

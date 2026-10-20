@@ -39,8 +39,12 @@ test('native text undo and keyboard font navigation remain independent', async (
     const font = page.getByRole('button', { name: '폰트', exact: true }).and(page.locator('[aria-haspopup="listbox"]'));
     await font.focus(); await page.keyboard.press('ArrowDown');
     const fonts = page.getByRole('listbox', { name: '폰트', exact: true });
-    await expect(fonts.getByRole('option', { selected: true })).toBeFocused();
-    await page.keyboard.press('End'); await expect(fonts.getByRole('option').last()).toBeFocused();
+    await expect(fonts).toBeFocused();
+    await page.keyboard.press('End');
+    const lastActiveOption = await fonts.getAttribute('aria-activedescendant');
+    expect(lastActiveOption).toBeTruthy();
+    await expect(page.locator(`[id="${lastActiveOption}"]`)).toHaveRole('option');
+    await expect(page.locator(`[id="${lastActiveOption}"]`)).toContainText('구름 산스 코드');
     await page.keyboard.press('Escape'); await expect(font).toBeFocused();
     await expect(fonts).toHaveCount(0);
 });

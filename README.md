@@ -13,6 +13,7 @@ FF14 Character Card는 파이널 판타지 XIV 플레이어가 자신의 캐릭�
 - 캐릭터 이름, 서버, 지역, 활동 시간, 플레이 스타일을 담은 프로필 카드
 - 주 직업과 직업별 레벨을 한눈에 보여주는 직업 정보
 - 캐릭터 스크린샷 업로드, 자르기, 위치·크기 조정
+- 실제 파일 읽기 진행·취소·재시도, 새 파일 선택 시 이전 읽기 취소. [Lucian UX/UI #032](https://lucianlabs.dev/uxui-prompt/#032)을 브라우저의 이미지 처리에 연결했습니다.
 - 스티커의 이동·확대·축소·회전과 키보드 미세 조정
 - 색상, 폰트, 테마, 다크 모드를 활용한 카드 디자인
 - 한국어, English, 日本語 인터페이스와 카드 콘텐츠
@@ -25,6 +26,8 @@ FF14 Character Card는 파이널 판타지 XIV 플레이어가 자신의 캐릭�
 - 순백색 라이트 카드, 다크 카드, 옅은 포인트 색의 주 직업 영역·플레이스타일 태그, 실제 배경에 맞춘 글자·아이콘 명도 보정
 - 생성형 종이·잉크 이미지 질감과 각각 선택할 수 있는 모서리 색 번짐·주 직업 워터마크. [텍스처 출처](./public/textures/README.md)
 - 다섯 색 팔레트의 개별 잠금·새로 섞기·포인트색 선택, 직접 HEX 입력·복사, 키보드 폰트 선택. [Lucian UX/UI #266](https://lucianlabs.dev/uxui-prompt/#266)을 기존 테마와 실제 카드 미리보기에 맞게 연결했습니다.
+- 폰트 목록의 방향키·Home/End·글자 입력 탐색과 확정 선택. [Lucian UX/UI #031](https://lucianlabs.dev/uxui-prompt/#031)을 세 언어의 폰트 목록에 연결했습니다.
+- 저장 진행·완료·오류와 색상 복사 결과를 모아 보여주는 [Lucian UX/UI #070](https://lucianlabs.dev/uxui-prompt/#070) 알림. 알림을 펼치거나 개별로 닫을 수 있고, 마우스를 올리거나 초점을 두면 자동 닫힘이 멈춥니다.
 - 전체 카드 보기·너비 맞춤·실제 크기 미리보기, 원본 해상도·1×·2×·3× PNG 저장과 실제 출력 해상도 표시
 - 30단계 실행 취소·다시 실행. 연속 입력을 묶고 색상 선택을 되돌리며, 입력칸 밖에서 Ctrl/⌘ Z·Ctrl/⌘ Shift Z를 지원합니다. 기록은 현재 세션에만 보관됩니다.
 - 데스크톱과 모바일 화면에 맞춰지는 반응형 편집 화면
@@ -149,6 +152,7 @@ public/
 | html-to-image | 카드의 PNG 변환 | MIT | [bubkoo/html-to-image](https://github.com/bubkoo/html-to-image) |
 | react-easy-crop | 이미지 자르기 | MIT | [ValentinH/react-easy-crop](https://github.com/ValentinH/react-easy-crop) |
 | react-helmet-async | 문서 메타데이터 | Apache-2.0 | [staylor/react-helmet-async](https://github.com/staylor/react-helmet-async) |
+| Lucian UX/UI Prompt | 팔레트·편집 레일·화면 안내·업로드·알림·폰트 선택 요소 | MIT · Copyright 2026 Seokwoooo | [Lucian UX/UI](https://lucianlabs.dev/uxui-prompt/) · [고지](./LICENSES/lucian-uxui.txt) |
 | Lucide React | 인터페이스 아이콘 | ISC | [lucide-icons/lucide](https://github.com/lucide-icons/lucide) |
 | `clsx` | 조건부 클래스 조합 | MIT | [lukeed/clsx](https://github.com/lukeed/clsx) |
 | `tailwind-merge` | Tailwind 클래스 병합 | MIT | [dcastil/tailwind-merge](https://github.com/dcastil/tailwind-merge) |

@@ -1,44 +1,17 @@
-import { useState, useCallback, useRef } from 'react';
+import { useCallback, useContext } from 'react';
+import { ToastContext, type ToastType } from '../contexts/ToastContext';
 
-export interface ToastState {
-    visible: boolean;
-    message: string;
-    type: 'error' | 'success' | 'info';
-}
+/** Access the shared notification stack. */
+export function useToast() {
+    const context = useContext(ToastContext);
+    if (!context) {
+        throw new Error('useToast must be used within a ToastProvider');
+    }
 
-const INITIAL: ToastState = { visible: false, message: '', type: 'info' };
+    const { toasts, showToast: showToastInContext, updateToast, dismissToast } = context;
+    const showToast = useCallback((message: string, type: ToastType = 'info') => (
+        showToastInContext(message, type)
+    ), [showToastInContext]);
 
-/**
- * useToast — lightweight toast notification state hook.
- *
- * Returns the current toast state and a `show` function that
- * auto-dismisses after `duration` ms (default 6000).
- *
- * Usage:
- *   const { toast, showToast, dismissToast } = useToast();
- *   showToast('Something went wrong', 'error');
- */
-export function useToast(duration = 6000) {
-    const [toast, setToast] = useState<ToastState>(INITIAL);
-    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-    const dismissToast = useCallback(() => {
-        setToast(prev => ({ ...prev, visible: false }));
-    }, []);
-
-    const showToast = useCallback(
-        (message: string, type: ToastState['type'] = 'info') => {
-            // Clear any existing auto-dismiss timer
-            if (timerRef.current) clearTimeout(timerRef.current);
-
-            setToast({ visible: true, message, type });
-
-            timerRef.current = setTimeout(() => {
-                setToast(prev => ({ ...prev, visible: false }));
-            }, duration);
-        },
-        [duration],
-    );
-
-    return { toast, showToast, dismissToast };
+    return { toasts, showToast, updateToast, dismissToast };
 }

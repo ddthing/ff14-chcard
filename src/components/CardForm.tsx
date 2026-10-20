@@ -1,9 +1,9 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import type { PlayerInfo } from '../types';
-import { ChevronLeft, ChevronRight, ChevronDown, Check, ContactRound, Swords, Tags, Paintbrush, ImagePlus, X, Save } from 'lucide-react';
-import { i18n, getFonts } from '../utils/i18n';
-import { inputClass } from '../utils/styles';
+import { ChevronLeft, ChevronRight, ContactRound, Swords, Tags, Paintbrush, ImagePlus, X, Save } from 'lucide-react';
+import { i18n } from '../utils/i18n';
 import { ColorPalettePicker } from './ColorPalettePicker';
+import { FontPicker } from './FontPicker';
 import { BackgroundEffectsSection } from './form/BackgroundEffectsSection';
 const ImageCropperModal = lazy(() => import('./ImageCropperModal').then(module => ({ default: module.ImageCropperModal })));
 
@@ -17,7 +17,8 @@ import { StickerSection } from './form/StickerSection';
 import { SlotSection } from './form/SlotSection';
 
 import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
-import { ImageFileError, readImageFile } from '../utils/imageFile';
+import { useCharacterImageUpload, type CharacterImageUploadCopy } from '../hooks/useCharacterImageUpload';
+import { CharacterImageUpload } from './CharacterImageUpload';
 import type { EditorTabId } from './editorTabs';
 
 type CardFormProps = {
@@ -30,21 +31,10 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
     const playerInfo = usePlayerSelector(s => s.playerInfo);
     const { setPlayerInfo, updateImage: onImageChange } = usePlayerActions();
     const panelRef = useRef<HTMLDivElement>(null);
-    const fontRef = useRef<HTMLDivElement>(null);
-    const fontTriggerRef = useRef<HTMLButtonElement>(null);
-    const fontOptionRefs = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const imageTriggerRef = useRef<HTMLButtonElement>(null);
-    const [isFontOpen, setIsFontOpen] = useState(false);
     const [internalActiveTab, setInternalActiveTab] = useState<EditorTabId>('basic');
     const activeTab = controlledTab ?? internalActiveTab;
-    const [previousActiveTab, setPreviousActiveTab] = useState(activeTab);
-    if (previousActiveTab !== activeTab) {
-        setPreviousActiveTab(activeTab);
-        setIsFontOpen(false);
-    }
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-    const [imageError, setImageError] = useState<string | null>(null);
     const tabRefs = useRef<Partial<Record<EditorTabId, HTMLButtonElement | null>>>({});
     const tabListRef = useRef<HTMLDivElement>(null);
     const [tabScrollState, setTabScrollState] = useState({ left: false, right: false });
@@ -53,67 +43,34 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
     const t = i18n[lang].form;
     const tp = i18n[lang].preview;
     const studio = i18n[lang].studio;
-    const fontsOptions = getFonts(lang);
+    const {
+        setInputRef: setImageInputRef,
+        job: imageUploadJob,
+        openPicker: openImagePicker,
+        handleFileChange: handleImageFileChange,
+        handleDrop: handleImageDrop,
+        cancel: cancelImageUpload,
+        retry: retryImageUpload,
+    } = useCharacterImageUpload({
+        onImageReady: setCropImageSrc,
+        onSelectionStart: () => setCropImageSrc(null),
+    });
+    const imageUploadCopy: CharacterImageUploadCopy = {
+        dropPrompt: t.imageUploadDropPrompt,
+        dropHint: studio.dropHint,
+        reading: t.imageUploadReading,
+        validating: t.imageUploadValidating,
+        ready: t.imageUploadReady,
+        retry: t.imageUploadRetry,
+        cancel: t.imageUploadCancel,
+        invalidType: t.imageInvalidType,
+        readFailed: t.imageUploadError,
+    };
     const isPointColorValid = /^#[0-9a-f]{6}$/i.test(playerInfo.pointColor);
-    // 폰트 드롭다운 외부 클릭 닫기
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (fontRef.current && !fontRef.current.contains(event.target as Node)) {
-                setIsFontOpen(false);
-            }
-        }
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    useEffect(() => { if (isFontOpen) fontOptionRefs.current[playerInfo.font]?.focus(); }, [isFontOpen, playerInfo.font]);
-
     useEffect(() => { panelRef.current?.scrollTo({ top: 0 }); }, [activeTab]);
 
     const handleChange = <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => {
         setPlayerInfo(prev => ({ ...prev, [field]: value }));
-    };
-
-    const handleFontTriggerKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); setIsFontOpen(true); }
-        if (event.key === 'Escape' && isFontOpen) {
-            event.preventDefault();
-            setIsFontOpen(false);
-        }
-    };
-
-    const handleFontOptionKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
-        const lastIndex = fontsOptions.length - 1;
-        let nextIndex: number | null = null;
-
-        if (event.key === 'ArrowDown') nextIndex = index === lastIndex ? 0 : index + 1;
-        if (event.key === 'ArrowUp') nextIndex = index === 0 ? lastIndex : index - 1;
-        if (event.key === 'Home') nextIndex = 0;
-        if (event.key === 'End') nextIndex = lastIndex;
-
-        if (nextIndex !== null) {
-            event.preventDefault();
-            fontOptionRefs.current[fontsOptions[nextIndex].id]?.focus();
-            return;
-        }
-
-        if (event.key === 'Escape') {
-            event.preventDefault();
-            setIsFontOpen(false);
-            fontTriggerRef.current?.focus();
-        }
-    };
-
-    const openImage = useCallback(async (file: File) => {
-        setImageError(null);
-        try { setCropImageSrc(await readImageFile(file)); }
-        catch (error) {
-            setImageError(error instanceof ImageFileError && error.code === 'invalid-type' ? t.imageInvalidType : t.imageUploadError);
-        }
-    }, [t.imageInvalidType, t.imageUploadError]);
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0]; event.target.value = '';
-        if (file) void openImage(file);
     };
 
     const handleCropApply = useCallback((croppedBase64: string) => {
@@ -121,7 +78,6 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
         setCropImageSrc(null);
     }, [onImageChange]);
 
-    // inputClass is a shared design token — imported from utils/styles.
 
     // ─── Tab Definitions ───────────────────────────────────────────────────────
     const tabs: { id: EditorTabId; label: string; icon: React.ReactNode }[] = [
@@ -195,17 +151,6 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                     aspectRatio={playerInfo.layout === 'left-portrait' ? 2 / 4.5 : 700 / 280}
                 /></Suspense>
             )}
-
-            {/* Hidden file input — triggered programmatically from image UI */}
-            <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/*"
-                aria-label={t.uploadImage}
-                className="hidden"
-                onChange={handleFileChange}
-            />
-            {imageError && <p role="alert" className="px-4 pt-3 text-[11px]" style={{ color: 'var(--destructive)' }}>{imageError}</p>}
 
             {/* ───── Tab Bar ────────────────────────────────────────────────── */}
             {!externalNavigation && <div className="relative shrink-0">
@@ -285,21 +230,9 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                 {activeTab === 'basic' && (
                     <div className="space-y-5 animate-tab-in">
 
-                        {/*
-                         * Image Upload — Mobile Only
-                         *
-                         * On desktop, the card preview panel is always visible and
-                         * clicking the card image triggers the file picker directly.
-                         * Surfacing this control in the sidebar on desktop adds noise
-                         * without providing value.
-                         *
-                         * On mobile (< md), the preview is collapsed at the top and
-                         * tap targets are small, so we keep a dedicated upload affordance
-                         * for a smooth first-run experience.
-                         */}
-                        <div data-tour="image-upload" onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); const file = event.dataTransfer.files[0]; if (file) void openImage(file); }}>
+                        <div data-tour="image-upload">
                             <Section title={t.uploadImage}>
-                                                {playerInfo.image ? (
+                                {playerInfo.image && (
                                     /* Uploaded state: thumbnail + change / remove actions */
                                     <div className="flex gap-2.5 items-center">
                                         <button
@@ -308,7 +241,7 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                                             aria-label={t.uploadImage}
                                             className="w-14 h-14 rounded-[8px] overflow-hidden cursor-pointer shrink-0 group relative border-0 p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                                             style={{ border: '1px solid var(--border-default)' }}
-                                            onClick={() => fileInputRef.current?.click()}
+                                            onClick={openImagePicker}
                                         >
                                             <img
                                                 src={playerInfo.image}
@@ -325,7 +258,7 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                                             <button
                                                 ref={imageTriggerRef}
                                                 type="button"
-                                                onClick={() => fileInputRef.current?.click()}
+                                                onClick={openImagePicker}
                                                 className="w-full py-2 text-[11px] font-semibold rounded-[8px] flex items-center justify-center gap-1.5 transition-colors"
                                                 style={{ backgroundColor: 'var(--surface-300)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}
                                                 onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--surface-400)')}
@@ -345,28 +278,19 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                                             </button>
                                         </div>
                                     </div>
-                                ) : (
-                                    /* Empty state: full-width drop zone */
-                                    <button
-                                        ref={imageTriggerRef}
-                                        type="button"
-                                        onClick={() => fileInputRef.current?.click()}
-                                    className="group flex h-[64px] w-full items-center justify-center gap-2.5 rounded-[8px] border-2 border-dashed text-[12px] font-semibold transition-[color,border-color,background-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                        style={{ borderColor: 'var(--border-medium)', color: 'var(--text-muted)', backgroundColor: 'transparent' }}
-                                        onMouseEnter={e => {
-                                            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-strong)';
-                                            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)';
-                                        }}
-                                        onMouseLeave={e => {
-                                            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-medium)';
-                                            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
-                                        }}
-                                    >
-                                        <ImagePlus size={16} aria-hidden="true" className="group-hover:scale-110 transition-transform" />
-                                        {t.uploadImage}
-                                    </button>
                                 )}
-                            <p className="studio-drop-hint">{studio.dropHint}</p>
+                                <CharacterImageUpload
+                                    inputRef={setImageInputRef}
+                                    job={imageUploadJob}
+                                    openPicker={openImagePicker}
+                                    handleFileChange={handleImageFileChange}
+                                    handleDrop={handleImageDrop}
+                                    cancel={cancelImageUpload}
+                                    retry={retryImageUpload}
+                                    ariaLabel={t.uploadImage}
+                                    triggerRef={playerInfo.image ? undefined : imageTriggerRef}
+                                    messages={imageUploadCopy}
+                                />
                             </Section>
                         </div>
 
@@ -480,78 +404,7 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
 
                         {/* Font Selector ─────────────────────────────────────── */}
                         <Section title={t.font}>
-                            <div className="relative w-full" ref={fontRef}>
-                                 <button
-                                     ref={fontTriggerRef}
-                                     type="button"
-                                     onClick={() => setIsFontOpen(!isFontOpen)}
-                                     aria-label={t.font}
-                                     aria-expanded={isFontOpen}
-                                     aria-haspopup="listbox"
-                                     aria-controls={isFontOpen ? 'font-listbox' : undefined}
-                                     onKeyDown={handleFontTriggerKeyDown}
-                                     className={`${inputClass} flex items-center justify-between cursor-pointer`}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        {(() => {
-                                            const selectedFont = fontsOptions.find(f => f.id === playerInfo.font);
-                                            return (
-                                                <span className={`text-[15px] font-medium ${selectedFont?.id || ''}`}>
-                                                    {selectedFont ? selectedFont.name : t.pleaseSelect}
-                                                </span>
-                                            );
-                                        })()}
-                                    </div>
-                                     <ChevronDown
-                                         size={16}
-                                         aria-hidden="true"
-                                         className={`text-[#86868b] transition-transform ${isFontOpen ? 'rotate-180' : ''}`}
-                                    />
-                                </button>
-
-                                {isFontOpen && (
-                                     <div
-                                         id="font-listbox"
-                                         className="absolute top-full mt-1.5 left-0 right-0 rounded-[10px] z-50 max-h-60 overflow-y-auto p-1"
-                                         role="listbox"
-                                         aria-label={t.font}
-                                         style={{
-                                            backgroundColor: 'var(--surface-100)',
-                                            border: '1px solid var(--border-medium)',
-                                        }}
-                                    >
-                                        {fontsOptions.map((font, index) => {
-                                            const isSelected = playerInfo.font === font.id;
-                                            return (
-                                                 <button
-                                                     key={font.id}
-                                                     ref={element => { fontOptionRefs.current[font.id] = element; }}
-                                                     type="button"
-                                                     role="option"
-                                                     tabIndex={isSelected ? 0 : -1}
-                                                     aria-selected={isSelected}
-                                                     onKeyDown={event => handleFontOptionKeyDown(event, index)}
-                                                     onClick={() => {
-                                                        handleChange('font', font.id);
-                                                        setIsFontOpen(false);
-                                                        fontTriggerRef.current?.focus();
-                                                    }}
-                                                    className="card-preview w-full flex items-center justify-between px-3 py-2 rounded-[7px] transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]"
-                                                    style={{
-                                                        backgroundColor: isSelected ? 'var(--surface-300)' : 'transparent',
-                                                        color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
-                                                    }}
-                                                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.backgroundColor = 'var(--surface-200)'; }}
-                                                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent'; }}
-                                                >
-                                                    <span className={`text-[14px] ${font.id}`}>{font.name}</span>
-                                                    {isSelected && <Check size={14} aria-hidden="true" style={{ color: 'var(--text-primary)' }} />}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
+                            <FontPicker value={playerInfo.font} onChange={font => handleChange('font', font)} lang={lang} active={activeTab === 'design'} />
                         </Section>
                         <BackgroundEffectsSection /><StickerSection />
                 </div>

@@ -5,6 +5,7 @@ import type { Language } from '../types';
 import { i18n } from '../utils/i18n';
 import { getContrastColor } from '../utils/styles';
 import { createColorPalette, isValidPaletteColor, shuffleColorPalette, type ColorPalette } from '../utils/colorPalette';
+import { useToast } from '../hooks/useToast';
 import './color-palette.css';
 
 type ColorPalettePickerProps = {
@@ -14,51 +15,42 @@ type ColorPalettePickerProps = {
 };
 
 type ColorPaletteLocks = [boolean, boolean, boolean, boolean, boolean];
-type CopyStatus = '' | 'copied' | 'copyFailed' | 'copyUnavailable';
 
 const initialLocks = (): ColorPaletteLocks => [false, false, false, false, false];
 
 export function ColorPalettePicker({ value, onChange, lang }: ColorPalettePickerProps) {
     const t = i18n[lang].palette;
+    const { showToast } = useToast();
     const statusId = `color-palette-status-${useId().replaceAll(':', '')}`;
     const [palette, setPalette] = useState<ColorPalette>(() => createColorPalette(value));
     const [locked, setLocked] = useState(initialLocks);
-    const [copyStatus, setCopyStatus] = useState<CopyStatus>('');
-    const [copiedColor, setCopiedColor] = useState('');
     const [shuffleCount, setShuffleCount] = useState(0);
     const allLocked = locked.every(Boolean);
     const selectedColor = isValidPaletteColor(value) ? value.toUpperCase() : null;
     const localizedColorLabel = (label: string, color: string) => label.replace('{color}', color);
-    const statusMessage = copyStatus === 'copied' ? `${t.copied} ${copiedColor}`
-        : copyStatus === 'copyFailed' ? t.copyFailed
-            : copyStatus === 'copyUnavailable' ? t.copyUnavailable
-                : allLocked ? t.allLocked : '';
+    const statusMessage = allLocked ? t.allLocked : '';
 
     const handleShuffle = () => {
         if (allLocked) return;
-        setCopyStatus('');
         setShuffleCount(current => current + 1);
         setPalette(current => shuffleColorPalette(current, locked));
     };
 
     const handleLock = (index: number) => {
-        setCopyStatus('');
         setLocked(current => current.map((isLocked, slot) => slot === index ? !isLocked : isLocked) as ColorPaletteLocks);
     };
 
     const handleCopy = async (color: string) => {
-        setCopyStatus('');
         if (!navigator.clipboard?.writeText) {
-            setCopyStatus('copyUnavailable');
+            showToast(t.copyUnavailable, 'error');
             return;
         }
 
         try {
             await navigator.clipboard.writeText(color);
-            setCopiedColor(color);
-            setCopyStatus('copied');
+            showToast(`${t.copied} ${color}`, 'success');
         } catch {
-            setCopyStatus('copyFailed');
+            showToast(t.copyFailed, 'error');
         }
     };
 
@@ -95,7 +87,7 @@ export function ColorPalettePicker({ value, onChange, lang }: ColorPalettePicker
                             <button
                                 type="button"
                                 className={`color-palette__swatch${isSelected ? ' is-selected' : ''}`}
-                                onClick={() => { setCopyStatus(''); onChange(color); }}
+                                onClick={() => { onChange(color); }}
                                 aria-label={localizedColorLabel(t.selectColor, color)}
                                 aria-pressed={isSelected}
                             >

@@ -1,4 +1,4 @@
-import { lazy, Suspense, forwardRef, useCallback, useMemo, useRef, useState, type ChangeEvent, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import { lazy, Suspense, forwardRef, useCallback, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from 'react';
 import { JOBS } from '../data/jobs';
 import { ImagePlus, Maximize2, X, RotateCw } from 'lucide-react';
 import { i18n } from '../utils/i18n';
@@ -9,8 +9,9 @@ import { JobList } from './preview/JobList';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useStickerInteraction } from '../hooks/useStickerInteraction';
 import { useFontLoader } from '../hooks/useFontLoader';
+import { useCharacterImageUpload, type CharacterImageUploadCopy } from '../hooks/useCharacterImageUpload';
 import type { Sticker } from '../types';
-import { ImageFileError, readImageFile } from '../utils/imageFile';
+import { CharacterImageUpload } from './CharacterImageUpload';
 
 import { getAccessibleAccentColor, getAccentSurface } from '../utils/styles';
 import { CardBackgroundEffects } from './preview/CardBackgroundEffects';
@@ -47,11 +48,34 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
     const lightAccentSurface = getAccentSurface(pointColor, '#ffffff');
     const darkAccentSurface = getAccentSurface(pointColor, '#252b24');
 
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const imageTriggerRef = useRef<HTMLButtonElement>(null);
     const constraintsRef = useRef<HTMLDivElement>(null);
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-    const [imageError, setImageError] = useState<string | null>(null);
+    const formText = i18n[lang].form;
+    const studioText = i18n[lang].studio;
+    const {
+        setInputRef: setImageInputRef,
+        job: imageUploadJob,
+        openPicker: openImagePicker,
+        handleFileChange: handleImageFileChange,
+        handleDrop: handleImageDrop,
+        cancel: cancelImageUpload,
+        retry: retryImageUpload,
+    } = useCharacterImageUpload({
+        onImageReady: setCropImageSrc,
+        onSelectionStart: () => setCropImageSrc(null),
+    });
+    const imageUploadCopy: CharacterImageUploadCopy = {
+        dropPrompt: formText.imageUploadDropPrompt,
+        dropHint: studioText.dropHint,
+        reading: formText.imageUploadReading,
+        validating: formText.imageUploadValidating,
+        ready: formText.imageUploadReady,
+        retry: formText.imageUploadRetry,
+        cancel: formText.imageUploadCancel,
+        invalidType: formText.imageInvalidType,
+        readFailed: formText.imageUploadError,
+    };
 
     const updateStickers = useCallback((stickers: Sticker[]) => updatePlayerField('stickers', stickers), [updatePlayerField]);
     
@@ -70,21 +94,6 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
     });
 
     useFontLoader(playerInfo.font);
-
-    const handleImageUpload = async (e: ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        e.target.value = '';
-        if (!file) return;
-
-        setImageError(null);
-        try {
-            setCropImageSrc(await readImageFile(file));
-        } catch (error) {
-            setImageError(error instanceof ImageFileError && error.code === 'invalid-type'
-                ? i18n[lang].form.imageInvalidType
-                : i18n[lang].form.imageUploadError);
-        }
-    };
 
     const handleStickerKeyDown = useCallback((event: ReactKeyboardEvent<HTMLButtonElement>, stickerId: string) => {
         const moveStep = event.shiftKey ? 2 : 0.2;
@@ -198,19 +207,19 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 /></Suspense>
             )}
 
-            <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/*"
-                aria-label={t.uploadPlease}
-                className="hidden"
-                onChange={handleImageUpload}
+            <CharacterImageUpload
+                inputRef={setImageInputRef}
+                job={imageUploadJob}
+                openPicker={openImagePicker}
+                handleFileChange={handleImageFileChange}
+                handleDrop={handleImageDrop}
+                cancel={cancelImageUpload}
+                retry={retryImageUpload}
+                ariaLabel={t.uploadPlease}
+                messages={imageUploadCopy}
+                mode="status-only"
+                className="export-ignore"
             />
-            {imageError && (
-                <p role="alert" className="export-ignore absolute left-4 right-4 top-4 z-[70] bg-[var(--surface-50)] p-3 text-xs shadow-lg" style={{ color: 'var(--destructive)' }}>
-                    {imageError}
-                </p>
-            )}
 
             {/* Image Section */}
             {image ? (
@@ -219,7 +228,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                     ref={imageTriggerRef}
                     aria-label={t.clickToEdit}
                     className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px]' : 'w-full h-[280px]'} sheet-image relative overflow-hidden group cursor-pointer shrink-0 border-0 p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]`}
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={openImagePicker}
                     title={t.clickToEdit}
                 >
                     <img
@@ -241,7 +250,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                     ref={imageTriggerRef}
                     aria-label={t.uploadPlease}
                     className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px]' : 'w-full h-[280px]'} sheet-image sheet-image-empty flex flex-col items-center justify-center gap-4 cursor-pointer transition-colors group shrink-0 relative border-0 p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]`}
-                    onClick={() => fileInputRef.current?.click()}
+                    onClick={openImagePicker}
                 >
                     <div className="studio-placeholder-art"></div>
                     <div className="p-4 bg-white/60 dark:bg-black/30 rounded-full group-hover:scale-110 transition-transform duration-300 z-10 border border-neutral-200/50 dark:border-[#4a4a4c]/50">

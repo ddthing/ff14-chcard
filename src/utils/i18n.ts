@@ -2,6 +2,7 @@ import type { Language } from '../types';
 
 export const i18n = {
     ko: {
+        notifications: { region: '알림', expand: '알림 펼치기', collapse: '알림 접기' },
         tour: {
             start: '사용방법', label: '카드 만들기 안내', skip: '닫기', previous: '이전', next: '다음', finish: '완료', progress: '{current} / {total}',
             steps: {
@@ -133,6 +134,12 @@ export const i18n = {
             uploadImage: '이미지 업로드',
             imageInvalidType: '이미지 파일만 업로드할 수 있습니다.',
             imageUploadError: '이미지를 읽지 못했습니다. 다른 파일을 선택해주세요.',
+            imageUploadDropPrompt: '이미지를 끌어놓거나 눌러서 선택하세요',
+            imageUploadReading: '파일 읽는 중',
+            imageUploadValidating: '이미지 확인 중',
+            imageUploadReady: '이미지 읽기 완료',
+            imageUploadRetry: '다시 시도',
+            imageUploadCancel: '읽기 취소',
             delete: '삭제',
             font: '폰트',
             pointColor: '포인트 컬러',
@@ -261,6 +268,7 @@ export const i18n = {
         },
     },
     en: {
+        notifications: { region: 'Notifications', expand: 'Expand notifications', collapse: 'Collapse notifications' },
         tour: {
             start: 'How to use', label: 'Create a character card', skip: 'Close', previous: 'Back', next: 'Next', finish: 'Done', progress: '{current} / {total}',
             steps: {
@@ -392,6 +400,12 @@ export const i18n = {
             uploadImage: 'Click to upload image',
             imageInvalidType: 'Only image files can be uploaded.',
             imageUploadError: 'The image could not be read. Please choose another file.',
+            imageUploadDropPrompt: 'Drop an image here or click to choose',
+            imageUploadReading: 'Reading file',
+            imageUploadValidating: 'Checking image',
+            imageUploadReady: 'Image ready',
+            imageUploadRetry: 'Try again',
+            imageUploadCancel: 'Cancel reading',
             delete: 'Delete',
             font: 'Font',
             pointColor: 'Point Color',
@@ -519,6 +533,7 @@ export const i18n = {
         },
     },
     ja: {
+        notifications: { region: '通知', expand: '通知を展開', collapse: '通知を折りたたむ' },
         tour: {
             start: '使い方', label: 'キャラクターカードの作り方', skip: '閉じる', previous: '戻る', next: '次へ', finish: '完了', progress: '{current} / {total}',
             steps: {
@@ -650,6 +665,12 @@ export const i18n = {
             uploadImage: '画像をアップロード',
             imageInvalidType: '画像ファイルのみアップロードできます。',
             imageUploadError: '画像を読み込めませんでした。別のファイルを選択してください。',
+            imageUploadDropPrompt: '画像をドロップ、またはクリックして選択',
+            imageUploadReading: 'ファイルを読み込み中',
+            imageUploadValidating: '画像を確認中',
+            imageUploadReady: '画像の読み込み完了',
+            imageUploadRetry: '再試行',
+            imageUploadCancel: '読み込みをキャンセル',
             delete: '削除',
             font: 'フォント',
             pointColor: 'ポイントカラー',
