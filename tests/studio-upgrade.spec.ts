@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { seed, nativeSize, exportPng } from './helpers';
+import { seed, nativeSize, exportPng, chooseQuality } from './helpers';
 test.beforeEach(async ({ page }) => { await page.route('https://cdn.jsdelivr.net/**', route => route.abort()); });
 
 test('history groups typing and palette selection, handles shortcuts and clears redo branches', async ({ page }) => {
@@ -55,9 +55,10 @@ test('discrete toggles and sticker deletion have distinct undo steps', async ({ 
     const sprout = page.getByRole('button', { name: '새싹', exact: true }), undo = page.getByRole('button', { name: '실행 취소', exact: true }), redo = page.getByRole('button', { name: '다시 실행', exact: true });
     await sprout.click(); await sprout.click(); await undo.click(); await expect(sprout).toHaveAttribute('aria-pressed', 'true');
     await undo.click(); await expect(sprout).toHaveAttribute('aria-pressed', 'false');
-    await page.getByRole('tab', { name: '꾸미기', exact: true }).click();
-    await page.getByRole('button', { name: '스티커 1 삭제', exact: true }).click();
-    const sticker = page.locator('#card-preview').getByRole('button', { name: '스티커 1', exact: true });
+    await page.locator('#profile-tab-stickers').click();
+    const historySticker = page.getByTestId('sticker-layer-list').locator('[data-sticker-id="history"]');
+    await historySticker.getByRole('button', { name: /삭제/ }).click();
+    const sticker = page.locator('#card-preview [data-testid="card-sticker"][data-sticker-id="history"]');
     await expect(sticker).toHaveCount(0); await undo.click(); await expect(sticker).toHaveCount(1);
     await expect(page.getByText('스티커를 삭제했습니다.', { exact: true })).toHaveCount(0);
     await redo.click(); await expect(sticker).toHaveCount(0);
@@ -90,7 +91,7 @@ for (const layout of ['header', 'left-portrait']) {
 }
 test('large imported cards show and download the same bounded PNG size', async ({ page }) => {
     await seed(page, { comment: '긴 소개 문장입니다.\n'.repeat(220) });
-    await page.getByLabel('저장 품질', { exact: true }).selectOption('3');
+    await chooseQuality(page, 'ultra');
     await expect(page.getByText('큰 카드의 저장 크기가 자동 조정됩니다.', { exact: true })).toBeVisible();
     const expected = (await page.getByLabel('PNG 출력 크기', { exact: true }).innerText()).match(/\d+/g)!.map(Number);
     const output = await exportPng(page);

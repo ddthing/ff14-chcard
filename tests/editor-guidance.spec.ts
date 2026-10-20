@@ -8,7 +8,7 @@ test('desktop editor rail expands, labels the active section, and keeps roving t
     await page.goto('/');
     const rail = page.locator('nav.u040');
     await expect(rail).toHaveAttribute('data-orientation', 'vertical');
-    for (const id of ['basic', 'job', 'style', 'design', 'slot']) await expect(page.locator(`#profile-tab-${id}`)).toHaveCount(1);
+    for (const id of ['basic', 'job', 'style', 'design', 'stickers', 'slot']) await expect(page.locator(`#profile-tab-${id}`)).toHaveCount(1);
     await expect.poll(() => rail.evaluate(element => element.getBoundingClientRect().width)).toBe(76);
     await expect(page.locator('#editor-title')).toHaveText('기본');
     await page.locator('input[name="character-name"]').fill('Seriane');
@@ -34,22 +34,19 @@ test('desktop editor rail expands, labels the active section, and keeps roving t
     await page.keyboard.press('ArrowLeft');
     await expect(basic).toBeFocused();
     await page.keyboard.press('End');
-    await expect(rail.getByRole('tab', { name: '저장', exact: true })).toBeFocused();
-    await expect(page.locator('#editor-title')).toHaveText('저장');
+    await expect(page.locator('#profile-tab-slot')).toBeFocused();
+    await expect(page.locator('#editor-title')).toHaveText('보관함');
     await page.keyboard.press('Home');
     await expect(rail.getByRole('tab', { name: '기본', exact: true })).toBeFocused();
     await expect(rail.locator('[role="tab"][tabindex="0"]')).toHaveCount(1);
     await expect(page.locator('input[name="character-name"]')).toHaveValue('Seriane');
 
     await page.locator('#profile-tab-design').click();
-    const content = page.locator('.studio-tab-content');
-    await content.evaluate(element => { element.scrollTop = element.scrollHeight; });
     await page.getByRole('button', { name: '폰트', exact: true }).and(page.locator('[aria-haspopup="listbox"]')).click();
     await expect(page.getByRole('listbox', { name: '폰트', exact: true })).toBeVisible();
     await page.locator('#profile-tab-basic').click();
     await expect(page.getByRole('listbox', { name: '폰트', exact: true })).toHaveCount(0);
     await page.locator('#profile-tab-design').click();
-    await expect.poll(() => content.evaluate(element => element.scrollTop)).toBe(0);
 });
 
 test('mobile rail stays horizontal and the editor help button fits at 320 and 375 pixels', async ({ page }) => {
@@ -58,12 +55,12 @@ test('mobile rail stays horizontal and the editor help button fits at 320 and 37
         await page.setViewportSize({ width, height: 844 });
         const rail = page.locator('nav.u040');
         await expect(rail).toHaveAttribute('data-orientation', 'horizontal');
-        await expect(rail.getByRole('tab')).toHaveCount(5);
+        await expect(rail.getByRole('tab')).toHaveCount(6);
         expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         await expect(page.locator('.u040-tog')).toBeHidden();
-        const visibleLaunchers = page.locator('.studio-tour-trigger:visible');
+        const visibleLaunchers = page.locator('.studio-mobile-sheet-tour:visible');
         await expect(visibleLaunchers).toHaveCount(1);
-        await expect(visibleLaunchers).toHaveText('사용방법');
+        await expect(visibleLaunchers).toHaveAccessibleName('사용방법');
     }
 });
 
@@ -71,13 +68,14 @@ test('guided tour reveals each live target and switches to the required editor s
     await page.setViewportSize({ width: 1440, height: 1000 });
     await seed(page, { jobs: [], mainJob: undefined, jobLevels: {} });
     const steps = [
-        { progress: '1 / 7', title: '사진 넣기', target: '[data-tour="image-upload"]', tab: 'basic' },
-        { progress: '2 / 7', title: '이름과 서버', target: 'input[name="character-name"]', tab: 'basic' },
-        { progress: '3 / 7', title: '직업과 레벨', target: '[data-tour="job-selection"] [role="tablist"]', tab: 'job' },
-        { progress: '4 / 7', title: '플레이 스타일', target: '[data-tour="style-section"] section:first-child', tab: 'style' },
-        { progress: '5 / 7', title: '색과 폰트', target: '.color-palette', tab: 'design' },
-        { progress: '6 / 7', title: '미리보기 확인', target: '[data-tour="preview-controls"]' },
-        { progress: '7 / 7', title: 'PNG로 저장', target: '[data-tour="export-controls"]' },
+        { progress: '1 / 8', title: '사진 넣기', target: '[data-tour="image-upload"]', tab: 'basic' },
+        { progress: '2 / 8', title: '이름과 서버', target: 'input[name="character-name"]', tab: 'basic' },
+        { progress: '3 / 8', title: '직업과 레벨', target: '[data-tour="job-selection"] [role="tablist"]', tab: 'job' },
+        { progress: '4 / 8', title: '플레이 스타일', target: '[data-tour="style-section"] section:first-child', tab: 'style' },
+        { progress: '5 / 8', title: '색과 폰트', target: '.color-palette', tab: 'design' },
+        { progress: '6 / 8', title: '스티커 배치', target: '[data-tour="stickers-section"] [data-sticker-add]', tab: 'stickers' },
+        { progress: '7 / 8', title: '미리보기 확인', target: '[data-tour="preview-controls"]' },
+        { progress: '8 / 8', title: 'PNG로 저장', target: '[data-tour="export-controls"]' },
     ];
     const launcher = page.locator('.studio-tour-trigger--header');
     await launcher.click();
@@ -120,7 +118,7 @@ test('guided tour reveals each live target and switches to the required editor s
     await expect(page.locator('#root')).not.toHaveAttribute('inert', '');
     await expect(launcher).toBeFocused();
     await launcher.click();
-    await expect(dialog.locator('.u197-progress')).toHaveText('1 / 7');
+    await expect(dialog.locator('.u197-progress')).toHaveText('1 / 8');
     await dialog.getByRole('button', { name: '닫기', exact: true }).click();
     await expect(dialog).toHaveCount(0);
 });
@@ -146,7 +144,7 @@ test('tour can close mid-step, restores focus and tab, leaves profile history in
     await page.keyboard.press('Shift+Tab');
     await expect(dialog.getByRole('button', { name: '다음', exact: true })).toBeFocused();
     for (let index = 0; index < 3; index++) await dialog.getByRole('button', { name: '다음', exact: true }).click();
-    await expect(dialog.locator('.u197-progress')).toHaveText('4 / 7');
+    await expect(dialog.locator('.u197-progress')).toHaveText('4 / 8');
     await dialog.getByRole('button', { name: '닫기', exact: true }).click();
 
     await expect(dialog).toHaveCount(0);
@@ -158,7 +156,7 @@ test('tour can close mid-step, restores focus and tab, leaves profile history in
     expect(await page.evaluate(() => localStorage.getItem('ff14-playerInfo'))).toBe(storedProfile);
 
     await launcher.click();
-    await expect(dialog.locator('.u197-progress')).toHaveText('1 / 7');
+    await expect(dialog.locator('.u197-progress')).toHaveText('1 / 8');
     await page.keyboard.press('Escape');
     await expect(dialog).toHaveCount(0);
     await expect(launcher).toBeFocused();
@@ -190,15 +188,15 @@ test('guided tour uses the current language and remains usable in dark mode with
     }
 
     await page.setViewportSize({ width: 320, height: 844 });
-    const mobileLauncher = page.locator('.studio-tour-trigger--editor');
+    const mobileLauncher = page.locator('.studio-mobile-sheet-tour');
     await expect(mobileLauncher).toBeVisible();
     await mobileLauncher.click();
     const mobileDialog = page.getByTestId('guided-tour-dialog');
-    for (let index = 0; index < 6; index++) {
-        await expect(mobileDialog.locator('.u197-progress')).toHaveText(`${index + 1} / 7`);
+    for (let index = 0; index < 7; index++) {
+        await expect(mobileDialog.locator('.u197-progress')).toHaveText(`${index + 1} / 8`);
         await mobileDialog.getByRole('button', { name: '다음', exact: true }).click();
     }
-    await expect(mobileDialog.locator('.u197-progress')).toHaveText('7 / 7');
+    await expect(mobileDialog.locator('.u197-progress')).toHaveText('8 / 8');
     await expect(mobileDialog.getByRole('heading', { name: 'PNG로 저장', exact: true })).toBeVisible();
     await mobileDialog.getByRole('button', { name: '완료', exact: true }).click();
     await expect(mobileDialog).toHaveCount(0);

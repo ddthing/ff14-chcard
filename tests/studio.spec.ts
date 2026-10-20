@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-import { seed, profile, exportPng, pixels } from './helpers';
+import { seed, profile, exportPng, pixels, chooseQuality } from './helpers';
 
 const PNG_CRC_TABLE = Uint32Array.from({ length: 256 }, (_, value) => {
     let crc = value;
@@ -64,23 +64,20 @@ test('primary tabs support arrows, Home and End with one active tab stop', async
     await page.goto('/');
     await page.getByRole('tab', { name: '기본', exact: true }).focus();
     await page.keyboard.press('ArrowRight'); await expect(page.getByRole('tab', { name: '직업', exact: true })).toBeFocused();
-    await page.keyboard.press('End'); await expect(page.getByRole('tab', { name: '저장', exact: true })).toBeFocused();
+    await page.keyboard.press('End'); await expect(page.locator('#profile-tab-slot')).toBeFocused();
     await page.keyboard.press('Home'); await expect(page.getByRole('tab', { name: '기본', exact: true })).toBeFocused();
     await expect(page.locator('[role="tab"][tabindex="0"]')).toHaveCount(1);
 });
-test('mobile shortcuts and every editor tab fit narrow viewports', async ({ page }) => {
+test('every editor tab fits narrow mobile viewports', async ({ page }) => {
     await seed(page);
     for (const width of [320, 390, 768]) {
         await page.setViewportSize({ width, height: 844 });
-        for (const id of ['basic', 'job', 'style', 'design', 'slot']) {
+        for (const id of ['basic', 'job', 'style', 'design', 'stickers', 'slot']) {
             await page.locator('#profile-tab-' + id).click();
             expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
         }
     }
     await page.setViewportSize({ width: 390, height: 844 });
-    const nav = page.getByRole('navigation', { name: '캐릭터 카드 스튜디오', exact: true });
-    await nav.getByRole('button', { name: '미리보기', exact: true }).click(); await expect(page.locator('#preview-panel')).toBeFocused();
-    await nav.getByRole('button', { name: '편집', exact: true }).click(); await expect(page.locator('#editor-panel')).toBeFocused();
 });
 test('all locales update the document, controls and creation credit', async ({ page }) => {
     await seed(page);
@@ -112,7 +109,7 @@ test('selected sticker exports at every quality with its image and without blue 
     await seed(page, { name: 'Export / test', stickers: [{ id: 'test', url, x: 50, y: 50, scale: 1, rotation: 0 }] });
     await page.locator('#card-preview').getByRole('button', { name: '스티커 1', exact: true }).click();
     for (const ratio of [1, 2, 3]) {
-        await page.getByLabel('저장 품질', { exact: true }).selectOption(String(ratio));
+        await chooseQuality(page, (['standard', 'high', 'ultra'] as const)[ratio - 1]);
         const result = await exportPng(page);
         expect(result.filename).toBe('ff14-Export - test.png');
         const [center] = await pixels(page, result.png, [{ x: result.width / 2, y: result.height / 2, width: 1, height: 1 }]);
@@ -152,7 +149,7 @@ test('all editor tabs pass automated WCAG AA checks in both themes', async ({ pa
     await seed(page);
     for (const dark of [false, true]) {
         if (dark) await page.getByRole('button', { name: '다크 모드로 변경', exact: true }).click();
-        for (const id of ['basic', 'job', 'style', 'design', 'slot']) {
+        for (const id of ['basic', 'job', 'style', 'design', 'stickers', 'slot']) {
             await page.locator('#profile-tab-' + id).click();
             const result = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
             expect(result.violations, id + '/' + dark).toEqual([]);
@@ -161,7 +158,7 @@ test('all editor tabs pass automated WCAG AA checks in both themes', async ({ pa
 });
 test('JSON backup includes effects and imports normalize invalid jobs and level caps', async ({ page }) => {
     await seed(page);
-    await page.getByRole('tab', { name: '저장', exact: true }).click();
+    await page.locator('#profile-tab-slot').click();
     const pending = page.waitForEvent('download');
     await page.getByRole('button', { name: '백업 내보내기', exact: true }).click();
     const stream = await (await pending).createReadStream(); const chunks: Buffer[] = [];

@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import { JOBS } from '../src/data/jobs';
 import { getContrastRatio } from '../src/utils/styles';
-import { seed, nativeSize, exportPng, pixels, changed } from './helpers';
+import { seed, nativeSize, exportPng, pixels, changed, chooseQuality } from './helpers';
 
 for (const layout of ['header', 'left-portrait'] as const) {
     for (const [index, language] of (['ko', 'en', 'ja'] as const).entries()) {
@@ -39,7 +39,7 @@ for (const layout of ['header', 'left-portrait'] as const) {
         for (const dark of [false, true]) {
             if (dark) await page.getByRole('button', { name: '다크 모드로 변경', exact: true }).click();
             for (const ratio of [1, 2, 3]) {
-                await page.getByLabel('저장 품질', { exact: true }).selectOption(String(ratio));
+                await chooseQuality(page, (['standard', 'high', 'ultra'] as const)[ratio - 1]);
                 await expect(page.getByLabel('PNG 출력 크기', { exact: true })).toHaveText(size.width * ratio + ' × ' + size.height * ratio + ' px');
                 const output = await exportPng(page);
                 expect([output.width, output.height]).toEqual([size.width * ratio, size.height * ratio]);
@@ -120,7 +120,7 @@ for (const layout of ['header', 'left-portrait'] as const) {
 
         // The image has a flat, known color, so sampling the former inset frame
         // in the downloaded PNG catches regressions that only appear on export.
-        await page.getByLabel('저장 품질', { exact: true }).selectOption('1');
+        await chooseQuality(page, 'standard');
         const output = await exportPng(page);
         const [topFrame, leftFrame] = await pixels(page, output.png, [
             { x: 30, y: 12, width: 1, height: 1 },
@@ -132,7 +132,7 @@ for (const layout of ['header', 'left-portrait'] as const) {
 
     test(layout + ': wash and watermark export independently, preserve photo and persist', async ({ page }) => {
         await seed(page, { layout, cornerWash: false, jobWatermark: false });
-        await page.getByLabel('저장 품질', { exact: true }).selectOption('1');
+        await chooseQuality(page, 'standard');
         await page.getByRole('tab', { name: '꾸미기', exact: true }).click();
         const wash = page.getByRole('checkbox', { name: '모서리 색 번짐', exact: true });
         const watermark = page.getByRole('checkbox', { name: '주 직업 워터마크', exact: true });

@@ -1,9 +1,10 @@
-import { useRef, useState, type ChangeEvent } from 'react';
-import { Plus, X, Move, Maximize, RotateCw, Settings2, ChevronUp, ChevronDown } from 'lucide-react';
+// Lucian UX/UI Prompt #122 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#122
+import { useRef, useState, type ChangeEvent, type CSSProperties } from 'react';
+import { Plus, X, Move, Maximize, RotateCw, ChevronsUp, ChevronsDown } from 'lucide-react';
 import { usePlayer } from '../../contexts/PlayerContext';
 import { i18n } from '../../utils/i18n';
-import { Section } from './Section';
 import type { Sticker } from '../../types';
+import '../stickerlayers.css';
 
 const MAX_STICKER_FILE_SIZE = 2 * 1024 * 1024;
 const MAX_STICKER_DIMENSION = 1600;
@@ -52,12 +53,18 @@ async function prepareStickerImage(file: File): Promise<string> {
 }
 
 export function StickerSection() {
-    const { playerInfo, updatePlayerField, selectedStickerId, setSelectedStickerId, removeSticker } = usePlayer();
+    const { playerInfo, updatePlayerField, commitStickerChange, selectedStickerId, setSelectedStickerId, removeSticker } = usePlayer();
     const fileInputRef = useRef<HTMLInputElement>(null);
     const lang = playerInfo.language;
     const t = i18n[lang].form;
+    const layerText = i18n[lang].layers;
     const stickers = playerInfo.stickers || [];
     const [uploadError, setUploadError] = useState('');
+    const [orderAnnouncement, setOrderAnnouncement] = useState('');
+    const frontToBackStickers = [...stickers].reverse();
+    const selectedSticker = stickers.find(sticker => sticker.id === selectedStickerId) ?? null;
+
+    const getLayerName = (number: number) => layerText.select.replace('{number}', String(number));
 
     const handleAddSticker = async (e: ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
@@ -76,7 +83,7 @@ export function StickerSection() {
                         url,
                         x: 50, y: 50, scale: 0.5, rotation: 0,
                     };
-                    updatePlayerField('stickers', [...stickers, newSticker]);
+                    commitStickerChange(current => [...current, newSticker]);
                 } catch {
                     setUploadError(t.stickerUploadError);
                 }
@@ -85,305 +92,270 @@ export function StickerSection() {
         if (e.target) e.target.value = '';
     };
 
-    const updateSticker = (id: string, updates: Partial<Sticker>) => {
-        updatePlayerField('stickers', stickers.map(s => s.id === id ? { ...s, ...updates } : s));
-    };
+    const moveStickerToEdge = (id: string, edge: 'front' | 'back') => {
+        const sourceIndex = stickers.findIndex(sticker => sticker.id === id);
+        if (sourceIndex < 0 || (edge === 'front' && sourceIndex === stickers.length - 1) || (edge === 'back' && sourceIndex === 0)) return;
 
-    const moveSticker = (index: number, direction: 'forward' | 'backward') => {
-        if (direction === 'backward' && index > 0) {
-            const arr = [...stickers];
-            [arr[index - 1], arr[index]] = [arr[index], arr[index - 1]];
-            updatePlayerField('stickers', arr);
-        } else if (direction === 'forward' && index < stickers.length - 1) {
-            const arr = [...stickers];
-            [arr[index], arr[index + 1]] = [arr[index + 1], arr[index]];
-            updatePlayerField('stickers', arr);
-        }
-    };
+        commitStickerChange(current => {
+            const index = current.findIndex(sticker => sticker.id === id);
+            if (index < 0 || (edge === 'front' && index === current.length - 1) || (edge === 'back' && index === 0)) return current;
 
-    // ─── Shared slider class (uses CSS accent-color) ─────────────────────────
-    const sliderClass = 'w-full h-1.5 rounded-lg appearance-none cursor-pointer accent-current focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2';
+            const next = [...current];
+            const [sticker] = next.splice(index, 1);
+            if (edge === 'front') next.push(sticker);
+            else next.unshift(sticker);
+            return next;
+        });
+        const sourceNumber = stickers.length - sourceIndex;
+        const actionLabel = edge === 'front' ? layerText.moveToFront : layerText.moveToBack;
+        setOrderAnnouncement(`${layerText.order}: ${getLayerName(sourceNumber)} ${actionLabel}`);
+    };
 
     // ─── Shared sub-panel style ───────────────────────────────────────────────
-    const panelStyle: React.CSSProperties = {
+    const panelStyle: CSSProperties = {
         backgroundColor: 'var(--surface-200)',
         border: '1px solid var(--border-subtle)',
-        borderRadius: '8px',
+        borderRadius: '0',
         padding: '8px',
     };
 
+    const updateSticker = (id: string, updates: Partial<Sticker>) => {
+        updatePlayerField('stickers', stickers.map(sticker => sticker.id === id ? { ...sticker, ...updates } : sticker));
+    };
+
+    const commitStickerUpdate = (id: string, updates: Partial<Sticker>) => {
+        commitStickerChange(current => {
+            const index = current.findIndex(sticker => sticker.id === id);
+            if (index < 0 || !(Object.keys(updates) as (keyof Sticker)[]).some(key => current[index][key] !== updates[key])) return current;
+
+            const next = [...current];
+            next[index] = { ...current[index], ...updates };
+            return next;
+        });
+    };
+
+    const scaleInputId = selectedSticker ? stickerControlId(selectedSticker.id, 'scale') : undefined;
+    const scaleRangeId = selectedSticker ? stickerControlId(selectedSticker.id, 'scale-range') : undefined;
+    const rotationInputId = selectedSticker ? stickerControlId(selectedSticker.id, 'rotation') : undefined;
+    const rotationRangeId = selectedSticker ? stickerControlId(selectedSticker.id, 'rotation-range') : undefined;
+    const removeLayerSticker = (id: string) => {
+        const rowIndex = frontToBackStickers.findIndex(sticker => sticker.id === id);
+        removeSticker(id);
+        window.requestAnimationFrame(() => {
+            const remainingRows = document.querySelectorAll<HTMLButtonElement>('[data-testid="sticker-layer-select"]');
+            const nextRow = remainingRows[Math.min(Math.max(rowIndex, 0), remainingRows.length - 1)];
+            (nextRow ?? document.querySelector<HTMLButtonElement>('[data-sticker-add]'))?.focus();
+        });
+    };
+
     return (
-        <Section title={t.stickers}>
-            <div className="space-y-3">
-                <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-muted)' }}>
-                    {t.stickerHint}
-                </p>
+        <section className="sticker-layer-panel" aria-labelledby="sticker-layer-heading">
+            <div className="sticker-layer-panel__header">
+                <h2 id="sticker-layer-heading">{layerText.title}</h2>
+                <p>{t.stickerHint}</p>
+            </div>
 
-                {/* ── Add sticker button ──────────────────────────────────── */}
-                <button
-                    type="button"
-                    onClick={() => fileInputRef.current?.click()}
-                    className="flex w-full items-center justify-center gap-2 rounded-[8px] border-2 border-dashed py-2.5 text-[12px] font-semibold transition-[color,border-color,background-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                    style={{
-                        borderColor: 'var(--border-medium)',
-                        color: 'var(--text-muted)',
-                        backgroundColor: 'transparent',
-                    }}
-                    onMouseEnter={e => {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-strong)';
-                        (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)';
-                    }}
-                    onMouseLeave={e => {
-                        (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-medium)';
-                        (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
-                    }}
-                >
-                    <Plus size={15} aria-hidden="true" />
-                    {t.addSticker}
-                </button>
-                <input type="file" ref={fileInputRef} accept="image/*" aria-label={t.addSticker} className="hidden" onChange={handleAddSticker} />
-                {uploadError && (
-                    <p role="alert" aria-live="polite" className="text-[11px] font-medium" style={{ color: 'var(--destructive)' }}>
-                        {uploadError}
-                    </p>
-                )}
+            <button type="button" data-sticker-add className="sticker-layer-panel__add" onClick={() => fileInputRef.current?.click()}>
+                <Plus size={15} aria-hidden="true" />
+                {t.addSticker}
+            </button>
+            <input type="file" ref={fileInputRef} accept="image/*" aria-label={t.addSticker} className="hidden" onChange={handleAddSticker} />
+            {uploadError && <p role="alert" aria-live="polite" className="sticker-layer-panel__error">{uploadError}</p>}
 
-                {/* ── Sticker list ─────────────────────────────────────────── */}
-                <div className="space-y-2">
-                    {stickers.length === 0 ? (
-                        <div
-                            className="flex min-h-[64px] items-center justify-center gap-2 border border-dashed px-3 text-center text-[11px]"
-                            style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-muted)' }}
-                            role="status"
-                        >
-                            <Move size={14} aria-hidden="true" />
-                            <span>{t.stickerEmpty}</span>
+            <ol className="sticker-layer-panel__list" aria-label={layerText.order} data-testid="sticker-layer-list">
+                {stickers.length === 0 ? (
+                    <li className="sticker-layer-panel__empty-list-item">
+                        <div className="sticker-layer-panel__empty" role="status">
+                            <Move size={15} aria-hidden="true" />
+                            <span>{layerText.empty}</span>
                         </div>
-                    ) : stickers.map((sticker, index) => {
-                        const isSelected = selectedStickerId === sticker.id;
-                        const scaleInputId = stickerControlId(sticker.id, 'scale');
-                        const scaleRangeId = stickerControlId(sticker.id, 'scale-range');
-                        const scaleLabelId = stickerControlId(sticker.id, 'scale-label');
-                        const rotationInputId = stickerControlId(sticker.id, 'rotation');
-                        const rotationRangeId = stickerControlId(sticker.id, 'rotation-range');
-                        const rotationLabelId = stickerControlId(sticker.id, 'rotation-label');
-                        return (
-                            <div
-                                key={sticker.id}
-                                className="cursor-pointer rounded-[10px] p-3 transition-[color,background-color,border-color,box-shadow]"
-                                role="group"
-                                aria-label={`${t.stickers} ${index + 1}`}
-                                style={{
-                                    backgroundColor: 'var(--surface-200)',
-                                    border: isSelected
-                                        ? '1px solid var(--primary)'
-                                        : '1px solid var(--border-subtle)',
-                                    boxShadow: isSelected ? '0 0 0 2px color-mix(in oklab, var(--primary) 12%, transparent)' : 'none',
-                                }}
-                            >
-                                {/* Header row */}
-                                <div className="flex items-center justify-between">
-                                    <button
-                                        type="button"
-                                        aria-label={`${t.stickers} ${index + 1}`}
-                                        aria-pressed={isSelected}
-                                        className="flex items-center gap-2.5 rounded border-0 bg-transparent p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                        onClick={() => setSelectedStickerId(sticker.id)}
+                    </li>
+                ) : frontToBackStickers.map((sticker, frontIndex) => {
+                            const arrayIndex = stickers.length - frontIndex - 1;
+                            const isSelected = selectedStickerId === sticker.id;
+                            const isAtFront = arrayIndex === stickers.length - 1;
+                            const isAtBack = arrayIndex === 0;
+                            const number = frontIndex + 1;
+                            const selectLabel = getLayerName(number);
+                            const positionLabels = [
+                                isAtFront ? layerText.front : '',
+                                isAtBack ? layerText.back : '',
+                                isSelected ? layerText.selected : '',
+                            ].filter(Boolean);
+
+                            return (
+                                <li key={sticker.id} aria-posinset={frontIndex + 1} aria-setsize={stickers.length}>
+                                    <div
+                                        className={`sticker-layer-panel__row${isSelected ? ' is-selected' : ''}`}
+                                        data-testid="sticker-layer-row"
+                                        data-sticker-id={sticker.id}
+                                        role="group"
+                                        aria-label={[selectLabel, ...positionLabels].join(', ')}
                                     >
-                                        <div
-                                            className="w-9 h-9 rounded-[6px] overflow-hidden flex-shrink-0 flex items-center justify-center"
-                                            style={{
-                                                backgroundColor: isSelected ? 'color-mix(in oklab, var(--primary) 6%, transparent)' : 'var(--surface-300)',
-                                                border: `1px solid ${isSelected ? 'color-mix(in oklab, var(--primary) 20%, transparent)' : 'var(--border-subtle)'}`,
+                                        <button
+                                            type="button"
+                                            className="sticker-layer-panel__select"
+                                            data-testid="sticker-layer-select"
+                                            data-sticker-id={sticker.id}
+                                            aria-label={selectLabel}
+                                            aria-pressed={isSelected}
+                                            onClick={() => setSelectedStickerId(sticker.id)}
+                                            onKeyDown={event => {
+                                                if (event.key === 'ArrowUp' || event.key === 'Home') {
+                                                    event.preventDefault();
+                                                    moveStickerToEdge(sticker.id, 'front');
+                                                } else if (event.key === 'ArrowDown' || event.key === 'End') {
+                                                    event.preventDefault();
+                                                    moveStickerToEdge(sticker.id, 'back');
+                                                }
                                             }}
                                         >
-                                            <img src={sticker.url} alt="" width={36} height={36} className="h-full w-full object-contain" />
+                                            <span className="sticker-layer-panel__thumbnail">
+                                                <img src={sticker.url} alt="" width={44} height={44} />
+                                            </span>
+                                            <span className="sticker-layer-panel__row-copy">
+                                                <span className="sticker-layer-panel__row-title">#{number}</span>
+                                                <span className="sticker-layer-panel__row-status">
+                                                    {positionLabels.map(label => <span key={label}>{label}</span>)}
+                                                </span>
+                                            </span>
+                                        </button>
+                                        <div className="sticker-layer-panel__actions" role="group" aria-label={`${layerText.actions} ${number}`}>
+                                            <button
+                                                type="button"
+                                                data-testid="sticker-move-to-front"
+                                                aria-label={`${layerText.moveToFront} ${number}`}
+                                                title={layerText.moveToFront}
+                                                disabled={isAtFront}
+                                                onClick={() => moveStickerToEdge(sticker.id, 'front')}
+                                            >
+                                                <ChevronsUp size={15} aria-hidden="true" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                data-testid="sticker-move-to-back"
+                                                aria-label={`${layerText.moveToBack} ${number}`}
+                                                title={layerText.moveToBack}
+                                                disabled={isAtBack}
+                                                onClick={() => moveStickerToEdge(sticker.id, 'back')}
+                                            >
+                                                <ChevronsDown size={15} aria-hidden="true" />
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="is-danger"
+                                                aria-label={`${selectLabel} ${t.delete}`}
+                                                title={t.delete}
+                                                onClick={() => removeLayerSticker(sticker.id)}
+                                            >
+                                                <X size={14} aria-hidden="true" />
+                                            </button>
                                         </div>
-                                        <span
-                                            className="text-[11px] font-bold"
-                                            style={{ color: isSelected ? 'var(--primary)' : 'var(--text-muted)' }}
-                                        >
-                                            #{index + 1}
-                                        </span>
-                                    </button>
-                                    <div className="flex items-center gap-0.5">
-                                        <button
-                                            type="button"
-                                            onClick={e => { e.stopPropagation(); moveSticker(index, 'forward'); }}
-                                            disabled={index === stickers.length - 1}
-                                            aria-label={`${t.stickers} ${index + 1} ${t.moveForward}`}
-                                            className="p-1.5 rounded transition-colors disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                            style={{ color: 'var(--text-muted)' }}
-                                            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-                                            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-                                        >
-                                            <ChevronUp size={13} aria-hidden="true" />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={e => { e.stopPropagation(); moveSticker(index, 'backward'); }}
-                                            disabled={index === 0}
-                                            aria-label={`${t.stickers} ${index + 1} ${t.moveBackward}`}
-                                            className="p-1.5 rounded transition-colors disabled:opacity-30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                            style={{ color: 'var(--text-muted)' }}
-                                            onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
-                                            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-                                        >
-                                            <ChevronDown size={13} aria-hidden="true" />
-                                        </button>
-                                        <div className="w-px h-3 mx-1" style={{ backgroundColor: 'var(--border-medium)' }} />
-                                        <button
-                                            type="button"
-                                            onClick={e => { e.stopPropagation(); removeSticker(sticker.id); }}
-                                            aria-label={`${t.stickers} ${index + 1} ${t.delete}`}
-                                            className="p-1 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                            style={{ color: 'var(--text-muted)' }}
-                                            onMouseEnter={e => (e.currentTarget.style.color = 'var(--destructive)')}
-                                            onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}
-                                        >
-                                            <X size={14} aria-hidden="true" />
-                                        </button>
+                                    </div>
+                                </li>
+                            );
+                        })}
+            </ol>
+            {stickers.length > 0 && <p className="sticker-layer-panel__sr-only" aria-live="polite" aria-atomic="true">{orderAnnouncement}</p>}
+
+            {selectedSticker && (
+                <section className="sticker-layer-panel__properties" data-testid="sticker-property-panel" data-sticker-id={selectedSticker.id} aria-labelledby="sticker-layer-properties-heading">
+                    <h3 id="sticker-layer-properties-heading">{layerText.properties}</h3>
+                    <div className="sticker-layer-panel__property-actions">
+                        <button type="button" onClick={() => commitStickerUpdate(selectedSticker.id, { x: 50, y: 50 })}>
+                            {t.centerSticker}
+                        </button>
+                        <button type="button" onClick={() => commitStickerUpdate(selectedSticker.id, { scale: 0.5, rotation: 0 })}>
+                            {t.resetStickerTransform}
+                        </button>
+                    </div>
+
+                    <div className="sticker-layer-panel__slider-grid">
+                        <div className="sticker-layer-panel__slider-card" style={panelStyle}>
+                            <div className="sticker-layer-panel__slider-heading">
+                                <label id={`${scaleInputId}-label`} htmlFor={scaleInputId}>
+                                    <Maximize size={11} aria-hidden="true" /> {t.stickerSize}
+                                </label>
+                                <div className="sticker-layer-panel__number-value">
+                                    <input
+                                        type="number" min="0.1" max="3" step="0.1"
+                                        id={scaleInputId}
+                                        name={scaleInputId}
+                                        data-testid="sticker-scale-input"
+                                        aria-labelledby={`${scaleInputId}-label`}
+                                        value={selectedSticker.scale}
+                                        onChange={event => updateSticker(selectedSticker.id, { scale: Number(event.target.value) })}
+                                    />
+                                    <span>x</span>
+                                </div>
+                            </div>
+                            <input
+                                type="range" min="0.1" max="3" step="0.05"
+                                id={scaleRangeId}
+                                name={scaleRangeId}
+                                data-testid="sticker-scale-range"
+                                aria-labelledby={`${scaleInputId}-label`}
+                                value={selectedSticker.scale}
+                                onChange={event => updateSticker(selectedSticker.id, { scale: Number(event.target.value) })}
+                            />
+                        </div>
+
+                        <div className="sticker-layer-panel__slider-card" style={panelStyle}>
+                            <div className="sticker-layer-panel__slider-heading">
+                                <label id={`${rotationInputId}-label`} htmlFor={rotationInputId}>
+                                    <RotateCw size={11} aria-hidden="true" /> {t.stickerRotate}
+                                </label>
+                                <div className="sticker-layer-panel__number-value">
+                                    <input
+                                        type="number" min="0" max="360"
+                                        id={rotationInputId}
+                                        name={rotationInputId}
+                                        data-testid="sticker-rotation-input"
+                                        aria-labelledby={`${rotationInputId}-label`}
+                                        value={selectedSticker.rotation}
+                                        onChange={event => updateSticker(selectedSticker.id, { rotation: Number(event.target.value) })}
+                                    />
+                                    <span>°</span>
+                                </div>
+                            </div>
+                            <input
+                                type="range" min="0" max="360" step="1"
+                                id={rotationRangeId}
+                                name={rotationRangeId}
+                                data-testid="sticker-rotation-range"
+                                aria-labelledby={`${rotationInputId}-label`}
+                                value={selectedSticker.rotation}
+                                onChange={event => updateSticker(selectedSticker.id, { rotation: Number(event.target.value) })}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="sticker-layer-panel__position-grid">
+                        {[
+                            { label: 'X', icon: <Move size={10} aria-hidden="true" />, key: 'x' as const },
+                            { label: 'Y', icon: <Move size={10} aria-hidden="true" className="rotate-90" />, key: 'y' as const },
+                        ].map(({ label, icon, key }) => {
+                            const inputId = stickerControlId(selectedSticker.id, key);
+                            return (
+                                <div className="sticker-layer-panel__position-value" key={key}>
+                                    <label htmlFor={inputId}>{icon}{label}</label>
+                                    <div>
+                                        <input
+                                            type="number" min="0" max="100"
+                                            id={inputId}
+                                            name={inputId}
+                                            data-testid={`sticker-${key}-input`}
+                                            value={Math.round(selectedSticker[key])}
+                                            onChange={event => updateSticker(selectedSticker.id, { [key]: Number(event.target.value) })}
+                                        />
+                                        <span>%</span>
                                     </div>
                                 </div>
-
-                                {/* Advanced settings toggle */}
-                                <details className="group mt-2.5">
-                                    <summary
-                                        className="list-none flex items-center gap-1.5 cursor-pointer text-[11px] font-semibold select-none transition-colors [&::-webkit-details-marker]:hidden"
-                                        style={{ color: 'var(--text-muted)' }}
-                                        onMouseEnter={e => ((e.target as HTMLElement).style.color = 'var(--text-primary)')}
-                                        onMouseLeave={e => ((e.target as HTMLElement).style.color = 'var(--text-muted)')}
-                                    >
-                                        <Settings2 size={12} aria-hidden="true" />
-                                        <span>{t.advancedSticker}</span>
-                                    </summary>
-
-                                    <div
-                                        className="mt-2.5 pt-2.5 space-y-3"
-                                        style={{ borderTop: '1px solid var(--border-subtle)' }}
-                                    >
-                                        <div className="flex gap-2">
-                                            <button
-                                                type="button"
-                                                onClick={() => updateSticker(sticker.id, { x: 50, y: 50 })}
-                                                className="flex-1 border px-2 py-1.5 text-[10px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                                style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)' }}
-                                            >
-                                                {t.centerSticker}
-                                            </button>
-                                            <button
-                                                type="button"
-                                                onClick={() => updateSticker(sticker.id, { scale: 0.5, rotation: 0 })}
-                                                className="flex-1 border px-2 py-1.5 text-[10px] font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                                style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)' }}
-                                            >
-                                                {t.resetStickerTransform}
-                                            </button>
-                                        </div>
-                                        {/* Scale + Rotation */}
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {/* Scale */}
-                                            <div style={panelStyle} className="space-y-1.5">
-                                                <div className="flex justify-between items-center">
-                                                    <label id={scaleLabelId} htmlFor={scaleInputId} className="text-[10px] font-semibold uppercase tracking-wide flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                                                        <Maximize size={10} aria-hidden="true" /> {t.stickerSize}
-                                                    </label>
-                                                    <div className="flex items-center gap-0.5">
-                                                        <input
-                                                            type="number" min="0.1" max="3" step="0.1"
-                                                            id={scaleInputId}
-                                                            name={scaleInputId}
-                                                            aria-labelledby={scaleLabelId}
-                                                            value={sticker.scale}
-                                                            onChange={e => updateSticker(sticker.id, { scale: Number(e.target.value) })}
-                                                            className="w-9 bg-transparent text-right text-[11px] font-mono font-bold outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                                            style={{ color: 'var(--text-primary)' }}
-                                                        />
-                                                        <span className="text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>x</span>
-                                                    </div>
-                                                </div>
-                                                <input type="range" min="0.1" max="3" step="0.05"
-                                                    id={scaleRangeId}
-                                                    name={scaleRangeId}
-                                                    aria-labelledby={scaleLabelId}
-                                                    value={sticker.scale}
-                                                    onChange={e => updateSticker(sticker.id, { scale: Number(e.target.value) })}
-                                                    className={sliderClass}
-                                                    style={{ color: 'var(--text-primary)' }}
-                                                />
-                                            </div>
-
-                                            {/* Rotation */}
-                                            <div style={panelStyle} className="space-y-1.5">
-                                                <div className="flex justify-between items-center">
-                                                    <label id={rotationLabelId} htmlFor={rotationInputId} className="text-[10px] font-semibold uppercase tracking-wide flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                                                        <RotateCw size={10} aria-hidden="true" /> {t.stickerRotate}
-                                                    </label>
-                                                    <div className="flex items-center gap-0.5">
-                                                        <input
-                                                            type="number" min="0" max="360"
-                                                            id={rotationInputId}
-                                                            name={rotationInputId}
-                                                            aria-labelledby={rotationLabelId}
-                                                            value={sticker.rotation}
-                                                            onChange={e => updateSticker(sticker.id, { rotation: Number(e.target.value) })}
-                                                            className="w-9 bg-transparent text-right text-[11px] font-mono font-bold outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                                            style={{ color: 'var(--text-primary)' }}
-                                                        />
-                                                        <span className="text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>°</span>
-                                                    </div>
-                                                </div>
-                                                <input type="range" min="0" max="360"
-                                                    id={rotationRangeId}
-                                                    name={rotationRangeId}
-                                                    aria-labelledby={rotationLabelId}
-                                                    value={sticker.rotation}
-                                                    onChange={e => updateSticker(sticker.id, { rotation: Number(e.target.value) })}
-                                                    className={sliderClass}
-                                                    style={{ color: 'var(--text-primary)' }}
-                                                />
-                                            </div>
-                                        </div>
-
-                                        {/* X / Y position inputs */}
-                                        <div className="grid grid-cols-2 gap-2">
-                                            {[
-                                                { label: 'X', icon: <Move size={9} aria-hidden="true" />, key: 'x' as const },
-                                                { label: 'Y', icon: <Move size={9} aria-hidden="true" className="rotate-90" />, key: 'y' as const },
-                                            ].map(({ label, icon, key }) => {
-                                                const inputId = stickerControlId(sticker.id, key);
-                                                return (
-                                                <div
-                                                    key={key}
-                                                    className="flex items-center justify-between px-2.5 py-1.5 rounded-[6px]"
-                                                    style={{ backgroundColor: 'var(--surface-200)', border: '1px solid var(--border-subtle)' }}
-                                                >
-                                                    <label htmlFor={inputId} className="text-[10px] font-semibold flex items-center gap-1" style={{ color: 'var(--text-muted)' }}>
-                                                        {icon} {label}
-                                                    </label>
-                                                    <div className="flex items-center gap-0.5">
-                                                        <input
-                                                            type="number" min="0" max="100"
-                                                            id={inputId}
-                                                            name={inputId}
-                                                            value={Math.round(sticker[key])}
-                                                            onChange={e => updateSticker(sticker.id, { [key]: Number(e.target.value) })}
-                                                            className="w-9 bg-transparent text-right text-[11px] font-mono outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                                            style={{ color: 'var(--text-primary)' }}
-                                                        />
-                                                        <span className="text-[10px] font-mono" style={{ color: 'var(--text-muted)' }}>%</span>
-                                                    </div>
-                                                </div>
-                                                );
-                                            })}
-                                        </div>
-                                    </div>
-                                </details>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-        </Section>
+                            );
+                        })}
+                    </div>
+                </section>
+            )}
+        </section>
     );
 }

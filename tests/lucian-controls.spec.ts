@@ -94,12 +94,21 @@ test('clipboard and real PNG export add independent notifications that can be ex
     copiedColor = await page.evaluate(() => (window as Window & { copiedColor?: string }).copiedColor ?? '');
     expect(copiedColor).toMatch(/^#[0-9A-F]{6}$/);
 
-    const save = page.locator('.studio-download').first();
+    const save = page.locator('.u010-main');
+    await page.evaluate(() => {
+        const photo = document.querySelector<HTMLImageElement>('#card-preview .sheet-image > img')!;
+        const decode = photo.decode.bind(photo);
+        let release: () => void;
+        const ready = new Promise<void>(resolve => { release = resolve; });
+        (window as Window & { releaseExportDecode?: () => void }).releaseExportDecode = () => release();
+        photo.decode = async () => { await decode(); await ready; };
+    });
     await save.click();
     await expect(save).toHaveAttribute('aria-busy', 'true');
     await expect(stack.locator('[data-type="loading"]')).toHaveCount(1);
     const exportToastId = await stack.locator('[data-type="loading"]').getAttribute('data-toast-id');
     expect(exportToastId).toBeTruthy();
+    await page.evaluate(() => (window as Window & { releaseExportDecode?: () => void }).releaseExportDecode?.());
     await expect(stack.locator(`[data-toast-id="${exportToastId}"]`)).toHaveAttribute('data-type', 'success');
     await expect(stack.locator(`[data-toast-id="${exportToastId}"] .u070-live`)).toContainText('PNG 카드를 저장했습니다');
     await expect(cards).toHaveCount(2);

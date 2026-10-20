@@ -1,6 +1,6 @@
 // Lucian UX/UI Prompt #040 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#040
 import { useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type CSSProperties } from 'react';
-import { ChevronRight, ContactRound, Paintbrush, Save, Swords, Tags } from 'lucide-react';
+import { ChevronRight, ContactRound, Paintbrush, Archive, Layers, Swords, Tags } from 'lucide-react';
 import type { Language } from '../types';
 import { i18n } from '../utils/i18n';
 import { EDITOR_TABS, type EditorTabId } from './editorTabs';
@@ -17,7 +17,8 @@ const icons = {
     job: Swords,
     style: Tags,
     design: Paintbrush,
-    slot: Save,
+    stickers: Layers,
+    slot: Archive,
 } satisfies Record<EditorTabId, typeof ContactRound>;
 
 const labels = {
@@ -25,6 +26,7 @@ const labels = {
     job: 'tabJob',
     style: 'tabStyle',
     design: 'tabDesign',
+    stickers: 'tabStickers',
     slot: 'tabSlot',
 } as const satisfies Record<EditorTabId, keyof typeof i18n.ko.form>;
 

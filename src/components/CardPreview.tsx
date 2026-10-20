@@ -1,4 +1,5 @@
-import { lazy, Suspense, forwardRef, useCallback, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+// Lucian UX/UI Prompt #122 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#122
+import { lazy, Suspense, forwardRef, useCallback, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { JOBS } from '../data/jobs';
 import { ImagePlus, Maximize2, X, RotateCw } from 'lucide-react';
 import { i18n } from '../utils/i18n';
@@ -12,6 +13,7 @@ import { useFontLoader } from '../hooks/useFontLoader';
 import { useCharacterImageUpload, type CharacterImageUploadCopy } from '../hooks/useCharacterImageUpload';
 import type { Sticker } from '../types';
 import { CharacterImageUpload } from './CharacterImageUpload';
+import { StickerContextMenu } from './StickerContextMenu';
 
 import { getAccessibleAccentColor, getAccentSurface } from '../utils/styles';
 import { CardBackgroundEffects } from './preview/CardBackgroundEffects';
@@ -27,6 +29,7 @@ const ImageCropperModal = lazy(() => import('./ImageCropperModal').then(module =
 interface CardPreviewProps {
     id?: string;
     onImageChange?: (image: string | undefined) => void;
+    onStickerEdit?: () => void;
 }
 
 const BATTLE_ROLES = new Set([
@@ -38,8 +41,8 @@ const BATTLE_ROLES = new Set([
     'Limited',
 ]);
 
-export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, onImageChange }, ref) => {
-    const { playerInfo, updatePlayerField, selectedStickerId, setSelectedStickerId, removeSticker } = usePlayer();
+export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, onImageChange, onStickerEdit }, ref) => {
+    const { playerInfo, updatePlayerField, commitStickerChange, selectedStickerId, setSelectedStickerId, removeSticker } = usePlayer();
     const { jobs, comment, image, font, mainJob, jobLevels } = playerInfo;
 
     const lang = playerInfo.language;
@@ -50,6 +53,8 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
 
     const imageTriggerRef = useRef<HTMLButtonElement>(null);
     const constraintsRef = useRef<HTMLDivElement>(null);
+    const stickerPointerStartRef = useRef<{ id: string; x: number; y: number; moved: boolean } | null>(null);
+    const skipNextStickerClickRef = useRef<string | null>(null);
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
     const formText = i18n[lang].form;
     const studioText = i18n[lang].studio;
@@ -92,6 +97,57 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
         updateStickers, 
         constraintsRef 
     });
+    const stickerCount = playerInfo.stickers?.length ?? 0;
+    const activeStickerZIndex = 51 + stickerCount;
+    const stickerTrackerZIndex = activeStickerZIndex + 1;
+
+    const moveSticker = useCallback((stickerId: string, direction: 'forward' | 'backward') => {
+        commitStickerChange(current => {
+            const index = current.findIndex(sticker => sticker.id === stickerId);
+            const targetIndex = direction === 'forward' ? index + 1 : index - 1;
+            if (index < 0 || targetIndex < 0 || targetIndex >= current.length) return current;
+
+            const next = [...current];
+            [next[index], next[targetIndex]] = [next[targetIndex], next[index]];
+            return next;
+        });
+    }, [commitStickerChange]);
+
+    const commitStickerUpdate = useCallback((stickerId: string, updates: Partial<Sticker>) => {
+        commitStickerChange(current => {
+            const index = current.findIndex(sticker => sticker.id === stickerId);
+            if (index < 0 || !(Object.keys(updates) as (keyof Sticker)[]).some(key => current[index][key] !== updates[key])) return current;
+
+            const next = [...current];
+            next[index] = { ...current[index], ...updates };
+            return next;
+        });
+    }, [commitStickerChange]);
+
+    const handleStickerPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+        const start = stickerPointerStartRef.current;
+        if (start && Math.hypot(event.clientX - start.x, event.clientY - start.y) > 4) start.moved = true;
+        handlePointerMove(event);
+    }, [handlePointerMove]);
+
+    const handleStickerPointerCancel = useCallback(() => {
+        stickerPointerStartRef.current = null;
+        skipNextStickerClickRef.current = null;
+        handlePointerCancel();
+    }, [handlePointerCancel]);
+
+    const selectStickerForEditing = useCallback((stickerId: string) => {
+        setSelectedStickerId(stickerId);
+        onStickerEdit?.();
+    }, [onStickerEdit, setSelectedStickerId]);
+
+    const handleStickerPointerUp = useCallback(() => {
+        const pointerStart = stickerPointerStartRef.current;
+        stickerPointerStartRef.current = null;
+        if (pointerStart) skipNextStickerClickRef.current = pointerStart.id;
+        handlePointerUp();
+        if (pointerStart && !pointerStart.moved) selectStickerForEditing(pointerStart.id);
+    }, [handlePointerUp, selectStickerForEditing]);
 
     useFontLoader(playerInfo.font);
 
@@ -113,6 +169,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
         }
 
         event.preventDefault();
+        selectStickerForEditing(stickerId);
         updateStickers(playerInfo.stickers?.map(sticker =>
             sticker.id === stickerId
                 ? {
@@ -122,7 +179,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 }
                 : sticker
         ) || []);
-    }, [playerInfo.stickers, removeSticker, updateStickers]);
+    }, [playerInfo.stickers, removeSticker, selectStickerForEditing, updateStickers]);
 
     const handleCropApply = (croppedImageBase64: string) => {
         onImageChange?.(croppedImageBase64);
@@ -285,10 +342,11 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 {/* Drag / Transform Tracker Layer */}
                 {(draggingId || transformingId) && (
                     <div 
-                        className="absolute inset-0 pointer-events-auto z-[60]"
-                        onPointerMove={handlePointerMove}
-                        onPointerUp={handlePointerUp}
-                        onPointerCancel={handlePointerCancel}
+                        className="absolute inset-0 pointer-events-auto"
+                        style={{ zIndex: stickerTrackerZIndex }}
+                        onPointerMove={handleStickerPointerMove}
+                        onPointerUp={handleStickerPointerUp}
+                        onPointerCancel={handleStickerPointerCancel}
                     />
                 )}
                 
@@ -300,49 +358,85 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
 
                 {playerInfo.stickers?.map((sticker, index) => {
                     const isSelected = selectedStickerId === sticker.id;
+                    const stickerNumber = stickerCount - index;
+                    const stickerLabel = `${formText.stickers} ${stickerNumber}`;
                     return (
                     <div
                         key={sticker.id}
                         className="absolute pointer-events-auto select-none group/sticker"
+                        data-testid="card-sticker"
+                        data-sticker-id={sticker.id}
                         role="group"
-                        aria-label={`${i18n[lang].form.stickers} ${index + 1}`}
+                        aria-label={stickerLabel}
                         style={{
                             left: `${sticker.x}%`,
                             top: `${sticker.y}%`,
                             transform: `translate(-50%, -50%) scale(${sticker.scale}) rotate(${sticker.rotation}deg)`,
-                            zIndex: (draggingId === sticker.id || transformingId === sticker.id) ? 55 : (isSelected ? 52 : 51)
+                            zIndex: (draggingId === sticker.id || transformingId === sticker.id) ? activeStickerZIndex : 51 + index,
                         }}
                     >
                         {/* 스티커 이미지 박스 (선택 시 테두리 표시) */}
-                        <button
-                            type="button"
-                            aria-label={`${i18n[lang].form.stickers} ${index + 1}`}
-                            aria-describedby={`sticker-keyboard-help-${index}`}
-                            aria-pressed={isSelected}
-                            className="block border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
-                            onClick={() => setSelectedStickerId(sticker.id)}
-                            onKeyDown={(event) => handleStickerKeyDown(event, sticker.id)}
-                            onPointerDown={(e) => {
-                                e.stopPropagation();
-                                setSelectedStickerId(sticker.id);
-                                startDrag(sticker.id);
-                            }}
-                            onPointerCancel={handlePointerCancel}
+                        <StickerContextMenu
+                            lang={lang}
+                            canvasRef={constraintsRef}
+                            stickerNumber={stickerNumber}
+                            isSelected={isSelected && draggingId !== sticker.id && transformingId !== sticker.id}
+                            isAtFront={index === (playerInfo.stickers?.length ?? 0) - 1}
+                            isAtBack={index === 0}
+                            onRequestOpen={() => selectStickerForEditing(sticker.id)}
+                            onMoveForward={() => moveSticker(sticker.id, 'forward')}
+                            onMoveBackward={() => moveSticker(sticker.id, 'backward')}
+                            onCenter={() => commitStickerUpdate(sticker.id, { x: 50, y: 50 })}
+                            onReset={() => commitStickerUpdate(sticker.id, { scale: 0.5, rotation: 0 })}
+                            onDelete={() => removeSticker(sticker.id)}
                         >
-                            <span id={`sticker-keyboard-help-${index}`} className="sr-only">{t.stickerKeyboardHelp}</span>
-                            <div className="relative">
-                                {isSelected && <span aria-hidden="true" className="export-ignore absolute inset-0 rounded ring-2 ring-[#0071e3] ring-offset-2 ring-offset-white dark:ring-offset-[#1d1d1f]" />}
-                                <img
-                                    src={sticker.url}
-                                    alt=""
-                                    width={96}
-                                    height={96}
-                                    draggable={false}
-                                    className="max-w-none pointer-events-none cursor-move drop-shadow-sm"
-                                    style={{ width: 'auto', height: 'auto' }}
-                                />
-                            </div>
-                        </button>
+                            <button
+                                type="button"
+                                aria-label={stickerLabel}
+                                aria-describedby={`sticker-keyboard-help-${index}`}
+                                aria-pressed={isSelected}
+                                className="block border-0 bg-transparent p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0071e3] focus-visible:ring-offset-2"
+                                onClick={event => {
+                                    if (event.detail === 0) {
+                                        skipNextStickerClickRef.current = null;
+                                        selectStickerForEditing(sticker.id);
+                                        return;
+                                    }
+                                    if (skipNextStickerClickRef.current === sticker.id) {
+                                        skipNextStickerClickRef.current = null;
+                                        return;
+                                    }
+                                    const pointerStart = stickerPointerStartRef.current;
+                                    const dragged = pointerStart?.id === sticker.id && pointerStart.moved;
+                                    stickerPointerStartRef.current = null;
+                                    if (!dragged) selectStickerForEditing(sticker.id);
+                                }}
+                                onKeyDown={event => handleStickerKeyDown(event, sticker.id)}
+                                onPointerDown={event => {
+                                    event.stopPropagation();
+                                    if (event.button !== 0) return;
+                                    skipNextStickerClickRef.current = null;
+                                    stickerPointerStartRef.current = { id: sticker.id, x: event.clientX, y: event.clientY, moved: false };
+                                    setSelectedStickerId(sticker.id);
+                                    startDrag(sticker.id);
+                                }}
+                                onPointerCancel={handleStickerPointerCancel}
+                            >
+                                <span id={`sticker-keyboard-help-${index}`} className="sr-only">{t.stickerKeyboardHelp}</span>
+                                <div className="relative">
+                                    {isSelected && <span aria-hidden="true" className="export-ignore absolute inset-0 rounded ring-2 ring-[#0071e3] ring-offset-2 ring-offset-white dark:ring-offset-[#1d1d1f]" />}
+                                    <img
+                                        src={sticker.url}
+                                        alt=""
+                                        width={96}
+                                        height={96}
+                                        draggable={false}
+                                        className="max-w-none pointer-events-none cursor-move drop-shadow-sm"
+                                        style={{ width: 'auto', height: 'auto' }}
+                                    />
+                                </div>
+                            </button>
+                        </StickerContextMenu>
 
                         {/* 선택 시 조작 UI: 삭제(X) 및 트랜스폼(핸들) */}
                         {isSelected && (

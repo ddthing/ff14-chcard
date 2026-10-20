@@ -1,5 +1,7 @@
 import { expect, type Page } from '@playwright/test';
 import { JOBS, getJobMaxLevel } from '../src/data/jobs';
+import { i18n } from '../src/utils/i18n';
+import type { Language } from '../src/types';
 export const profile = {
     name: '세리안', region: 'KR', server: '초코보', dataCenter: '한국', mainJob: 'BST',
     jobs: JOBS.map(job => job.id), jobLevels: Object.fromEntries(JOBS.map(job => [job.id, getJobMaxLevel(job.id)])),
@@ -20,6 +22,16 @@ export async function seed(page: Page, extra: Record<string, unknown> = {}) {
 }
 export async function nativeSize(page: Page) {
     return page.locator('#card-preview').evaluate(card => ({ width: (card as HTMLElement).offsetWidth, height: (card as HTMLElement).offsetHeight }));
+}
+export async function chooseQuality(page: Page, quality: 'original' | 'standard' | 'high' | 'ultra', language: Language = 'ko') {
+    const trigger = page.getByRole('button', { name: i18n[language].exportMenu.options, exact: true });
+    await trigger.click();
+    const option = page.getByRole('menuitemradio', { name: i18n[language].studio[quality], exact: true });
+    await option.click();
+    await trigger.click();
+    const selected = page.getByRole('menuitemradio', { name: i18n[language].studio[quality], exact: true });
+    await expect(selected).toHaveAttribute('aria-checked', 'true');
+    await page.keyboard.press('Escape');
 }
 export async function exportPng(page: Page) {
     const pending = page.waitForEvent('download');
