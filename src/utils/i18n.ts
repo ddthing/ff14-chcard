@@ -2,6 +2,18 @@ import type { Language } from '../types';
 
 export const i18n = {
     ko: {
+        tour: {
+            start: '사용방법', label: '카드 만들기 안내', skip: '닫기', previous: '이전', next: '다음', finish: '완료', progress: '{current} / {total}',
+            steps: {
+                photo: { title: '사진 넣기', description: '캐릭터 스크린샷을 올리고 카드에 들어갈 영역을 골라주세요. 원본 해상도는 그대로 유지됩니다.' },
+                basic: { title: '이름과 서버', description: '캐릭터 이름과 서버를 입력하세요. 새싹·멘토 표시도 여기에서 바꿀 수 있습니다.' },
+                job: { title: '직업과 레벨', description: '표시할 직업을 고르고 주 직업을 지정하세요. 레벨은 직업별로 바꿀 수 있습니다.' },
+                style: { title: '플레이 스타일', description: '즐겨 하는 활동과 접속 시간을 골라주세요. 자기소개도 적을 수 있습니다.' },
+                design: { title: '색과 폰트', description: '팔레트에서 포인트색을 고르세요. 마음에 드는 색을 잠그고 나머지만 다시 섞을 수 있습니다. 폰트와 스티커도 이곳에서 바꿉니다.' },
+                preview: { title: '미리보기 확인', description: '화면에 맞춤으로 카드 전체를 확인하세요. 실제 크기로 바꾸면 사진과 글자를 확대해 볼 수 있습니다.' },
+                export: { title: 'PNG로 저장', description: '출력 크기를 확인한 뒤 이미지 저장을 누르세요. 원본 해상도는 사진의 세부 묘사를 유지하고, 1·2·3배 저장도 선택할 수 있습니다.' },
+            },
+        },
         palette: {
             title: '색 팔레트',
             shuffle: '새로 섞기',
@@ -152,6 +164,8 @@ export const i18n = {
             centerSticker: '가운데 정렬',
             resetStickerTransform: '크기·회전 초기화',
             tabNavigation: '프로필 작성 단계',
+            navigationExpand: '편집 메뉴 펼치기',
+            navigationCollapse: '편집 메뉴 접기',
             autoFill: '자동 채우기',
             saveCurrentProfile: '현재 프로필 저장',
             slotName: '슬롯 이름',
@@ -247,6 +261,18 @@ export const i18n = {
         },
     },
     en: {
+        tour: {
+            start: 'How to use', label: 'Create a character card', skip: 'Close', previous: 'Back', next: 'Next', finish: 'Done', progress: '{current} / {total}',
+            steps: {
+                photo: { title: 'Add a screenshot', description: 'Choose your character screenshot and crop the area for your card. The original resolution is retained.' },
+                basic: { title: 'Name and world', description: 'Enter your character name and world. You can also set the sprout and mentor badges here.' },
+                job: { title: 'Jobs and levels', description: 'Choose which jobs to show and select your main job. You can set each job’s level.' },
+                style: { title: 'Playstyle', description: 'Choose your favorite activities and usual playtimes, then add a short introduction.' },
+                design: { title: 'Colors and fonts', description: 'Pick an accent from the palette. Lock colors you like and shuffle the rest. Fonts and stickers are here too.' },
+                preview: { title: 'Check your card', description: 'Fit to view shows the whole card. Actual size lets you inspect the image and text more closely.' },
+                export: { title: 'Save a PNG', description: 'Check the output dimensions, then select Save Image. Original resolution keeps photo detail; 1×, 2× and 3× exports are also available.' },
+            },
+        },
         palette: {
             title: 'Color palette',
             shuffle: 'Shuffle',
@@ -397,6 +423,8 @@ export const i18n = {
             centerSticker: 'Center sticker',
             resetStickerTransform: 'Reset size & rotation',
             tabNavigation: 'Profile creation steps',
+            navigationExpand: 'Expand editor menu',
+            navigationCollapse: 'Collapse editor menu',
             autoFill: 'Auto Fill',
             saveCurrentProfile: 'Save current profile',
             slotName: 'Slot name',
@@ -491,6 +519,18 @@ export const i18n = {
         },
     },
     ja: {
+        tour: {
+            start: '使い方', label: 'キャラクターカードの作り方', skip: '閉じる', previous: '戻る', next: '次へ', finish: '完了', progress: '{current} / {total}',
+            steps: {
+                photo: { title: '写真を追加', description: 'キャラクターのスクリーンショットを選び、カードに使う範囲を切り抜きます。元の解像度は維持されます。' },
+                basic: { title: '名前とワールド', description: 'キャラクター名とワールドを入力します。若葉・メンターマークもここで設定できます。' },
+                job: { title: 'ジョブとレベル', description: '表示するジョブとメインジョブを選びます。レベルはジョブごとに設定できます。' },
+                style: { title: 'プレイスタイル', description: '好きな遊び方やログイン時間を選び、自己紹介を添えましょう。' },
+                design: { title: '色とフォント', description: 'パレットからアクセントカラーを選びます。好きな色をロックし、残りをシャッフルできます。フォントやステッカーもここで変更します。' },
+                preview: { title: '仕上がりを確認', description: '画面に合わせるとカード全体を確認できます。実際のサイズにすると写真や文字を詳しく見られます。' },
+                export: { title: 'PNGで保存', description: '出力サイズを確認し、画像を保存します。元の解像度なら写真の細部を維持でき、1・2・3倍での保存も選べます。' },
+            },
+        },
         palette: {
             title: 'カラーパレット',
             shuffle: 'シャッフル',
@@ -641,6 +681,8 @@ export const i18n = {
             centerSticker: '中央に配置',
             resetStickerTransform: '大きさ・回転をリセット',
             tabNavigation: 'プロフィール作成ステップ',
+            navigationExpand: '編集メニューを展開',
+            navigationCollapse: '編集メニューを折りたたむ',
             autoFill: '自動で合わせる',
             saveCurrentProfile: '現在のプロフィールを保存',
             slotName: 'スロット名',

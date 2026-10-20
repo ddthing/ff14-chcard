@@ -18,10 +18,15 @@ import { SlotSection } from './form/SlotSection';
 
 import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
 import { ImageFileError, readImageFile } from '../utils/imageFile';
+import type { EditorTabId } from './editorTabs';
 
-type TabId = 'basic' | 'job' | 'style' | 'design' | 'slot';
+type CardFormProps = {
+    activeTab?: EditorTabId;
+    onTabChange?: (tab: EditorTabId) => void;
+    externalNavigation?: boolean;
+};
 
-export function CardForm() {
+export function CardForm({ activeTab: controlledTab, onTabChange, externalNavigation = false }: CardFormProps = {}) {
     const playerInfo = usePlayerSelector(s => s.playerInfo);
     const { setPlayerInfo, updateImage: onImageChange } = usePlayerActions();
     const panelRef = useRef<HTMLDivElement>(null);
@@ -31,10 +36,16 @@ export function CardForm() {
     const fileInputRef = useRef<HTMLInputElement>(null);
     const imageTriggerRef = useRef<HTMLButtonElement>(null);
     const [isFontOpen, setIsFontOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<TabId>('basic');
+    const [internalActiveTab, setInternalActiveTab] = useState<EditorTabId>('basic');
+    const activeTab = controlledTab ?? internalActiveTab;
+    const [previousActiveTab, setPreviousActiveTab] = useState(activeTab);
+    if (previousActiveTab !== activeTab) {
+        setPreviousActiveTab(activeTab);
+        setIsFontOpen(false);
+    }
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
     const [imageError, setImageError] = useState<string | null>(null);
-    const tabRefs = useRef<Partial<Record<TabId, HTMLButtonElement | null>>>({});
+    const tabRefs = useRef<Partial<Record<EditorTabId, HTMLButtonElement | null>>>({});
     const tabListRef = useRef<HTMLDivElement>(null);
     const [tabScrollState, setTabScrollState] = useState({ left: false, right: false });
 
@@ -56,6 +67,8 @@ export function CardForm() {
     }, []);
 
     useEffect(() => { if (isFontOpen) fontOptionRefs.current[playerInfo.font]?.focus(); }, [isFontOpen, playerInfo.font]);
+
+    useEffect(() => { panelRef.current?.scrollTo({ top: 0 }); }, [activeTab]);
 
     const handleChange = <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => {
         setPlayerInfo(prev => ({ ...prev, [field]: value }));
@@ -111,7 +124,7 @@ export function CardForm() {
     // inputClass is a shared design token — imported from utils/styles.
 
     // ─── Tab Definitions ───────────────────────────────────────────────────────
-    const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
+    const tabs: { id: EditorTabId; label: string; icon: React.ReactNode }[] = [
         { id: 'basic',  label: t.tabBasic,  icon: <ContactRound size={13} /> },
         { id: 'job',    label: t.tabJob,    icon: <Swords       size={13} /> },
         { id: 'style',  label: t.tabStyle,  icon: <Tags         size={13} /> },
@@ -146,8 +159,9 @@ export function CardForm() {
         return () => observer.disconnect();
     }, [lang, updateTabScrollState]);
 
-    const selectTab = (id: TabId, focusTab = false) => {
-        setActiveTab(id); setIsFontOpen(false); panelRef.current?.scrollTo({ top: 0 });
+    const selectTab = (id: EditorTabId, focusTab = false) => {
+        if (controlledTab === undefined) setInternalActiveTab(id);
+        onTabChange?.(id);
         const tab = tabRefs.current[id], list = tabListRef.current;
         if (focusTab) tab?.focus({ preventScroll: true });
         if (tab && list) list.scrollTo({ left: tab.offsetLeft - (list.clientWidth - tab.offsetWidth) / 2 });
@@ -194,7 +208,7 @@ export function CardForm() {
             {imageError && <p role="alert" className="px-4 pt-3 text-[11px]" style={{ color: 'var(--destructive)' }}>{imageError}</p>}
 
             {/* ───── Tab Bar ────────────────────────────────────────────────── */}
-            <div className="relative shrink-0">
+            {!externalNavigation && <div className="relative shrink-0">
                 <div
                     ref={tabListRef}
                     className="flex overflow-x-auto px-1 scrollbar-hide"
@@ -249,12 +263,12 @@ export function CardForm() {
                         style={{ background: 'linear-gradient(to left, var(--surface-50), transparent)' }}
                     />
                 )}
-            </div>
+            </div>}
 
-            <div className="studio-tab-intro" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--surface-50)' }}>
+            {!externalNavigation && <div className="studio-tab-intro" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--surface-50)' }}>
                 <span>{studio.stepHints[activeTabIndex]}</span>
                 <span className="tabular-nums">{activeTabIndex + 1} / {tabs.length}</span>
-            </div>
+            </div>}
 
             {/* ───── Tab Content ────────────────────────────────────────────── */}
             <div
@@ -283,7 +297,7 @@ export function CardForm() {
                          * tap targets are small, so we keep a dedicated upload affordance
                          * for a smooth first-run experience.
                          */}
-                        <div onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); const file = event.dataTransfer.files[0]; if (file) void openImage(file); }}>
+                        <div data-tour="image-upload" onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); const file = event.dataTransfer.files[0]; if (file) void openImage(file); }}>
                             <Section title={t.uploadImage}>
                                                 {playerInfo.image ? (
                                     /* Uploaded state: thumbnail + change / remove actions */
@@ -356,7 +370,7 @@ export function CardForm() {
                             </Section>
                         </div>
 
-                        <BasicInfoSection />
+                        <div data-tour="basic-section"><BasicInfoSection /></div>
 
                         {/* Layout Selector */}
                         <Section title={t.layout}>
@@ -397,14 +411,14 @@ export function CardForm() {
                  * the transparent save-button backdrop below short job grids.
                  */}
                 {activeTab === 'job' && (
-                    <div className="animate-tab-in flex-1 flex flex-col">
+                    <div className="animate-tab-in flex-1 flex flex-col" data-tour="job-selection">
                         <JobSelectionSection />
                     </div>
                 )}
 
                 {/* ── Tab 3: Style ───────────────────────────────────────────── */}
                 {activeTab === 'style' && (
-                    <div className="space-y-5 animate-tab-in">
+                    <div className="space-y-5 animate-tab-in" data-tour="style-section">
                         <PlaystyleSection />
                         <DetailsSection />
                     </div>
@@ -414,6 +428,7 @@ export function CardForm() {
                 <div
                     hidden={activeTab !== 'design'}
                     className={`space-y-5 relative z-20${activeTab === 'design' ? ' animate-tab-in' : ''}`}
+                    data-tour="design-section"
                 >
                         {/* Point Color ──────────────────────────────────────── */}
                         <Section title={t.pointColor}>
@@ -543,15 +558,15 @@ export function CardForm() {
 
                 {/* ── Tab 5: Slot ─────────────────────────────────────────────── */}
                 {activeTab === 'slot' && (
-                    <div className="animate-tab-in flex-1 flex flex-col">
+                    <div className="animate-tab-in flex-1 flex flex-col" data-tour="slot-section">
                         <SlotSection />
                     </div>
                 )}
 
-                <div className="studio-step-nav">
+                {!externalNavigation && <div className="studio-step-nav">
                     <button type="button" disabled={activeTabIndex === 0} onClick={() => selectTab(tabs[activeTabIndex - 1].id, true)}><ChevronLeft size={14} aria-hidden="true" />{studio.previous}</button>
                     <button type="button" disabled={activeTabIndex === tabs.length - 1} onClick={() => selectTab(tabs[activeTabIndex + 1].id, true)}>{studio.next}<ChevronRight size={14} aria-hidden="true" /></button>
-                </div>
+                </div>}
             </div>
         </div>
     );

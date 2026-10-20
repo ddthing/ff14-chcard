@@ -1,5 +1,5 @@
 import { type ReactNode, type KeyboardEvent, useRef, useState } from 'react';
-import { Check, Eye, Focus, PenLine, ZoomIn, Undo2, Redo2, MoveHorizontal } from 'lucide-react';
+import { Check, Eye, Focus, PenLine, ZoomIn, Undo2, Redo2, MoveHorizontal, CircleHelp } from 'lucide-react';
 import type { Language } from '../types';
 import { useWindowScale } from '../hooks/useWindowScale';
 import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
@@ -11,6 +11,7 @@ interface MainLayoutProps {
     form: ReactNode; preview: ReactNode; exportControls: ReactNode; mobileDownload: ReactNode;
     lang: Language; layoutType: 'header' | 'left-portrait';
     cardSize: { width: number; height: number }; onLanguageChange: (lang: Language) => void;
+    navigation?: ReactNode; editorTitle?: string; onStartTour?: () => void;
 }
 function HistoryControls({ lang }: { lang: Language }) {
     const canUndo = usePlayerSelector(s => s.canUndo);
@@ -27,7 +28,7 @@ function DraftStatus({ lang }: { lang: Language }) {
     const t = i18n[lang].studio;
     return <span className={'studio-draft' + (persistenceStatus ? ' studio-draft-warning' : '')}><Check size={13} aria-hidden="true" />{persistenceStatus ? t.draftWarning : t.localDraft}</span>;
 }
-export function MainLayout({ form, preview, exportControls, mobileDownload, lang, layoutType, cardSize, onLanguageChange }: MainLayoutProps) {
+export function MainLayout({ form, preview, exportControls, mobileDownload, lang, layoutType, cardSize, onLanguageChange, navigation, editorTitle, onStartTour }: MainLayoutProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const targetWidth = layoutType === 'left-portrait' ? 880 : 700;
     const [zoom, setZoom] = useState<'fit' | 'width' | 'actual'>('fit');
@@ -52,19 +53,20 @@ export function MainLayout({ form, preview, exportControls, mobileDownload, lang
     };
     return <div className="studio-page" onKeyDown={handleHistoryKey}>
         <a href="#main-content" className="skip-link">{i18n[lang].layout.skipToContent}</a>
-        <GlobalHeader lang={lang} onLanguageChange={onLanguageChange} />
+        <GlobalHeader lang={lang} onLanguageChange={onLanguageChange} onStartTour={onStartTour} />
         <main id="main-content" aria-labelledby="page-title" className="studio-main">
             <h1 id="page-title" className="sr-only">{t.workspace}</h1>
-            <div className="studio-workspace" aria-label={t.workspace}>
+            <div className={'studio-workspace' + (navigation ? ' studio-workspace--rail' : '')} aria-label={t.workspace}>
+                {navigation}
                 <section id="editor-panel" tabIndex={-1} aria-labelledby="editor-title" className="studio-editor">
-                    <div className="studio-panel-heading"><div className="flex items-center gap-3"><span className="studio-section-number" aria-hidden="true">01</span><h2 id="editor-title">{t.editor}</h2></div><HistoryControls lang={lang} /></div>
+                    <div className="studio-panel-heading"><h2 id="editor-title" key={editorTitle} className="studio-editor-current-title">{editorTitle || t.editor}</h2><div className="flex items-center gap-2">{onStartTour && <button type="button" className="studio-tour-trigger studio-tour-trigger--editor" onClick={onStartTour}><CircleHelp size={14} aria-hidden="true" />{i18n[lang].tour.start}</button>}<HistoryControls lang={lang} /></div></div>
                     <div className="studio-form">{form}</div>
                     <div className="studio-editor-footer"><DraftStatus lang={lang} /><span aria-hidden="true">FF XIV</span></div>
                 </section>
                 <section id="preview-panel" tabIndex={-1} aria-labelledby="preview-title" className="studio-preview">
                     <div className="studio-preview-toolbar">
-                        <div className="flex items-center gap-3"><span className="studio-section-number" aria-hidden="true">02</span><h2 id="preview-title">{t.preview}</h2><span className="studio-live"><span />{t.live}</span></div>
-                        <div className="studio-zoom" role="group" aria-label={t.zoom}>
+                        <div className="flex items-center gap-3"><h2 id="preview-title">{t.preview}</h2><span className="studio-live"><span />{t.live}</span></div>
+                        <div className="studio-zoom" role="group" aria-label={t.zoom} data-tour="preview-controls">
                             <button type="button" aria-pressed={zoom === 'fit'} onClick={() => changeZoom('fit')} title={t.fit} aria-label={t.fit}><Focus size={15} aria-hidden="true" /></button>
                             <button type="button" aria-pressed={zoom === 'width'} onClick={() => changeZoom('width')} title={t.fitWidth} aria-label={t.fitWidth}><MoveHorizontal size={15} aria-hidden="true" /></button>
                             <span className="tabular-nums" aria-hidden="true">{Math.round(scale * 100)}%</span>
@@ -76,7 +78,7 @@ export function MainLayout({ form, preview, exportControls, mobileDownload, lang
                             <div className="studio-card-wrapper" style={{ width: targetWidth, transform: 'scale(' + scale + ')' }}>{preview}</div>
                         </div>
                     </div>
-                    <div className="studio-export-bar">{exportControls}</div>
+                    <div className="studio-export-bar" data-tour="export-controls">{exportControls}</div>
                 </section>
             </div>
         </main>

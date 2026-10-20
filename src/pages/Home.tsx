@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, type MouseEvent } from 'react';
+import { lazy, Suspense, useCallback, useState, useMemo, useRef, useEffect, type MouseEvent } from 'react';
 import { MainLayout } from '../components/MainLayout';
 import { CardForm } from '../components/CardForm';
 import { CardPreview } from '../components/CardPreview';
@@ -16,6 +16,10 @@ import { PersistenceNotice } from '../components/common/PersistenceNotice';
 import { useCardDimensions } from '../hooks/useCardDimensions';
 import { getExportDimensions, type ExportQuality } from '../utils/exportDimensions';
 import { useOriginalImageRatio } from '../hooks/useOriginalImageRatio';
+import { EditorRail } from '../components/EditorRail';
+import type { EditorTabId } from '../components/editorTabs';
+import type { GuidedTourStep } from '../components/GuidedTour';
+const GuidedTour = lazy(() => import('../components/GuidedTour').then(module => ({ default: module.GuidedTour })));
 export function Home() {
     const language = usePlayerSelector(s => s.playerInfo.language);
     const layout = usePlayerSelector(s => s.playerInfo.layout ?? 'header');
@@ -23,6 +27,22 @@ export function Home() {
     const { updateImage, updateLanguage } = usePlayerActions();
     const t = i18n[language].studio;
     const [pixelRatio, setPixelRatio] = useState<ExportQuality>('original');
+    const [activeTab, setActiveTab] = useState<EditorTabId>('basic');
+    const [tourOpen, setTourOpen] = useState(false);
+    const previousTourTab = useRef<EditorTabId>('basic');
+    const startTour = useCallback(() => { previousTourTab.current = activeTab; setTourOpen(true); }, [activeTab]);
+    const closeTour = useCallback(() => { setTourOpen(false); setActiveTab(previousTourTab.current); }, []);
+    const tourCopy = i18n[language].tour.steps;
+    const tourSteps = useMemo<GuidedTourStep[]>(() => [
+        { target: '[data-tour="image-upload"]', ...tourCopy.photo, prepare: () => setActiveTab('basic') },
+        { target: 'input[name="character-name"]', ...tourCopy.basic, prepare: () => setActiveTab('basic') },
+        { target: '[data-tour="job-selection"] [role="tablist"]', ...tourCopy.job, prepare: () => setActiveTab('job') },
+        { target: '[data-tour="style-section"] section:first-child', ...tourCopy.style, prepare: () => setActiveTab('style') },
+        { target: '.color-palette', ...tourCopy.design, prepare: () => setActiveTab('design') },
+        { target: '[data-tour="preview-controls"]', ...tourCopy.preview },
+        { target: '[data-tour="export-controls"]', ...tourCopy.export },
+    ], [tourCopy]);
+    const editorTitle = { basic: i18n[language].form.tabBasic, job: i18n[language].form.tabJob, style: i18n[language].form.tabStyle, design: i18n[language].form.tabDesign, slot: i18n[language].form.tabSlot }[activeTab];
     const [isRendering, setIsRendering] = useState(false);
     const renderingRef = useRef(false);
     const returnFocusRef = useRef<HTMLButtonElement | null>(null);
@@ -44,12 +64,13 @@ export function Home() {
         try { if (await download()) showToast(t.exported, 'success'); }
         finally { renderingRef.current = false; setIsRendering(false); }
     };
-    const form = useMemo(() => <CardForm />, []);
+    const form = useMemo(() => <CardForm activeTab={activeTab} onTabChange={setActiveTab} externalNavigation />, [activeTab]);
     const preview = useMemo(() => <CardPreview ref={exportRef} onImageChange={updateImage} id="card-preview" />, [exportRef, updateImage]);
     const downloadButton = <Button onClick={handleDownload} disabled={isRendering} aria-busy={isRendering} size="lg" className="studio-download"><Download size={16} aria-hidden="true" />{i18n[language].layout.saveImage}</Button>;
     return <>
         <SeoHead meta={pageMeta[language].home} path="/" />
         <ToastNotification toast={toast} onDismiss={dismissToast} /><StickerUndoNotice /><PersistenceNotice />
+        {tourOpen && <Suspense fallback={null}><GuidedTour open={tourOpen} lang={language} steps={tourSteps} onClose={closeTour} /></Suspense>}
         {isRendering && <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm" role="status" aria-live="polite" aria-atomic="true" aria-label={i18n[language].layout.renderingTitle}>
             <div className="flex w-full max-w-[340px] flex-col items-center gap-4 rounded-2xl border p-6 text-center" style={{ backgroundColor: 'var(--surface-50)', borderColor: 'var(--border-medium)' }}>
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-t-transparent" aria-hidden="true" style={{ borderColor: 'var(--text-primary)', borderTopColor: 'transparent' }} />
@@ -58,7 +79,7 @@ export function Home() {
             </div>
         </div>}
         <div inert={isRendering ? true : undefined} aria-hidden={isRendering || undefined}>
-            <MainLayout lang={language} layoutType={layout} cardSize={cardSize} onLanguageChange={updateLanguage} form={form} preview={preview} mobileDownload={downloadButton} exportControls={<>
+            <MainLayout lang={language} layoutType={layout} cardSize={cardSize} onLanguageChange={updateLanguage} form={form} preview={preview} mobileDownload={downloadButton} navigation={<EditorRail activeTab={activeTab} onTabChange={setActiveTab} lang={language} />} editorTitle={editorTitle} onStartTour={startTour} exportControls={<>
                 <div className="studio-quality"><label htmlFor="export-quality">{t.quality}</label><select id="export-quality" value={pixelRatio} onChange={event => setPixelRatio(event.target.value === 'original' ? 'original' : Number(event.target.value))}>
                     <option value="original">{t.original}</option><option value={1}>{t.standard}</option><option value={2}>{t.high}</option><option value={3}>{t.ultra}</option>
                 </select></div>

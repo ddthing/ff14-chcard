@@ -1,0 +1,248 @@
+/* Lucian UX/UI Prompt #197 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#197 */
+.u197 {
+  --ux-surface: var(--card);
+  --ux-surface-2: var(--secondary);
+  --ux-line: var(--border);
+  --ux-line-2: var(--border-subtle);
+  --ux-ink: var(--foreground);
+  --ux-ink-2: var(--text-secondary);
+  --ux-ink-3: var(--text-muted);
+  --ux-accent: var(--studio-accent);
+  --ux-shadow-strong: var(--shadow-color-1);
+  --ux-spring: cubic-bezier(.3, 1.3, .5, 1);
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  color: var(--ux-ink);
+  font-family: inherit;
+  pointer-events: none;
+}
+
+.u197-ov {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  transition: opacity .35s;
+  pointer-events: none;
+}
+
+.u197[data-ready="false"] .u197-ov { opacity: 0; }
+
+.u197-ov path {
+  fill: rgba(10, 12, 22, .66);
+  fill-rule: evenodd;
+}
+
+.u197-ring {
+  position: fixed;
+  left: 0;
+  top: 0;
+  border-radius: 14px;
+  box-shadow: 0 0 0 2px var(--ux-accent);
+  pointer-events: none;
+}
+
+.u197-ring::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  box-shadow: 0 0 0 2px var(--ux-accent);
+  animation: u197-pulse 1.5s ease-out infinite;
+}
+
+@keyframes u197-pulse {
+  0% { opacity: .9; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.25); }
+}
+
+.u197-tip {
+  position: fixed;
+  left: var(--guided-tour-left, 12px);
+  top: var(--guided-tour-top, 12px);
+  z-index: 10001;
+  width: min(286px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  overflow: visible;
+  padding: 10px 12px 11px;
+  border: 1px solid var(--ux-line);
+  border-radius: 14px;
+  background: var(--ux-surface);
+  color: var(--ux-ink);
+  box-shadow: 0 14px 30px -10px var(--ux-shadow-strong);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(6px) scale(.97);
+  transition: left .45s cubic-bezier(.3, 1.15, .4, 1), top .45s cubic-bezier(.3, 1.15, .4, 1), opacity .25s, transform .35s var(--ux-spring), visibility 0s .3s;
+  pointer-events: auto;
+}
+
+.u197-tip.is-visible {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: left .45s cubic-bezier(.3, 1.15, .4, 1), top .45s cubic-bezier(.3, 1.15, .4, 1), opacity .25s, transform .35s var(--ux-spring);
+}
+
+.u197-tip.is-pending {
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%);
+}
+
+.u197-tip::before {
+  content: "";
+  position: absolute;
+  left: var(--ax, 30px);
+  width: 12px;
+  height: 12px;
+  margin-left: -6px;
+  border: 1px solid var(--ux-line);
+  border-right: 0;
+  border-bottom: 0;
+  background: inherit;
+  transform: rotate(45deg);
+  transition: left .45s cubic-bezier(.3, 1.15, .4, 1), top .45s cubic-bezier(.3, 1.15, .4, 1), bottom .45s cubic-bezier(.3, 1.15, .4, 1);
+}
+
+.u197-tip.dn::before { top: -7px; }
+.u197-tip.up::before { bottom: -7px; transform: rotate(225deg); }
+.u197-tip.rt::before { left: -7px; top: var(--ay, 30px); margin: -6px 0 0; transform: rotate(-45deg); }
+.u197-tip.lt::before { right: -7px; left: auto; top: var(--ay, 30px); margin: -6px 0 0; transform: rotate(135deg); }
+.u197-tip.is-centered::before,
+.u197-tip.is-pending::before,
+.u197-tip:not(.dn):not(.up):not(.rt):not(.lt)::before { display: none; }
+
+.u197-tip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 22px;
+  gap: 10px;
+}
+
+.u197-announcement { display: block; }
+
+.u197-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.u197-progress {
+  color: var(--ux-accent);
+  font-size: 10.5px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.u197-x {
+  min-height: 24px;
+  padding: 0 5px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--ux-ink-3);
+  font: inherit;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+
+.u197-content {
+  animation: u197-fade .35s ease;
+}
+
+.u197-content h2 {
+  margin: 4px 0 0;
+  color: var(--ux-ink);
+  font-size: 14px;
+  font-weight: 750;
+  line-height: 1.35;
+}
+
+.u197-content p {
+  margin: 4px 0 12px;
+  color: var(--ux-ink-2);
+  font-size: 12px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+@keyframes u197-fade {
+  from { opacity: 0; transform: translateY(4px); }
+}
+
+.u197-tf {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.u197-dots {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.u197-dots i {
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 3px;
+  background: var(--ux-line-2);
+  transition: width .3s var(--ux-spring), background-color .3s;
+}
+
+.u197-dots i.on {
+  width: 16px;
+  flex-basis: 16px;
+  background: var(--ux-accent);
+}
+
+.u197-tf button {
+  min-width: 0;
+  height: 28px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--ux-surface-2);
+  color: var(--ux-ink-2);
+  font: inherit;
+  font-size: 11.5px;
+  font-weight: 750;
+  white-space: nowrap;
+}
+
+.u197-tf .u197-nx {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+.u197 button:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 3px;
+}
+
+@media (max-width: 359px) {
+  .u197-tip { padding-right: 10px; padding-left: 10px; }
+  .u197-tf { gap: 4px; }
+  .u197-tf button { padding-right: 7px; padding-left: 7px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .u197-ring::after { animation: none; }
+  .u197-content { animation: none; }
+  .u197-tip,
+  .u197-tip::before,
+  .u197-dots i { transition: none; }
+}
