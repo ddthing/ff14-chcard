@@ -14,25 +14,27 @@ import { SeoHead } from '../components/SeoHead';
 import { StickerUndoNotice } from '../components/common/StickerUndoNotice';
 import { PersistenceNotice } from '../components/common/PersistenceNotice';
 import { useCardDimensions } from '../hooks/useCardDimensions';
-import { getExportDimensions } from '../utils/exportDimensions';
+import { getExportDimensions, type ExportQuality } from '../utils/exportDimensions';
+import { useOriginalImageRatio } from '../hooks/useOriginalImageRatio';
 export function Home() {
     const language = usePlayerSelector(s => s.playerInfo.language);
     const layout = usePlayerSelector(s => s.playerInfo.layout ?? 'header');
     const name = usePlayerSelector(s => s.playerInfo.name);
     const { updateImage, updateLanguage } = usePlayerActions();
     const t = i18n[language].studio;
-    const [pixelRatio, setPixelRatio] = useState(2);
+    const [pixelRatio, setPixelRatio] = useState<ExportQuality>('original');
     const [isRendering, setIsRendering] = useState(false);
     const renderingRef = useRef(false);
     const returnFocusRef = useRef<HTMLButtonElement | null>(null);
     const { toast, showToast, dismissToast } = useToast();
     const { exportRef, download } = useImageExport({
         filename: 'ff14-' + (name || 'sheet'), pixelRatio,
-        errorCopy: { cors: i18n[language].layout.exportErrorCors, generic: i18n[language].layout.exportErrorGeneric, details: i18n[language].layout.errorDetails },
+        errorCopy: { cors: i18n[language].layout.exportErrorCors, generic: i18n[language].layout.exportErrorGeneric, original: i18n[language].layout.exportErrorOriginal, details: i18n[language].layout.errorDetails },
         onError: message => showToast(message, 'error'),
     });
     const cardSize = useCardDimensions(exportRef);
-    const outputSize = getExportDimensions(cardSize.width, cardSize.height, pixelRatio);
+    const originalPixelRatio = useOriginalImageRatio(exportRef);
+    const outputSize = getExportDimensions(cardSize.width, cardSize.height, pixelRatio, originalPixelRatio);
     useEffect(() => {
         if (!isRendering && returnFocusRef.current) { returnFocusRef.current.focus({ preventScroll: true }); returnFocusRef.current = null; }
     }, [isRendering]);
@@ -57,10 +59,10 @@ export function Home() {
         </div>}
         <div inert={isRendering ? true : undefined} aria-hidden={isRendering || undefined}>
             <MainLayout lang={language} layoutType={layout} cardSize={cardSize} onLanguageChange={updateLanguage} form={form} preview={preview} mobileDownload={downloadButton} exportControls={<>
-                <div className="studio-quality"><label htmlFor="export-quality">{t.quality}</label><select id="export-quality" value={pixelRatio} onChange={event => setPixelRatio(Number(event.target.value))}>
-                    <option value={1}>{t.standard}</option><option value={2}>{t.high}</option><option value={3}>{t.ultra}</option>
+                <div className="studio-quality"><label htmlFor="export-quality">{t.quality}</label><select id="export-quality" value={pixelRatio} onChange={event => setPixelRatio(event.target.value === 'original' ? 'original' : Number(event.target.value))}>
+                    <option value="original">{t.original}</option><option value={1}>{t.standard}</option><option value={2}>{t.high}</option><option value={3}>{t.ultra}</option>
                 </select></div>
-                <div className="studio-export-action"><div className="studio-output-info"><output className="studio-output-size" aria-label={t.outputSize}>{outputSize.width} × {outputSize.height} px</output><span>{outputSize.limited ? t.exportLimited : t.exportHint}</span></div>{downloadButton}</div>
+                <div className="studio-export-action"><div className="studio-output-info"><output className="studio-output-size" aria-label={t.outputSize}>{outputSize.width} × {outputSize.height} px</output><span>{outputSize.limited ? t.exportLimited : pixelRatio === 'original' ? t.originalHint : t.exportHint}</span></div>{downloadButton}</div>
             </>} />
         </div>
     </>;

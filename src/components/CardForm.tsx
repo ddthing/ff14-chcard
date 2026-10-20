@@ -2,8 +2,8 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ChangeEv
 import type { PlayerInfo } from '../types';
 import { ChevronLeft, ChevronRight, ChevronDown, Check, ContactRound, Swords, Tags, Paintbrush, ImagePlus, X, Save } from 'lucide-react';
 import { i18n, getFonts } from '../utils/i18n';
-import { getAccessibleAccentColor, getAccentSurface, inputClass } from '../utils/styles';
-import { DesignPresets } from './DesignPresets';
+import { inputClass } from '../utils/styles';
+import { ColorPalettePicker } from './ColorPalettePicker';
 import { BackgroundEffectsSection } from './form/BackgroundEffectsSection';
 const ImageCropperModal = lazy(() => import('./ImageCropperModal').then(module => ({ default: module.ImageCropperModal })));
 
@@ -411,10 +411,10 @@ export function CardForm() {
                 )}
 
                 {/* ── Tab 4: Design ──────────────────────────────────────────── */}
-                {activeTab === 'design' && (
-                    <div className="space-y-5 animate-tab-in relative z-20">
-                        <DesignPresets />
-
+                <div
+                    hidden={activeTab !== 'design'}
+                    className={`space-y-5 relative z-20${activeTab === 'design' ? ' animate-tab-in' : ''}`}
+                >
                         {/* Point Color ──────────────────────────────────────── */}
                         <Section title={t.pointColor}>
                             <div className="space-y-2.5">
@@ -459,35 +459,7 @@ export function CardForm() {
                                     />
                                 </div>
                                 <div id="point-color-status" className="text-[11px] leading-relaxed" role="status" aria-live="polite" style={{ color: isPointColorValid ? 'var(--text-secondary)' : 'var(--destructive)' }}>{isPointColorValid ? t.pointColorAuto : t.pointColorInvalid}</div>
-                                {isPointColorValid && <div className="studio-accent-previews" role="group" aria-label={t.pointColorPreview}>
-                                    {[{ surface: '#ffffff', label: t.lightPreview }, { surface: '#252b24', label: t.darkPreview }].map(({ surface, label }) => {
-                                        const background = getAccentSurface(playerInfo.pointColor, surface);
-                                        return <div key={surface} style={{ backgroundColor: background, color: getAccessibleAccentColor(playerInfo.pointColor, background, 4.5) }}><strong aria-hidden="true">Aa</strong><span>{label}</span></div>;
-                                    })}
-                                </div>}
-                                <div className="space-y-1.5">
-                                    <p className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>
-                                        {t.colorPresets}
-                                    </p>
-                                    <div className="studio-color-presets grid grid-cols-6 gap-2" role="group" aria-label={t.colorPresets}>
-                                        {['#e44c21', '#0071e3', '#30d158', '#ff375f', '#bf5af2', '#ffd60a'].map(color => (
-                                            <button
-                                                key={color}
-                                                type="button"
-                                                onClick={() => handleChange('pointColor', color)}
-                                                aria-label={`${t.pointColor}: ${color}`}
-                                                aria-pressed={playerInfo.pointColor === color}
-                                                className="h-7 w-full border transition-[transform,box-shadow] hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                                style={{
-                                                    backgroundColor: color,
-                                                    borderColor: playerInfo.pointColor === color ? 'var(--text-primary)' : 'transparent',
-                                                    boxShadow: playerInfo.pointColor === color ? '0 0 0 1px var(--surface-100)' : 'none',
-                                                }}
-                                                title={color}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
+                                <ColorPalettePicker value={playerInfo.pointColor} onChange={color => handleChange('pointColor', color)} lang={lang} />
                             </div>
                         </Section>
 
@@ -567,8 +539,7 @@ export function CardForm() {
                             </div>
                         </Section>
                         <BackgroundEffectsSection /><StickerSection />
-                    </div>
-                )}
+                </div>
 
                 {/* ── Tab 5: Slot ─────────────────────────────────────────────── */}
                 {activeTab === 'slot' && (

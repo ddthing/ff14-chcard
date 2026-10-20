@@ -2,21 +2,25 @@ import { test, expect } from '@playwright/test';
 import { seed, nativeSize, exportPng } from './helpers';
 test.beforeEach(async ({ page }) => { await page.route('https://cdn.jsdelivr.net/**', route => route.abort()); });
 
-test('history groups typing and presets, handles shortcuts and clears redo branches', async ({ page }) => {
+test('history groups typing and palette selection, handles shortcuts and clears redo branches', async ({ page }) => {
     await page.goto('/');
     const undo = page.getByRole('button', { name: '실행 취소', exact: true });
     const redo = page.getByRole('button', { name: '다시 실행', exact: true });
     await expect(undo).toBeDisabled();
     await page.getByRole('textbox', { name: '닉네임', exact: true }).pressSequentially('Seriane');
     await page.getByRole('tab', { name: '꾸미기', exact: true }).click();
-    await page.getByRole('button', { name: '보태니컬', exact: true }).click();
+    const initialColor = await page.getByRole('textbox', { name: '포인트 컬러 HEX', exact: true }).inputValue();
+    const firstColor = page.locator('.color-palette__swatch').first();
+    const firstHex = (await page.locator('.color-palette__slot').first().locator('.color-palette__hex').innerText()).toUpperCase();
+    await firstColor.click();
+    await expect(page.getByRole('textbox', { name: '포인트 컬러 HEX', exact: true })).toHaveValue(firstHex);
     await undo.click();
-    await expect(page.locator('#card-preview')).toHaveAttribute('data-layout', 'header');
+    await expect(page.getByRole('textbox', { name: '포인트 컬러 HEX', exact: true })).toHaveValue(initialColor);
     await expect(page.locator('.sheet-name')).toHaveText('Seriane');
     await page.locator('#preview-panel').focus(); await page.keyboard.press('Control+Shift+z');
-    await expect(page.getByRole('button', { name: '보태니컬', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('textbox', { name: '포인트 컬러 HEX', exact: true })).toHaveValue(firstHex);
     await page.keyboard.press('Control+z');
-    await page.getByRole('button', { name: '포인트 컬러: #0071e3', exact: true }).click();
+    await page.locator('.color-palette__swatch').nth(1).click();
     await expect(redo).toBeDisabled();
     await undo.click(); await undo.click();
     await expect(page.locator('.sheet-name')).toHaveCount(0);

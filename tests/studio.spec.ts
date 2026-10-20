@@ -39,17 +39,25 @@ function addLargeTextChunk(png: Buffer) {
 
 test.beforeEach(async ({ page }) => { await page.route('https://cdn.jsdelivr.net/**', route => route.abort()); });
 
-test('profile changes and a collection persist without losing content', async ({ page }) => {
+test('profile changes and a selected palette color persist without losing content', async ({ page }) => {
     await page.goto('/');
     await page.getByRole('textbox', { name: '닉네임', exact: true }).fill('빛의 모험가');
     await page.getByRole('combobox', { name: '서버 선택', exact: true }).selectOption({ index: 1 });
     await page.getByRole('tab', { name: '꾸미기', exact: true }).click();
-    await page.getByRole('button', { name: '보태니컬', exact: true }).click();
+    const selectedColor = page.locator('.color-palette__swatch').first();
+    const selectedLabel = await selectedColor.getAttribute('aria-label');
+    const selectedHex = (await page.locator('.color-palette__slot').first().locator('.color-palette__hex').innerText()).toUpperCase();
+    await selectedColor.click();
     await expect(page.locator('.sheet-name')).toHaveText('빛의 모험가');
+    await expect(page.locator('#card-preview')).toHaveAttribute('data-layout', 'header');
+    await expect(page.getByRole('textbox', { name: '포인트 컬러 HEX', exact: true })).toHaveValue(selectedHex);
+    await expect(page.getByRole('button', { name: selectedLabel!, exact: true })).toHaveAttribute('aria-pressed', 'true');
     await page.evaluate(() => window.dispatchEvent(new Event('pagehide')));
     await page.reload();
     await expect(page.getByRole('textbox', { name: '닉네임', exact: true })).toHaveValue('빛의 모험가');
-    await expect(page.locator('#card-preview')).toHaveAttribute('data-layout', 'left-portrait');
+    await expect(page.locator('#card-preview')).toHaveAttribute('data-layout', 'header');
+    await page.getByRole('tab', { name: '꾸미기', exact: true }).click();
+    await expect(page.getByRole('textbox', { name: '포인트 컬러 HEX', exact: true })).toHaveValue(selectedHex);
     await expect(page.getByRole('button', { name: '실행 취소', exact: true })).toBeDisabled();
 });
 test('primary tabs support arrows, Home and End with one active tab stop', async ({ page }) => {
@@ -191,7 +199,7 @@ test('image validation rejects invalid files and accepts a valid PNG over 10 MiB
     await expect(dialog).toBeVisible();
     const workingImage = dialog.locator('img').first();
     await expect(workingImage).toHaveAttribute('src', /^data:image\/png/);
-    expect((await workingImage.getAttribute('src'))?.length).toBeLessThan(50_000);
+    expect(await workingImage.getAttribute('src') === 'data:image/png;base64,' + largePng.toString('base64')).toBe(true);
     await dialog.getByRole('button', { name: '적용하기', exact: true }).click();
     await expect(dialog).toHaveCount(0);
     await expect(page.locator('#card-preview .sheet-image > img')).toBeVisible();
@@ -232,12 +240,12 @@ test('small compressed JPEGs keep their original bytes in the cropper', async ({
     expect(await workingImage.getAttribute('src') === jpegDataUrl).toBe(true);
 });
 
-test('large source dimensions are reduced to the 3000 px crop working bound', async ({ page }) => {
+test('large source dimensions remain unchanged in the crop dialog', async ({ page }) => {
     await page.goto('/');
     const input = page.locator('input[type="file"][aria-label="이미지 업로드"]');
     const svg = Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="8000" height="4000"><rect width="8000" height="4000" fill="#244b37"/></svg>');
     await input.setInputFiles({ name: '8k-character.svg', mimeType: 'image/svg+xml', buffer: svg });
     const dialogImage = page.getByRole('dialog').locator('img').first();
-    await expect.poll(() => dialogImage.evaluate(image => Math.max((image as HTMLImageElement).naturalWidth, (image as HTMLImageElement).naturalHeight))).toBe(3000);
-    await expect(dialogImage).toHaveAttribute('src', /^data:image\/webp/);
+    await expect.poll(() => dialogImage.evaluate(image => [(image as HTMLImageElement).naturalWidth, (image as HTMLImageElement).naturalHeight])).toEqual([8000, 4000]);
+    await expect(dialogImage).toHaveAttribute('src', /^data:image\/svg\+xml/);
 });
