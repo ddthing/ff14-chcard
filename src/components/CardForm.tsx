@@ -95,9 +95,9 @@ export function CardForm() {
         setImageError(null);
         try { setCropImageSrc(await readImageFile(file)); }
         catch (error) {
-            setImageError(error instanceof ImageFileError && error.code === 'too-large' ? t.imageFileTooLarge : error instanceof ImageFileError && error.code === 'invalid-type' ? t.imageInvalidType : t.imageUploadError);
+            setImageError(error instanceof ImageFileError && error.code === 'invalid-type' ? t.imageInvalidType : t.imageUploadError);
         }
-    }, [t.imageFileTooLarge, t.imageInvalidType, t.imageUploadError]);
+    }, [t.imageInvalidType, t.imageUploadError]);
     const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0]; event.target.value = '';
         if (file) void openImage(file);

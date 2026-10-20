@@ -17,7 +17,7 @@ export function PageLayout({ children, title }: PageLayoutProps) {
     return (
         <div className="min-h-screen flex flex-col transition-colors duration-200" style={{ backgroundColor: 'var(--surface-200)', color: 'var(--text-primary)' }}>
             <a href="#main-content" className="skip-link">{i18n[lang].layout.skipToContent}</a>
-            <GlobalHeader lang={lang} onLanguageChange={updateLanguage} pageTitle={title} />
+            <GlobalHeader lang={lang} onLanguageChange={updateLanguage} />
 
             {/* ── Content ────────────────────────────────────────────────── */}
             <main id="main-content" className="flex-1 w-full max-w-3xl mx-auto px-6 py-12 md:py-20 animate-tab-in">

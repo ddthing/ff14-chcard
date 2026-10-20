@@ -39,7 +39,7 @@ export const i18n = {
                 "컬러와 폰트로 당신만의 분위기를.",
                 "프로필을 보관하고 백업하세요."
             ],
-            "dropHint": "이미지를 끌어놓거나 선택 · 최대 10MB",
+            "dropHint": "이미지를 끌어놓거나 선택 · 고해상도 이미지 지원",
             "workspace": "캐릭터 카드 스튜디오",
             "guide": "사용 가이드",
             "localDraft": "이 브라우저에 자동 저장",
@@ -56,7 +56,7 @@ export const i18n = {
         layout: {
             title: '프로필 작성',
             tutorial: '정보를 입력하면 실시간으로 미리보기 가능합니다.',
-            headerTitle: 'FF14 캐릭터 카드 생성기',
+            headerTitle: '캐릭터 카드 생성기',
             skipToContent: '콘텐츠로 건너뛰기',
             close: '닫기',
             externalNewWindow: '새 창에서 열림',
@@ -108,7 +108,6 @@ export const i18n = {
             list: '목록',
             commentPlaceholder: '자기소개 (200자 이내)',
             uploadImage: '이미지 업로드',
-            imageFileTooLarge: '캐릭터 이미지는 10MB 이하로 업로드해주세요.',
             imageInvalidType: '이미지 파일만 업로드할 수 있습니다.',
             imageUploadError: '이미지를 읽지 못했습니다. 다른 파일을 선택해주세요.',
             delete: '삭제',
@@ -274,7 +273,7 @@ export const i18n = {
                 "Make it yours with color and type.",
                 "Keep your profiles and backups together."
             ],
-            "dropHint": "Drop an image or choose a file · Up to 10MB",
+            "dropHint": "Drop an image or choose a file · High-resolution images supported",
             "workspace": "Character card studio",
             "guide": "User guide",
             "localDraft": "Auto-saved in this browser",
@@ -291,7 +290,7 @@ export const i18n = {
         layout: {
             title: 'Create Profile',
             tutorial: 'The preview will instantly update as you type.',
-            headerTitle: 'FF14 Character Card Generator',
+            headerTitle: 'Character Card Generator',
             skipToContent: 'Skip to content',
             close: 'Close',
             externalNewWindow: 'opens in a new window',
@@ -343,7 +342,6 @@ export const i18n = {
             list: 'List',
             commentPlaceholder: 'Introduce your character (Max 200 chars)',
             uploadImage: 'Click to upload image',
-            imageFileTooLarge: 'Please upload a character image no larger than 10 MB.',
             imageInvalidType: 'Only image files can be uploaded.',
             imageUploadError: 'The image could not be read. Please choose another file.',
             delete: 'Delete',
@@ -508,7 +506,7 @@ export const i18n = {
                 "カラーとフォントであなたらしく。",
                 "プロフィールの保存とバックアップ。"
             ],
-            "dropHint": "画像をドロップ、または選択 · 最大10MB",
+            "dropHint": "画像をドロップ、または選択 · 高解像度画像に対応",
             "workspace": "キャラクターカードスタジオ",
             "guide": "使い方",
             "localDraft": "このブラウザーに自動保存",
@@ -525,7 +523,7 @@ export const i18n = {
         layout: {
             title: 'プロフィール作成',
             tutorial: '情報を入力するとリアルタイムでプレビューできます。',
-            headerTitle: 'FF14 キャラクターカードジェネレーター',
+            headerTitle: 'キャラクターカードジェネレーター',
             skipToContent: 'コンテンツへ移動',
             close: '閉じる',
             externalNewWindow: '新しいウィンドウで開きます',
@@ -577,7 +575,6 @@ export const i18n = {
             list: 'リスト',
             commentPlaceholder: '自己紹介 (200文字以内)',
             uploadImage: '画像をアップロード',
-            imageFileTooLarge: 'キャラクター画像は10MB以下でアップロードしてください。',
             imageInvalidType: '画像ファイルのみアップロードできます。',
             imageUploadError: '画像を読み込めませんでした。別のファイルを選択してください。',
             delete: '削除',
