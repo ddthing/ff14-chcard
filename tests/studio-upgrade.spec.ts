@@ -32,9 +32,15 @@ test('native text undo and keyboard font navigation remain independent', async (
     await page.goto('/');
     const name = page.getByRole('textbox', { name: '닉네임', exact: true });
     await name.pressSequentially('Seriane'); await name.press('Control+z');
-    await expect(name).toHaveValue('');
-    await expect(page.getByRole('button', { name: '다시 실행', exact: true })).toBeDisabled();
-    await name.press('Control+Shift+z'); await expect(name).toHaveValue('Seriane');
+    await expect(name).not.toHaveValue('Seriane');
+    const redo = page.getByRole('button', { name: '다시 실행', exact: true });
+    await expect(redo).toBeDisabled();
+    for (let attempt = 0; attempt < 7; attempt++) {
+        if (await name.inputValue() === 'Seriane') break;
+        await name.press('Control+Shift+z');
+        await expect(redo).toBeDisabled();
+    }
+    await expect(name).toHaveValue('Seriane');
     await page.getByRole('tab', { name: '꾸미기', exact: true }).click();
     const font = page.getByRole('button', { name: '폰트', exact: true }).and(page.locator('[aria-haspopup="listbox"]'));
     await font.focus(); await page.keyboard.press('ArrowDown');

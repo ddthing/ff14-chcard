@@ -52,6 +52,7 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
         handleDrop: handleImageDrop,
         cancel: cancelImageUpload,
         retry: retryImageUpload,
+        dismissCompleted: dismissImageUpload,
     } = useCharacterImageUpload({
         onImageReady: setCropImageSrc,
         onSelectionStart: () => setCropImageSrc(null),
@@ -78,9 +79,15 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
     };
 
     const handleCropApply = useCallback((croppedBase64: string) => {
+        dismissImageUpload();
         onImageChange(croppedBase64);
         setCropImageSrc(null);
-    }, [onImageChange]);
+    }, [dismissImageUpload, onImageChange]);
+
+    const handleCropCancel = useCallback(() => {
+        dismissImageUpload();
+        setCropImageSrc(null);
+    }, [dismissImageUpload]);
 
 
     // ─── Tab Definitions ───────────────────────────────────────────────────────
@@ -150,7 +157,7 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                 <Suspense fallback={null}><ImageCropperModal
                     imageSrc={cropImageSrc}
                     onApply={handleCropApply}
-                    onCancel={() => setCropImageSrc(null)}
+                    onCancel={handleCropCancel}
                     returnFocusRef={imageTriggerRef}
                     lang={lang}
                     aspectRatio={playerInfo.layout === 'left-portrait' ? 2 / 4.5 : 700 / 280}
@@ -236,7 +243,11 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                 {activeTab === 'basic' && (
                     <div className="space-y-5 animate-tab-in">
 
-                        <div data-tour="image-upload">
+                        <div
+                            data-tour="image-upload"
+                            onDragOver={playerInfo.image ? event => event.preventDefault() : undefined}
+                            onDrop={playerInfo.image ? handleImageDrop : undefined}
+                        >
                             <Section title={t.uploadImage}>
                                 {playerInfo.image && (
                                     /* Uploaded state: thumbnail + change / remove actions */
@@ -274,7 +285,10 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                                             </button>
                                             <button
                                                 type="button"
-                                                onClick={() => onImageChange(undefined)}
+                                                onClick={() => {
+                                                    dismissImageUpload();
+                                                    onImageChange(undefined);
+                                                }}
                                                 className="w-full py-2 text-[11px] font-semibold rounded-[8px] flex items-center justify-center gap-1.5 transition-colors"
                                                 style={{ backgroundColor: 'color-mix(in oklab, var(--destructive) 6%, transparent)', border: '1px solid color-mix(in oklab, var(--destructive) 20%, transparent)', color: 'var(--destructive)' }}
                                                 onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.backgroundColor = 'color-mix(in oklab, var(--destructive) 10%, transparent)')}
@@ -296,6 +310,7 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                                     ariaLabel={t.uploadImage}
                                     triggerRef={playerInfo.image ? undefined : imageTriggerRef}
                                     messages={imageUploadCopy}
+                                    mode={playerInfo.image ? 'compact' : 'dropzone'}
                                 />
                             </Section>
                         </div>

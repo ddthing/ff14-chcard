@@ -360,3 +360,20 @@ button:not(:disabled),
   .studio-canvas-stage { padding:12px 0; }
   .studio-page > footer { display:none; }
 }
+
+/* Storage failures stay in the document flow, clear of editing controls. */
+.studio-draft-inspect { min-height:36px; border:0; padding:4px 0; background:transparent; cursor:pointer; text-align:left; }
+.studio-draft-inspect:focus-visible { outline:2px solid var(--ring); outline-offset:3px; }
+.studio-persistence-notice { display:flex; flex:none; align-items:center; gap:10px; padding:8px 12px; border:1px solid var(--border-default); border-bottom:0; background:var(--card); color:var(--text-primary); }
+.studio-persistence-notice > svg { flex:none; color:var(--destructive); }
+.studio-persistence-notice p { flex:1; min-width:0; margin:0; font-size:12px; line-height:1.6; overflow-wrap:anywhere; }
+.studio-persistence-notice button { flex:none; min-height:40px; border:1px solid var(--border-default); background:var(--secondary); color:var(--text-primary); cursor:pointer; }
+.studio-persistence-backup { padding:6px 10px; font-size:12px; }
+.studio-persistence-close { display:grid; min-width:40px; place-items:center; }
+.studio-persistence-notice button:focus-visible { outline:2px solid var(--ring); outline-offset:2px; }
+@media(max-width:599px) {
+ .studio-persistence-notice { flex-wrap:wrap; gap:6px; padding:8px; }
+ .studio-persistence-notice p { flex-basis:calc(100% - 30px); }
+ .studio-persistence-backup { margin-left:22px; }
+ .studio-persistence-close { margin-left:auto; }
+}

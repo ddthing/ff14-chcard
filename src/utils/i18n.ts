@@ -71,7 +71,9 @@ export const i18n = {
             "workspace": "캐릭터 카드 스튜디오",
             "guide": "사용 가이드",
             "localDraft": "이 브라우저에 자동 저장",
-            "draftWarning": "자동 저장 확인 필요",
+            "draftWarning": "자동 저장 실패",
+            "draftSaving": "저장 중",
+            "draftImageWarning": "사진 자동 저장 실패",
             "canvas": "카드 미리보기 작업 영역",
             "backgroundEffects": "배경 효과",
             "backgroundEffectsHint": "종이 질감 위에 효과를 더합니다. 두 효과를 함께 사용할 수도 있어요.",
@@ -97,8 +99,9 @@ export const i18n = {
             renderingTitle: '고화질 카드를 렌더링 중입니다…',
             renderingDesc: '잠시만 기다려주세요',
             loading: '페이지를 불러오는 중입니다…',
-            profileSavedWithoutImage: '브라우저 저장 공간이 부족해 이미지 없이 편집 내용을 저장했습니다. 저장 탭에서 JSON 백업을 내보내 주세요.',
-            profileSaveFailed: '브라우저 저장 공간이 부족해 편집 내용을 자동 저장하지 못했습니다. 저장 탭에서 JSON 백업을 내보내 주세요.'
+            openBackup: '보관함 열기',
+            profileSavedWithoutImage: '사진과 스티커를 이 브라우저에 자동 저장하지 못했습니다. 현재 사진 편집과 PNG 저장은 계속할 수 있습니다. 보관함에서 JSON 백업을 내려받아 주세요.',
+            profileSaveFailed: '편집 내용을 이 브라우저에 자동 저장하지 못했습니다. 보관함에서 JSON 백업을 내려받아 주세요.'
         },
         footer: {
             guide: "가이드",
@@ -343,7 +346,9 @@ export const i18n = {
             "workspace": "Character card studio",
             "guide": "User guide",
             "localDraft": "Auto-saved in this browser",
-            "draftWarning": "Check automatic saving",
+            "draftWarning": "Automatic saving failed",
+            "draftSaving": "Saving",
+            "draftImageWarning": "Photo not saved",
             "canvas": "Card preview workspace",
             "backgroundEffects": "Background effects",
             "backgroundEffectsHint": "Add effects over the paper texture. Both effects can be used together.",
@@ -369,8 +374,9 @@ export const i18n = {
             renderingTitle: 'Rendering high-quality card…',
             renderingDesc: 'Please wait a moment',
             loading: 'Loading page…',
-            profileSavedWithoutImage: 'Browser storage is full, so your edits were saved without the image. Export a JSON backup from the Save tab.',
-            profileSaveFailed: 'Browser storage is full and your edits could not be saved automatically. Export a JSON backup from the Save tab.'
+            openBackup: 'Open Library',
+            profileSavedWithoutImage: 'Your photo and stickers could not be saved in this browser. You can continue editing and saving PNGs. Download a JSON backup from Library.',
+            profileSaveFailed: 'Your edits could not be saved in this browser. Download a JSON backup from Library.'
         },
         footer: {
             guide: "Guide",
@@ -614,7 +620,9 @@ export const i18n = {
             "workspace": "キャラクターカードスタジオ",
             "guide": "使い方",
             "localDraft": "このブラウザーに自動保存",
-            "draftWarning": "自動保存をご確認ください",
+            "draftWarning": "自動保存に失敗",
+            "draftSaving": "保存中",
+            "draftImageWarning": "写真の自動保存に失敗",
             "canvas": "カードプレビュー作業エリア",
             "backgroundEffects": "背景効果",
             "backgroundEffectsHint": "紙の質感に効果を重ねます。両方の効果を併用できます。",
@@ -640,8 +648,9 @@ export const i18n = {
             renderingTitle: '高画質カードをレンダリング中です…',
             renderingDesc: '少々お待ちください',
             loading: 'ページを読み込んでいます…',
-            profileSavedWithoutImage: 'ブラウザの保存容量が不足したため、画像を除いて編集内容を保存しました。保存タブからJSONバックアップを書き出してください。',
-            profileSaveFailed: 'ブラウザの保存容量が不足し、編集内容を自動保存できませんでした。保存タブからJSONバックアップを書き出してください。'
+            openBackup: '保管庫を開く',
+            profileSavedWithoutImage: '写真とステッカーをこのブラウザーに自動保存できませんでした。編集とPNG保存は続けられます。保管庫からJSONバックアップを書き出してください。',
+            profileSaveFailed: '編集内容をこのブラウザーに自動保存できませんでした。保管庫からJSONバックアップを書き出してください。'
         },
         footer: {
             guide: "ガイド",

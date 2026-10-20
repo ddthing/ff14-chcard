@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { seed } from './helpers';
+import { readStoredValue, seed } from './helpers';
 
 test.beforeEach(async ({ page }) => { await page.route('https://cdn.jsdelivr.net/**', route => route.abort()); });
 
@@ -129,7 +129,7 @@ test('tour can close mid-step, restores focus and tab, leaves profile history in
     const startingTab = page.getByRole('tab', { name: '직업', exact: true });
     await startingTab.click();
     const launcher = page.locator('.studio-tour-trigger--header');
-    const storedProfile = await page.evaluate(() => localStorage.getItem('ff14-playerInfo'));
+    const storedProfile = await readStoredValue(page, 'currentProfile');
     const undo = page.getByRole('button', { name: '실행 취소', exact: true });
     await expect(undo).toBeDisabled();
 
@@ -153,7 +153,7 @@ test('tour can close mid-step, restores focus and tab, leaves profile history in
     await expect(page.locator('#editor-title')).toHaveText('직업');
     await expect(launcher).toBeFocused();
     await expect(undo).toBeDisabled();
-    expect(await page.evaluate(() => localStorage.getItem('ff14-playerInfo'))).toBe(storedProfile);
+    expect(await readStoredValue(page, 'currentProfile')).toEqual(storedProfile);
 
     await launcher.click();
     await expect(dialog.locator('.u197-progress')).toHaveText('1 / 8');
@@ -161,7 +161,7 @@ test('tour can close mid-step, restores focus and tab, leaves profile history in
     await expect(dialog).toHaveCount(0);
     await expect(launcher).toBeFocused();
     await expect(startingTab).toHaveAttribute('aria-selected', 'true');
-    expect(await page.evaluate(() => localStorage.getItem('ff14-playerInfo'))).toBe(storedProfile);
+    expect(await readStoredValue(page, 'currentProfile')).toEqual(storedProfile);
 });
 
 test('guided tour uses the current language and remains usable in dark mode with reduced motion', async ({ page }) => {

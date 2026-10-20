@@ -66,6 +66,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
         handleDrop: handleImageDrop,
         cancel: cancelImageUpload,
         retry: retryImageUpload,
+        dismissCompleted: dismissImageUpload,
     } = useCharacterImageUpload({
         onImageReady: setCropImageSrc,
         onSelectionStart: () => setCropImageSrc(null),
@@ -182,11 +183,13 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
     }, [playerInfo.stickers, removeSticker, selectStickerForEditing, updateStickers]);
 
     const handleCropApply = (croppedImageBase64: string) => {
+        dismissImageUpload();
         onImageChange?.(croppedImageBase64);
         setCropImageSrc(null);
     };
 
     const handleCropCancel = () => {
+        dismissImageUpload();
         setCropImageSrc(null);
     };
 
@@ -286,6 +289,8 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                     aria-label={t.clickToEdit}
                     className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px]' : 'w-full h-[280px]'} sheet-image relative overflow-hidden group cursor-pointer shrink-0 border-0 p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]`}
                     onClick={openImagePicker}
+                    onDragOver={event => event.preventDefault()}
+                    onDrop={handleImageDrop}
                     title={t.clickToEdit}
                 >
                     <img
@@ -308,6 +313,8 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                     aria-label={t.uploadPlease}
                     className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px]' : 'w-full h-[280px]'} sheet-image sheet-image-empty flex flex-col items-center justify-center gap-4 cursor-pointer transition-colors group shrink-0 relative border-0 p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]`}
                     onClick={openImagePicker}
+                    onDragOver={event => event.preventDefault()}
+                    onDrop={handleImageDrop}
                 >
                     <div className="studio-placeholder-art"></div>
                     <div className="p-4 bg-white/60 dark:bg-black/30 rounded-full group-hover:scale-110 transition-transform duration-300 z-10 border border-neutral-200/50 dark:border-[#4a4a4c]/50">

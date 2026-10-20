@@ -28,6 +28,8 @@
 .u032--status-only{position:absolute;top:1rem;left:1rem;right:1rem;z-index:70;width:auto;pointer-events:none}
 .u032--status-only .u032-list{margin:0}
 .u032--status-only .u032-row{pointer-events:auto}
+.u032--compact .u032-list{margin:0}
+.u032--compact.u032--has-job .u032-list{margin-top:10px}
 .u032-zone{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;width:100%;height:196px;border:0;padding:0;border-radius:26px;background:var(--ux-surface);color:var(--ux-ink);cursor:pointer;transition:transform .5s var(--ux-spring),background-color .3s var(--ux-ease)}
 .u032-zone:focus-visible{outline:2px solid var(--ux-accent);outline-offset:4px}
 .u032-zone svg.u032-dash{position:absolute;left:1px;top:1px;width:calc(100% - 2px);height:calc(100% - 2px);overflow:visible;pointer-events:none}

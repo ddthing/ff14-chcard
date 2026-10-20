@@ -20,6 +20,44 @@ export async function seed(page: Page, extra: Record<string, unknown> = {}) {
     await page.goto('/');
     await expect(page.locator('#card-preview')).toBeVisible();
 }
+export async function readStoredValue<T>(page: Page, key: string): Promise<T | undefined> {
+    return page.evaluate(async storageKey => {
+        const db = await new Promise<IDBDatabase>((resolve, reject) => {
+            const request = indexedDB.open('ff14-chcard-storage');
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+        try {
+            return await new Promise<T | undefined>((resolve, reject) => {
+                const request = db.transaction('values', 'readonly').objectStore('values').get(storageKey);
+                request.onsuccess = () => resolve(request.result as T | undefined);
+                request.onerror = () => reject(request.error);
+            });
+        } finally {
+            db.close();
+        }
+    }, key);
+}
+export async function writeStoredValue<T>(page: Page, key: string, value: T): Promise<void> {
+    await page.evaluate(async ({ storageKey, storedValue }) => {
+        const db = await new Promise<IDBDatabase>((resolve, reject) => {
+            const request = indexedDB.open('ff14-chcard-storage');
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+        try {
+            await new Promise<void>((resolve, reject) => {
+                const transaction = db.transaction('values', 'readwrite');
+                transaction.objectStore('values').put(storedValue, storageKey);
+                transaction.oncomplete = () => resolve();
+                transaction.onabort = () => reject(transaction.error);
+                transaction.onerror = () => reject(transaction.error);
+            });
+        } finally {
+            db.close();
+        }
+    }, { storageKey: key, storedValue: value });
+}
 export async function nativeSize(page: Page) {
     return page.locator('#card-preview').evaluate(card => ({ width: (card as HTMLElement).offsetWidth, height: (card as HTMLElement).offsetHeight }));
 }

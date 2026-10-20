@@ -1,11 +1,12 @@
 import { type KeyboardEvent, type ReactNode, type Ref, useEffect, useRef, useState } from 'react';
-import { Check, Focus, MoveHorizontal, Redo2, Undo2, ZoomIn } from 'lucide-react';
+import { AlertTriangle, Check, LoaderCircle, Focus, MoveHorizontal, Redo2, Undo2, ZoomIn } from 'lucide-react';
 import type { Language } from '../types';
 import { useWindowScale } from '../hooks/useWindowScale';
 import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
 import { GlobalHeader } from './GlobalHeader';
 import { Footer } from './Footer';
 import { MobileEditorSheet, type MobileEditorSheetHandle } from './MobileEditorSheet';
+import { PersistenceNotice } from './common/PersistenceNotice';
 import { i18n } from '../utils/i18n';
 
 interface MainLayoutProps {
@@ -19,6 +20,7 @@ interface MainLayoutProps {
     navigation?: ReactNode;
     editorTitle?: string;
     onStartTour?: () => void;
+    onOpenLibrary?: () => void;
     mobileEditorRef?: Ref<MobileEditorSheetHandle>;
 }
 
@@ -39,15 +41,18 @@ function HistoryControls({ lang }: { lang: Language }) {
     );
 }
 
-function DraftStatus({ lang }: { lang: Language }) {
+function DraftStatus({ lang, expanded, onInspect }: { lang: Language; expanded: boolean; onInspect: () => void }) {
     const persistenceStatus = usePlayerSelector(state => state.persistenceStatus);
+    const isPersisting = usePlayerSelector(state => state.isPersisting);
     const copy = i18n[lang].studio;
-    return (
-        <span className={'studio-draft' + (persistenceStatus ? ' studio-draft-warning' : '')}>
-            <Check size={13} aria-hidden="true" />
-            {persistenceStatus ? copy.draftWarning : copy.localDraft}
-        </span>
-    );
+    if (persistenceStatus && !isPersisting) return <button type="button" className="studio-draft studio-draft-warning studio-draft-inspect" aria-expanded={expanded} onClick={onInspect}>
+        <AlertTriangle size={13} aria-hidden="true" />
+        {persistenceStatus === 'image-omitted' ? copy.draftImageWarning : copy.draftWarning}
+    </button>;
+    return <span className="studio-draft" aria-busy={isPersisting}>
+        {isPersisting ? <LoaderCircle size={13} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Check size={13} aria-hidden="true" />}
+        {isPersisting ? copy.draftSaving : copy.localDraft}
+    </span>;
 }
 
 export function MainLayout({
@@ -61,9 +66,17 @@ export function MainLayout({
     navigation,
     editorTitle,
     onStartTour,
+    onOpenLibrary,
     mobileEditorRef,
 }: MainLayoutProps) {
     const containerRef = useRef<HTMLDivElement>(null);
+    const persistenceStatus = usePlayerSelector(state => state.persistenceStatus);
+    const [noticeOpen, setNoticeOpen] = useState(true);
+    const [previousPersistenceStatus, setPreviousPersistenceStatus] = useState(persistenceStatus);
+    if (previousPersistenceStatus !== persistenceStatus) {
+        setPreviousPersistenceStatus(persistenceStatus);
+        setNoticeOpen(true);
+    }
     const [zoom, setZoom] = useState<'fit' | 'width' | 'actual'>('fit');
     const [canvasHeight, setCanvasHeight] = useState(0);
     const targetWidth = layoutType === 'left-portrait' ? 880 : 700;
@@ -110,10 +123,11 @@ export function MainLayout({
                 <div className="studio-workspace-toolbar" role="group" aria-label={workspaceCopy.tools} data-tour="export-controls">
                     <div className="studio-workspace-tools-meta">
                         <HistoryControls lang={lang} />
-                        <DraftStatus lang={lang} />
+                        <DraftStatus lang={lang} expanded={noticeOpen} onInspect={() => setNoticeOpen(value => !value)} />
                     </div>
                     <div className="studio-workspace-export">{exportControls}</div>
                 </div>
+                {noticeOpen && <PersistenceNotice onDismiss={() => setNoticeOpen(false)} onOpenLibrary={onOpenLibrary} />}
                 <div className={'studio-workspace' + (navigation ? ' studio-workspace--rail' : '')} role="region" aria-label={studioCopy.workspace}>
                     <MobileEditorSheet
                         ref={mobileEditorRef}
