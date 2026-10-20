@@ -1,0 +1,194 @@
+/* Lucian UX/UI Prompt #031 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#031 */
+.u031-root,
+.u031-list {
+    --ux-surface: var(--surface-100);
+    --ux-surface-2: var(--surface-300);
+    --ux-ink: var(--text-primary);
+    --ux-ink-2: var(--text-secondary);
+    --ux-ink-3: var(--text-muted);
+    --ux-line: var(--border-subtle);
+    --ux-line-2: var(--border-default);
+    --ux-accent: var(--studio-accent);
+    --ux-accent-soft: color-mix(in srgb, var(--studio-accent) 14%, transparent);
+    --ux-shadow-strong: var(--shadow-color-1);
+    --ux-ease: cubic-bezier(.2, .8, .2, 1);
+    --ux-spring: cubic-bezier(.34, 1.45, .64, 1);
+    color: var(--ux-ink);
+    font-family: inherit;
+    letter-spacing: normal;
+}
+
+.u031-root {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+
+.u031-f {
+    position: relative;
+    width: 100%;
+    min-width: 0;
+}
+
+.u031-btn {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 40px;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--ux-line-2);
+    border-radius: 8px;
+    padding: 0 14px;
+    background: var(--ux-surface-2);
+    color: var(--ux-ink);
+    cursor: pointer;
+    text-align: left;
+    box-shadow: inset 0 0 0 1.5px transparent;
+    transition: box-shadow .25s var(--ux-ease), background-color .25s;
+}
+
+.u031-btn:hover:not(:disabled) {
+    box-shadow: inset 0 0 0 1.5px var(--ux-line-2);
+}
+
+.u031-btn:focus-visible,
+.u031-root.is-open .u031-btn[aria-expanded="true"] {
+    outline: 0;
+    background: var(--ux-surface);
+    box-shadow: inset 0 0 0 2px var(--ux-accent), 0 0 0 3px var(--ux-accent-soft);
+}
+
+.u031-btn:disabled {
+    cursor: not-allowed;
+    opacity: .58;
+}
+
+.u031-v {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    font-size: 13px;
+    font-weight: 550;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.u031-v-name {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.u031-car {
+    width: 16px;
+    height: 16px;
+    flex: none;
+    color: var(--ux-ink-3);
+    transition: transform .45s var(--ux-spring);
+}
+
+.u031-btn[aria-expanded="true"] .u031-car {
+    transform: rotate(180deg);
+}
+
+.u031-list {
+    position: fixed;
+    z-index: 1000;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    margin: 0;
+    border: 1px solid var(--ux-line-2);
+    border-radius: 14px;
+    padding: 6px;
+    background: var(--ux-surface);
+    box-shadow: 0 0 0 1px var(--ux-line-2), 0 28px 56px -24px var(--ux-shadow-strong);
+    transform-origin: var(--u031-origin, 50% 0%);
+    outline: none;
+    opacity: 0;
+    transform: translateY(-6px) scaleY(.92);
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity .2s var(--ux-ease), transform .4s var(--ux-spring), visibility 0s .4s;
+    scrollbar-width: thin;
+    scrollbar-color: var(--ux-line-2) transparent;
+}
+
+.u031-list.is-open {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    pointer-events: auto;
+    transition: opacity .2s var(--ux-ease), transform .45s var(--ux-spring);
+}
+
+.u031-hl {
+    position: absolute;
+    z-index: 0;
+    top: 6px;
+    right: 6px;
+    left: 6px;
+    height: 46px;
+    border-radius: 12px;
+    background: var(--ux-surface-2);
+    transform: translateY(calc(var(--i, 0) * 46px));
+    transition: transform .35s var(--ux-spring);
+    pointer-events: none;
+}
+
+.u031-options {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+}
+
+.u031-o {
+    position: relative;
+    display: flex;
+    height: 46px;
+    min-width: 0;
+    align-items: center;
+    gap: 12px;
+    border-radius: 12px;
+    padding: 0 10px;
+    color: var(--ux-ink);
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 620;
+    line-height: 1.2;
+}
+
+.u031-o-label {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.u031-ck {
+    width: 18px;
+    height: 18px;
+    flex: none;
+    margin-left: auto;
+    color: var(--ux-accent);
+    opacity: 0;
+    transform: scale(.4);
+    transition: opacity .2s, transform .4s var(--ux-spring);
+}
+
+.u031-o[aria-selected="true"] .u031-ck {
+    opacity: 1;
+    transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .u031-root *,
+    .u031-list,
+    .u031-list * {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: .001ms !important;
+    }
+}

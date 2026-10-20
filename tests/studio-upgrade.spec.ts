@@ -2,21 +2,25 @@ import { test, expect } from '@playwright/test';
 import { seed, nativeSize, exportPng } from './helpers';
 test.beforeEach(async ({ page }) => { await page.route('https://cdn.jsdelivr.net/**', route => route.abort()); });
 
-test('history groups typing and presets, handles shortcuts and clears redo branches', async ({ page }) => {
+test('history groups typing and palette selection, handles shortcuts and clears redo branches', async ({ page }) => {
     await page.goto('/');
     const undo = page.getByRole('button', { name: '실행 취소', exact: true });
     const redo = page.getByRole('button', { name: '다시 실행', exact: true });
     await expect(undo).toBeDisabled();
     await page.getByRole('textbox', { name: '닉네임', exact: true }).pressSequentially('Seriane');
     await page.getByRole('tab', { name: '꾸미기', exact: true }).click();
-    await page.getByRole('button', { name: '보태니컬', exact: true }).click();
+    const initialColor = await page.getByRole('textbox', { name: '포인트 컬러 HEX', exact: true }).inputValue();
+    const firstColor = page.locator('.color-palette__swatch').first();
+    const firstHex = (await page.locator('.color-palette__slot').first().locator('.color-palette__hex').innerText()).toUpperCase();
+    await firstColor.click();
+    await expect(page.getByRole('textbox', { name: '포인트 컬러 HEX', exact: true })).toHaveValue(firstHex);
     await undo.click();
-    await expect(page.locator('#card-preview')).toHaveAttribute('data-layout', 'header');
+    await expect(page.getByRole('textbox', { name: '포인트 컬러 HEX', exact: true })).toHaveValue(initialColor);
     await expect(page.locator('.sheet-name')).toHaveText('Seriane');
     await page.locator('#preview-panel').focus(); await page.keyboard.press('Control+Shift+z');
-    await expect(page.getByRole('button', { name: '보태니컬', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.getByRole('textbox', { name: '포인트 컬러 HEX', exact: true })).toHaveValue(firstHex);
     await page.keyboard.press('Control+z');
-    await page.getByRole('button', { name: '포인트 컬러: #0071e3', exact: true }).click();
+    await page.locator('.color-palette__swatch').nth(1).click();
     await expect(redo).toBeDisabled();
     await undo.click(); await undo.click();
     await expect(page.locator('.sheet-name')).toHaveCount(0);
@@ -35,8 +39,12 @@ test('native text undo and keyboard font navigation remain independent', async (
     const font = page.getByRole('button', { name: '폰트', exact: true }).and(page.locator('[aria-haspopup="listbox"]'));
     await font.focus(); await page.keyboard.press('ArrowDown');
     const fonts = page.getByRole('listbox', { name: '폰트', exact: true });
-    await expect(fonts.getByRole('option', { selected: true })).toBeFocused();
-    await page.keyboard.press('End'); await expect(fonts.getByRole('option').last()).toBeFocused();
+    await expect(fonts).toBeFocused();
+    await page.keyboard.press('End');
+    const lastActiveOption = await fonts.getAttribute('aria-activedescendant');
+    expect(lastActiveOption).toBeTruthy();
+    await expect(page.locator(`[id="${lastActiveOption}"]`)).toHaveRole('option');
+    await expect(page.locator(`[id="${lastActiveOption}"]`)).toContainText('구름 산스 코드');
     await page.keyboard.press('Escape'); await expect(font).toBeFocused();
     await expect(fonts).toHaveCount(0);
 });

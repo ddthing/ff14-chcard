@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense, useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { PlayerProvider, usePlayerSelector } from './contexts/PlayerContext';
+import { ToastProvider } from './contexts/ToastContext';
 import { i18n } from './utils/i18n';
 
 const Home = lazy(() => import('./pages/Home').then(module => ({ default: module.Home })));
@@ -39,22 +40,24 @@ function App() {
   return (
     <HelmetProvider>
       <PlayerProvider>
-        <BrowserRouter>
-          <DocumentLanguage />
-          <Suspense fallback={<LoadingFallback />}>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/privacy" element={<Privacy />} />
-              <Route path="/terms" element={<Terms />} />
-              <Route path="/guide" element={<Guide />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/faq" element={<Faq />} />
-              {/* 정의되지 않은 경로는 홈으로 리다이렉트 */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </Suspense>
-        </BrowserRouter>
+        <ToastProvider>
+          <BrowserRouter>
+            <DocumentLanguage />
+            <Suspense fallback={<LoadingFallback />}>
+              <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/guide" element={<Guide />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/faq" element={<Faq />} />
+                {/* 정의되지 않은 경로는 홈으로 리다이렉트 */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
+        </ToastProvider>
       </PlayerProvider>
     </HelmetProvider>
   );

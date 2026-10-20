@@ -1,9 +1,9 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ChangeEvent, type KeyboardEvent } from 'react';
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import type { PlayerInfo } from '../types';
-import { ChevronLeft, ChevronRight, ChevronDown, Check, ContactRound, Swords, Tags, Paintbrush, ImagePlus, X, Save } from 'lucide-react';
-import { i18n, getFonts } from '../utils/i18n';
-import { getAccessibleAccentColor, getAccentSurface, inputClass } from '../utils/styles';
-import { DesignPresets } from './DesignPresets';
+import { ChevronLeft, ChevronRight, ContactRound, Swords, Tags, Paintbrush, ImagePlus, X, Save } from 'lucide-react';
+import { i18n } from '../utils/i18n';
+import { ColorPalettePicker } from './ColorPalettePicker';
+import { FontPicker } from './FontPicker';
 import { BackgroundEffectsSection } from './form/BackgroundEffectsSection';
 const ImageCropperModal = lazy(() => import('./ImageCropperModal').then(module => ({ default: module.ImageCropperModal })));
 
@@ -17,24 +17,25 @@ import { StickerSection } from './form/StickerSection';
 import { SlotSection } from './form/SlotSection';
 
 import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
-import { ImageFileError, readImageFile } from '../utils/imageFile';
+import { useCharacterImageUpload, type CharacterImageUploadCopy } from '../hooks/useCharacterImageUpload';
+import { CharacterImageUpload } from './CharacterImageUpload';
+import type { EditorTabId } from './editorTabs';
 
-type TabId = 'basic' | 'job' | 'style' | 'design' | 'slot';
+type CardFormProps = {
+    activeTab?: EditorTabId;
+    onTabChange?: (tab: EditorTabId) => void;
+    externalNavigation?: boolean;
+};
 
-export function CardForm() {
+export function CardForm({ activeTab: controlledTab, onTabChange, externalNavigation = false }: CardFormProps = {}) {
     const playerInfo = usePlayerSelector(s => s.playerInfo);
     const { setPlayerInfo, updateImage: onImageChange } = usePlayerActions();
     const panelRef = useRef<HTMLDivElement>(null);
-    const fontRef = useRef<HTMLDivElement>(null);
-    const fontTriggerRef = useRef<HTMLButtonElement>(null);
-    const fontOptionRefs = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
-    const fileInputRef = useRef<HTMLInputElement>(null);
     const imageTriggerRef = useRef<HTMLButtonElement>(null);
-    const [isFontOpen, setIsFontOpen] = useState(false);
-    const [activeTab, setActiveTab] = useState<TabId>('basic');
+    const [internalActiveTab, setInternalActiveTab] = useState<EditorTabId>('basic');
+    const activeTab = controlledTab ?? internalActiveTab;
     const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
-    const [imageError, setImageError] = useState<string | null>(null);
-    const tabRefs = useRef<Partial<Record<TabId, HTMLButtonElement | null>>>({});
+    const tabRefs = useRef<Partial<Record<EditorTabId, HTMLButtonElement | null>>>({});
     const tabListRef = useRef<HTMLDivElement>(null);
     const [tabScrollState, setTabScrollState] = useState({ left: false, right: false });
 
@@ -42,65 +43,34 @@ export function CardForm() {
     const t = i18n[lang].form;
     const tp = i18n[lang].preview;
     const studio = i18n[lang].studio;
-    const fontsOptions = getFonts(lang);
+    const {
+        setInputRef: setImageInputRef,
+        job: imageUploadJob,
+        openPicker: openImagePicker,
+        handleFileChange: handleImageFileChange,
+        handleDrop: handleImageDrop,
+        cancel: cancelImageUpload,
+        retry: retryImageUpload,
+    } = useCharacterImageUpload({
+        onImageReady: setCropImageSrc,
+        onSelectionStart: () => setCropImageSrc(null),
+    });
+    const imageUploadCopy: CharacterImageUploadCopy = {
+        dropPrompt: t.imageUploadDropPrompt,
+        dropHint: studio.dropHint,
+        reading: t.imageUploadReading,
+        validating: t.imageUploadValidating,
+        ready: t.imageUploadReady,
+        retry: t.imageUploadRetry,
+        cancel: t.imageUploadCancel,
+        invalidType: t.imageInvalidType,
+        readFailed: t.imageUploadError,
+    };
     const isPointColorValid = /^#[0-9a-f]{6}$/i.test(playerInfo.pointColor);
-    // 폰트 드롭다운 외부 클릭 닫기
-    useEffect(() => {
-        function handleClickOutside(event: MouseEvent) {
-            if (fontRef.current && !fontRef.current.contains(event.target as Node)) {
-                setIsFontOpen(false);
-            }
-        }
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
-
-    useEffect(() => { if (isFontOpen) fontOptionRefs.current[playerInfo.font]?.focus(); }, [isFontOpen, playerInfo.font]);
+    useEffect(() => { panelRef.current?.scrollTo({ top: 0 }); }, [activeTab]);
 
     const handleChange = <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => {
         setPlayerInfo(prev => ({ ...prev, [field]: value }));
-    };
-
-    const handleFontTriggerKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-        if (event.key === 'ArrowDown' || event.key === 'ArrowUp') { event.preventDefault(); setIsFontOpen(true); }
-        if (event.key === 'Escape' && isFontOpen) {
-            event.preventDefault();
-            setIsFontOpen(false);
-        }
-    };
-
-    const handleFontOptionKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
-        const lastIndex = fontsOptions.length - 1;
-        let nextIndex: number | null = null;
-
-        if (event.key === 'ArrowDown') nextIndex = index === lastIndex ? 0 : index + 1;
-        if (event.key === 'ArrowUp') nextIndex = index === 0 ? lastIndex : index - 1;
-        if (event.key === 'Home') nextIndex = 0;
-        if (event.key === 'End') nextIndex = lastIndex;
-
-        if (nextIndex !== null) {
-            event.preventDefault();
-            fontOptionRefs.current[fontsOptions[nextIndex].id]?.focus();
-            return;
-        }
-
-        if (event.key === 'Escape') {
-            event.preventDefault();
-            setIsFontOpen(false);
-            fontTriggerRef.current?.focus();
-        }
-    };
-
-    const openImage = useCallback(async (file: File) => {
-        setImageError(null);
-        try { setCropImageSrc(await readImageFile(file)); }
-        catch (error) {
-            setImageError(error instanceof ImageFileError && error.code === 'invalid-type' ? t.imageInvalidType : t.imageUploadError);
-        }
-    }, [t.imageInvalidType, t.imageUploadError]);
-    const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0]; event.target.value = '';
-        if (file) void openImage(file);
     };
 
     const handleCropApply = useCallback((croppedBase64: string) => {
@@ -108,10 +78,9 @@ export function CardForm() {
         setCropImageSrc(null);
     }, [onImageChange]);
 
-    // inputClass is a shared design token — imported from utils/styles.
 
     // ─── Tab Definitions ───────────────────────────────────────────────────────
-    const tabs: { id: TabId; label: string; icon: React.ReactNode }[] = [
+    const tabs: { id: EditorTabId; label: string; icon: React.ReactNode }[] = [
         { id: 'basic',  label: t.tabBasic,  icon: <ContactRound size={13} /> },
         { id: 'job',    label: t.tabJob,    icon: <Swords       size={13} /> },
         { id: 'style',  label: t.tabStyle,  icon: <Tags         size={13} /> },
@@ -146,8 +115,9 @@ export function CardForm() {
         return () => observer.disconnect();
     }, [lang, updateTabScrollState]);
 
-    const selectTab = (id: TabId, focusTab = false) => {
-        setActiveTab(id); setIsFontOpen(false); panelRef.current?.scrollTo({ top: 0 });
+    const selectTab = (id: EditorTabId, focusTab = false) => {
+        if (controlledTab === undefined) setInternalActiveTab(id);
+        onTabChange?.(id);
         const tab = tabRefs.current[id], list = tabListRef.current;
         if (focusTab) tab?.focus({ preventScroll: true });
         if (tab && list) list.scrollTo({ left: tab.offsetLeft - (list.clientWidth - tab.offsetWidth) / 2 });
@@ -182,19 +152,8 @@ export function CardForm() {
                 /></Suspense>
             )}
 
-            {/* Hidden file input — triggered programmatically from image UI */}
-            <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/*"
-                aria-label={t.uploadImage}
-                className="hidden"
-                onChange={handleFileChange}
-            />
-            {imageError && <p role="alert" className="px-4 pt-3 text-[11px]" style={{ color: 'var(--destructive)' }}>{imageError}</p>}
-
             {/* ───── Tab Bar ────────────────────────────────────────────────── */}
-            <div className="relative shrink-0">
+            {!externalNavigation && <div className="relative shrink-0">
                 <div
                     ref={tabListRef}
                     className="flex overflow-x-auto px-1 scrollbar-hide"
@@ -249,12 +208,12 @@ export function CardForm() {
                         style={{ background: 'linear-gradient(to left, var(--surface-50), transparent)' }}
                     />
                 )}
-            </div>
+            </div>}
 
-            <div className="studio-tab-intro" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--surface-50)' }}>
+            {!externalNavigation && <div className="studio-tab-intro" style={{ color: 'var(--text-muted)', backgroundColor: 'var(--surface-50)' }}>
                 <span>{studio.stepHints[activeTabIndex]}</span>
                 <span className="tabular-nums">{activeTabIndex + 1} / {tabs.length}</span>
-            </div>
+            </div>}
 
             {/* ───── Tab Content ────────────────────────────────────────────── */}
             <div
@@ -271,21 +230,9 @@ export function CardForm() {
                 {activeTab === 'basic' && (
                     <div className="space-y-5 animate-tab-in">
 
-                        {/*
-                         * Image Upload — Mobile Only
-                         *
-                         * On desktop, the card preview panel is always visible and
-                         * clicking the card image triggers the file picker directly.
-                         * Surfacing this control in the sidebar on desktop adds noise
-                         * without providing value.
-                         *
-                         * On mobile (< md), the preview is collapsed at the top and
-                         * tap targets are small, so we keep a dedicated upload affordance
-                         * for a smooth first-run experience.
-                         */}
-                        <div onDragOver={event => event.preventDefault()} onDrop={event => { event.preventDefault(); const file = event.dataTransfer.files[0]; if (file) void openImage(file); }}>
+                        <div data-tour="image-upload">
                             <Section title={t.uploadImage}>
-                                                {playerInfo.image ? (
+                                {playerInfo.image && (
                                     /* Uploaded state: thumbnail + change / remove actions */
                                     <div className="flex gap-2.5 items-center">
                                         <button
@@ -294,7 +241,7 @@ export function CardForm() {
                                             aria-label={t.uploadImage}
                                             className="w-14 h-14 rounded-[8px] overflow-hidden cursor-pointer shrink-0 group relative border-0 p-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                                             style={{ border: '1px solid var(--border-default)' }}
-                                            onClick={() => fileInputRef.current?.click()}
+                                            onClick={openImagePicker}
                                         >
                                             <img
                                                 src={playerInfo.image}
@@ -311,7 +258,7 @@ export function CardForm() {
                                             <button
                                                 ref={imageTriggerRef}
                                                 type="button"
-                                                onClick={() => fileInputRef.current?.click()}
+                                                onClick={openImagePicker}
                                                 className="w-full py-2 text-[11px] font-semibold rounded-[8px] flex items-center justify-center gap-1.5 transition-colors"
                                                 style={{ backgroundColor: 'var(--surface-300)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}
                                                 onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--surface-400)')}
@@ -331,32 +278,23 @@ export function CardForm() {
                                             </button>
                                         </div>
                                     </div>
-                                ) : (
-                                    /* Empty state: full-width drop zone */
-                                    <button
-                                        ref={imageTriggerRef}
-                                        type="button"
-                                        onClick={() => fileInputRef.current?.click()}
-                                    className="group flex h-[64px] w-full items-center justify-center gap-2.5 rounded-[8px] border-2 border-dashed text-[12px] font-semibold transition-[color,border-color,background-color,box-shadow] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                        style={{ borderColor: 'var(--border-medium)', color: 'var(--text-muted)', backgroundColor: 'transparent' }}
-                                        onMouseEnter={e => {
-                                            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-strong)';
-                                            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-primary)';
-                                        }}
-                                        onMouseLeave={e => {
-                                            (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-medium)';
-                                            (e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)';
-                                        }}
-                                    >
-                                        <ImagePlus size={16} aria-hidden="true" className="group-hover:scale-110 transition-transform" />
-                                        {t.uploadImage}
-                                    </button>
                                 )}
-                            <p className="studio-drop-hint">{studio.dropHint}</p>
+                                <CharacterImageUpload
+                                    inputRef={setImageInputRef}
+                                    job={imageUploadJob}
+                                    openPicker={openImagePicker}
+                                    handleFileChange={handleImageFileChange}
+                                    handleDrop={handleImageDrop}
+                                    cancel={cancelImageUpload}
+                                    retry={retryImageUpload}
+                                    ariaLabel={t.uploadImage}
+                                    triggerRef={playerInfo.image ? undefined : imageTriggerRef}
+                                    messages={imageUploadCopy}
+                                />
                             </Section>
                         </div>
 
-                        <BasicInfoSection />
+                        <div data-tour="basic-section"><BasicInfoSection /></div>
 
                         {/* Layout Selector */}
                         <Section title={t.layout}>
@@ -397,24 +335,25 @@ export function CardForm() {
                  * the transparent save-button backdrop below short job grids.
                  */}
                 {activeTab === 'job' && (
-                    <div className="animate-tab-in flex-1 flex flex-col">
+                    <div className="animate-tab-in flex-1 flex flex-col" data-tour="job-selection">
                         <JobSelectionSection />
                     </div>
                 )}
 
                 {/* ── Tab 3: Style ───────────────────────────────────────────── */}
                 {activeTab === 'style' && (
-                    <div className="space-y-5 animate-tab-in">
+                    <div className="space-y-5 animate-tab-in" data-tour="style-section">
                         <PlaystyleSection />
                         <DetailsSection />
                     </div>
                 )}
 
                 {/* ── Tab 4: Design ──────────────────────────────────────────── */}
-                {activeTab === 'design' && (
-                    <div className="space-y-5 animate-tab-in relative z-20">
-                        <DesignPresets />
-
+                <div
+                    hidden={activeTab !== 'design'}
+                    className={`space-y-5 relative z-20${activeTab === 'design' ? ' animate-tab-in' : ''}`}
+                    data-tour="design-section"
+                >
                         {/* Point Color ──────────────────────────────────────── */}
                         <Section title={t.pointColor}>
                             <div className="space-y-2.5">
@@ -459,128 +398,28 @@ export function CardForm() {
                                     />
                                 </div>
                                 <div id="point-color-status" className="text-[11px] leading-relaxed" role="status" aria-live="polite" style={{ color: isPointColorValid ? 'var(--text-secondary)' : 'var(--destructive)' }}>{isPointColorValid ? t.pointColorAuto : t.pointColorInvalid}</div>
-                                {isPointColorValid && <div className="studio-accent-previews" role="group" aria-label={t.pointColorPreview}>
-                                    {[{ surface: '#ffffff', label: t.lightPreview }, { surface: '#252b24', label: t.darkPreview }].map(({ surface, label }) => {
-                                        const background = getAccentSurface(playerInfo.pointColor, surface);
-                                        return <div key={surface} style={{ backgroundColor: background, color: getAccessibleAccentColor(playerInfo.pointColor, background, 4.5) }}><strong aria-hidden="true">Aa</strong><span>{label}</span></div>;
-                                    })}
-                                </div>}
-                                <div className="space-y-1.5">
-                                    <p className="text-[10px] font-semibold" style={{ color: 'var(--text-muted)' }}>
-                                        {t.colorPresets}
-                                    </p>
-                                    <div className="studio-color-presets grid grid-cols-6 gap-2" role="group" aria-label={t.colorPresets}>
-                                        {['#e44c21', '#0071e3', '#30d158', '#ff375f', '#bf5af2', '#ffd60a'].map(color => (
-                                            <button
-                                                key={color}
-                                                type="button"
-                                                onClick={() => handleChange('pointColor', color)}
-                                                aria-label={`${t.pointColor}: ${color}`}
-                                                aria-pressed={playerInfo.pointColor === color}
-                                                className="h-7 w-full border transition-[transform,box-shadow] hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
-                                                style={{
-                                                    backgroundColor: color,
-                                                    borderColor: playerInfo.pointColor === color ? 'var(--text-primary)' : 'transparent',
-                                                    boxShadow: playerInfo.pointColor === color ? '0 0 0 1px var(--surface-100)' : 'none',
-                                                }}
-                                                title={color}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
+                                <ColorPalettePicker value={playerInfo.pointColor} onChange={color => handleChange('pointColor', color)} lang={lang} />
                             </div>
                         </Section>
 
                         {/* Font Selector ─────────────────────────────────────── */}
                         <Section title={t.font}>
-                            <div className="relative w-full" ref={fontRef}>
-                                 <button
-                                     ref={fontTriggerRef}
-                                     type="button"
-                                     onClick={() => setIsFontOpen(!isFontOpen)}
-                                     aria-label={t.font}
-                                     aria-expanded={isFontOpen}
-                                     aria-haspopup="listbox"
-                                     aria-controls={isFontOpen ? 'font-listbox' : undefined}
-                                     onKeyDown={handleFontTriggerKeyDown}
-                                     className={`${inputClass} flex items-center justify-between cursor-pointer`}
-                                >
-                                    <div className="flex items-center gap-2">
-                                        {(() => {
-                                            const selectedFont = fontsOptions.find(f => f.id === playerInfo.font);
-                                            return (
-                                                <span className={`text-[15px] font-medium ${selectedFont?.id || ''}`}>
-                                                    {selectedFont ? selectedFont.name : t.pleaseSelect}
-                                                </span>
-                                            );
-                                        })()}
-                                    </div>
-                                     <ChevronDown
-                                         size={16}
-                                         aria-hidden="true"
-                                         className={`text-[#86868b] transition-transform ${isFontOpen ? 'rotate-180' : ''}`}
-                                    />
-                                </button>
-
-                                {isFontOpen && (
-                                     <div
-                                         id="font-listbox"
-                                         className="absolute top-full mt-1.5 left-0 right-0 rounded-[10px] z-50 max-h-60 overflow-y-auto p-1"
-                                         role="listbox"
-                                         aria-label={t.font}
-                                         style={{
-                                            backgroundColor: 'var(--surface-100)',
-                                            border: '1px solid var(--border-medium)',
-                                        }}
-                                    >
-                                        {fontsOptions.map((font, index) => {
-                                            const isSelected = playerInfo.font === font.id;
-                                            return (
-                                                 <button
-                                                     key={font.id}
-                                                     ref={element => { fontOptionRefs.current[font.id] = element; }}
-                                                     type="button"
-                                                     role="option"
-                                                     tabIndex={isSelected ? 0 : -1}
-                                                     aria-selected={isSelected}
-                                                     onKeyDown={event => handleFontOptionKeyDown(event, index)}
-                                                     onClick={() => {
-                                                        handleChange('font', font.id);
-                                                        setIsFontOpen(false);
-                                                        fontTriggerRef.current?.focus();
-                                                    }}
-                                                    className="card-preview w-full flex items-center justify-between px-3 py-2 rounded-[7px] transition-colors duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]"
-                                                    style={{
-                                                        backgroundColor: isSelected ? 'var(--surface-300)' : 'transparent',
-                                                        color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)',
-                                                    }}
-                                                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.backgroundColor = 'var(--surface-200)'; }}
-                                                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.backgroundColor = 'transparent'; }}
-                                                >
-                                                    <span className={`text-[14px] ${font.id}`}>{font.name}</span>
-                                                    {isSelected && <Check size={14} aria-hidden="true" style={{ color: 'var(--text-primary)' }} />}
-                                                </button>
-                                            );
-                                        })}
-                                    </div>
-                                )}
-                            </div>
+                            <FontPicker value={playerInfo.font} onChange={font => handleChange('font', font)} lang={lang} active={activeTab === 'design'} />
                         </Section>
                         <BackgroundEffectsSection /><StickerSection />
-                    </div>
-                )}
+                </div>
 
                 {/* ── Tab 5: Slot ─────────────────────────────────────────────── */}
                 {activeTab === 'slot' && (
-                    <div className="animate-tab-in flex-1 flex flex-col">
+                    <div className="animate-tab-in flex-1 flex flex-col" data-tour="slot-section">
                         <SlotSection />
                     </div>
                 )}
 
-                <div className="studio-step-nav">
+                {!externalNavigation && <div className="studio-step-nav">
                     <button type="button" disabled={activeTabIndex === 0} onClick={() => selectTab(tabs[activeTabIndex - 1].id, true)}><ChevronLeft size={14} aria-hidden="true" />{studio.previous}</button>
                     <button type="button" disabled={activeTabIndex === tabs.length - 1} onClick={() => selectTab(tabs[activeTabIndex + 1].id, true)}>{studio.next}<ChevronRight size={14} aria-hidden="true" /></button>
-                </div>
+                </div>}
             </div>
         </div>
     );

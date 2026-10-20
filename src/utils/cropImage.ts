@@ -25,8 +25,11 @@ export function rotateSize(width: number, height: number, rotation: number) {
   }
 }
 
+class CropProcessingError extends Error {}
+
 /**
- * This function was adapted from the one in the ReadMe of https://github.com/DominicTobias/react-image-crop
+ * Draw the requested crop directly into its final canvas. This avoids a full
+ * rotated-source canvas and the additional ImageData copy used by the old path.
  */
 export default async function getCroppedImg(
   imageSrc: string,
@@ -34,52 +37,73 @@ export default async function getCroppedImg(
   rotation = 0,
   flip = { horizontal: false, vertical: false }
 ): Promise<string | null> {
-  const image = await createImage(imageSrc)
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-
-  if (!ctx) {
-    return null
+  let image: HTMLImageElement
+  try {
+    image = await createImage(imageSrc)
+  } catch {
+    throw new CropProcessingError('The source image could not be decoded for cropping.')
   }
 
-  const rotRad = getRadianAngle(rotation)
+  const cropX = Math.trunc(pixelCrop.x)
+  const cropY = Math.trunc(pixelCrop.y)
+  const cropWidth = Math.trunc(pixelCrop.width)
+  const cropHeight = Math.trunc(pixelCrop.height)
+  // Canvas width/height attributes are unsigned 32-bit values; reject values
+  // that would wrap when assigned, while leaving actual limits to the browser.
+  const maxCanvasDimension = 0xffffffff
 
-  // calculate bounding box of the rotated image
-  const { width: bBoxWidth, height: bBoxHeight } = rotateSize(
-    image.width,
-    image.height,
-    rotation
-  )
+  if (
+    !Number.isFinite(rotation) ||
+    !Number.isFinite(pixelCrop.x) ||
+    !Number.isFinite(pixelCrop.y) ||
+    !Number.isFinite(pixelCrop.width) ||
+    !Number.isFinite(pixelCrop.height) ||
+    !Number.isFinite(cropX) ||
+    !Number.isFinite(cropY) ||
+    image.naturalWidth <= 0 ||
+    image.naturalHeight <= 0 ||
+    cropWidth <= 0 ||
+    cropHeight <= 0 ||
+    cropWidth > maxCanvasDimension ||
+    cropHeight > maxCanvasDimension
+  ) {
+    throw new CropProcessingError('The selected crop has invalid dimensions.')
+  }
 
-  // set canvas size to match the bounding box
-  canvas.width = bBoxWidth
-  canvas.height = bBoxHeight
+  const canvas = document.createElement('canvas')
+  try {
+    canvas.width = cropWidth
+    canvas.height = cropHeight
+    if (canvas.width !== cropWidth || canvas.height !== cropHeight) {
+      throw new CropProcessingError('The browser cannot allocate a canvas at the selected crop size.')
+    }
 
-  // translate canvas context to a central location to allow rotating and flipping around the center
-  ctx.translate(bBoxWidth / 2, bBoxHeight / 2)
-  ctx.rotate(rotRad)
-  ctx.scale(flip.horizontal ? -1 : 1, flip.vertical ? -1 : 1)
-  ctx.translate(-image.width / 2, -image.height / 2)
+    const ctx = canvas.getContext('2d')
+    if (!ctx) throw new CropProcessingError('The browser could not create a crop canvas.')
 
-  // draw rotated image
-  ctx.drawImage(image, 0, 0)
+    const rotRad = getRadianAngle(rotation)
+    const { width: bBoxWidth, height: bBoxHeight } = rotateSize(
+      image.naturalWidth,
+      image.naturalHeight,
+      rotation
+    )
 
-  // extracted cropped image
-  const data = ctx.getImageData(
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height
-  )
+    // Map the source through the same rotate/flip transform as before, offset
+    // by the selected crop so only pixels in the output rectangle are rasterized.
+    ctx.translate(-cropX, -cropY)
+    ctx.translate(bBoxWidth / 2, bBoxHeight / 2)
+    ctx.rotate(rotRad)
+    ctx.scale(flip.horizontal ? -1 : 1, flip.vertical ? -1 : 1)
+    ctx.translate(-image.naturalWidth / 2, -image.naturalHeight / 2)
+    ctx.drawImage(image, 0, 0)
 
-  // set canvas width to final desired crop size - this will clear existing context
-  canvas.width = pixelCrop.width
-  canvas.height = pixelCrop.height
-
-  // paste generated rotate image at the top left corner
-  ctx.putImageData(data, 0, 0)
-
-  // As compressed WebP string (reduces size by 80-90% allowing localStorage saves and faster renders)
-  // Fallbacks to PNG on unsupported older browsers automatically.
-  return canvas.toDataURL('image/webp', 0.85);
+    const output = canvas.toDataURL('image/png')
+    if (!output.startsWith('data:image/png;base64,')) {
+      throw new CropProcessingError('The browser could not encode the crop as a full-resolution PNG.')
+    }
+    return output
+  } catch (error) {
+    if (error instanceof CropProcessingError) throw error
+    throw new CropProcessingError('The browser could not render or encode the crop at its original resolution.')
+  }
 }

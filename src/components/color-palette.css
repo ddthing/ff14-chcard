@@ -1,0 +1,263 @@
+/* Lucian UX/UI Prompt #266 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#266 */
+.color-palette {
+    --ux-surface: var(--surface-100);
+    --ux-surface-2: var(--surface-300);
+    --ux-ink: var(--text-primary);
+    --ux-ink-2: var(--text-secondary);
+    --ux-ink-3: var(--text-muted);
+    --ux-line: var(--border-subtle);
+    --ux-line-2: var(--border-default);
+    --ux-accent: var(--ring);
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.color-palette__header,
+.color-palette__actions {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+}
+
+.color-palette__header {
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.color-palette__title {
+    min-width: 0;
+    margin: 0;
+    color: var(--ux-ink-3);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.color-palette__actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 6px;
+}
+
+.color-palette__action {
+    display: inline-flex;
+    height: 34px;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    border: 0;
+    border-radius: 4px;
+    padding: 0 14px;
+    background: var(--ux-ink);
+    color: var(--ux-surface);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1;
+    cursor: pointer;
+    transition: color 150ms ease;
+}
+
+.color-palette__action:focus-visible,
+.color-palette__shuffle-icon:focus-visible {
+    outline: 2px solid var(--ux-accent);
+    outline-offset: 2px;
+    z-index: 2;
+}
+
+.color-palette__swatch:focus-visible,
+.color-palette__lock:focus-visible,
+.color-palette__copy:focus-visible {
+    outline: 2px solid var(--palette-ink);
+    outline-offset: -4px;
+    z-index: 2;
+}
+
+.color-palette__action:disabled {
+    cursor: not-allowed;
+    opacity: 0.58;
+}
+
+.color-palette__swatches {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    height: 186px;
+    overflow: hidden;
+    border: 1px solid var(--ux-line-2);
+    border-radius: 4px;
+}
+
+.color-palette__slot {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    background: var(--palette-color);
+    color: var(--palette-ink);
+    transition: flex 300ms cubic-bezier(.3, 1.3, .5, 1);
+}
+
+.color-palette__slot + .color-palette__slot {
+    border-left: 1px solid color-mix(in srgb, var(--palette-ink) 18%, transparent);
+}
+
+.color-palette__slot:hover,
+.color-palette__slot:focus-within {
+    flex: 1.25;
+}
+
+.color-palette__slot:hover .color-palette__lock,
+.color-palette__slot:focus-within .color-palette__lock {
+    opacity: 1;
+}
+
+.color-palette__swatch {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    display: flex;
+    width: 100%;
+    height: 100%;
+    min-width: 0;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 0;
+    padding: 0 2px 36px;
+    background: var(--palette-color);
+    color: var(--palette-ink);
+    cursor: pointer;
+    transition: background-color 550ms ease, color 400ms;
+    transition-delay: calc(var(--palette-index) * 70ms);
+}
+
+.color-palette__swatch.is-selected {
+    box-shadow: inset 0 0 0 2px var(--palette-ink);
+}
+
+.color-palette__selected {
+    position: absolute;
+    inset-inline: 2px;
+    bottom: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    overflow: hidden;
+    font-size: 8px;
+    font-weight: 700;
+    line-height: 1.2;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.color-palette__hex {
+    min-width: 0;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: clamp(9px, 2.8vw, 10px);
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    letter-spacing: 0.02em;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+.color-palette__copy {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    display: flex;
+    width: 100%;
+    height: 28px;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    border-top: 1px solid color-mix(in srgb, var(--palette-ink) 35%, transparent);
+    border-radius: 0;
+    padding: 0 2px;
+    background: var(--palette-color);
+    color: var(--palette-ink);
+    cursor: pointer;
+    opacity: 1;
+    transition: opacity 200ms ease;
+}
+
+.color-palette__copy:hover {
+    opacity: 1;
+}
+
+.color-palette__copy:focus-visible {
+    opacity: 1;
+}
+
+.color-palette__lock {
+    position: absolute;
+    top: 3px;
+    left: 50%;
+    z-index: 1;
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    transform: translateX(-50%);
+    border: 0;
+    border-radius: 50%;
+    padding: 0;
+    background: color-mix(in srgb, var(--palette-ink) 16%, transparent);
+    color: var(--palette-ink);
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 200ms ease, transform 300ms cubic-bezier(.3, 1.7, .5, 1);
+}
+
+.color-palette__lock:hover,
+.color-palette__lock[aria-pressed="true"] {
+    opacity: 1;
+}
+
+.color-palette__lock[aria-pressed="true"] {
+    transform: translateX(-50%) scale(1.1);
+}
+
+.color-palette__status {
+    min-height: 16px;
+    margin: 0;
+    color: var(--ux-ink-2);
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+@media (max-width: 360px) {
+    .color-palette__header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .color-palette__action,
+    .color-palette__slot,
+    .color-palette__swatch,
+    .color-palette__lock,
+    .color-palette__copy,
+    .color-palette__shuffle-icon,
+    .color-palette__shuffle-icon.is-spinning {
+        transition: none;
+        transition-delay: 0ms;
+        animation: none;
+    }
+}
+
+.color-palette__shuffle-icon.is-spinning {
+    animation: color-palette-spin 500ms cubic-bezier(.3, 1.3, .5, 1) both;
+}
+
+@keyframes color-palette-spin {
+    to { transform: rotate(360deg); }
+}
