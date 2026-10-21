@@ -1,4 +1,5 @@
 import { useCallback, useRef } from 'react';
+import { canvasToPngBlob } from '../utils/png';
 import { getExportDimensions, getOriginalImagePixelRatio, type ExportQuality } from '../utils/exportDimensions';
 interface UseImageExportOptions {
     filename?: string; pixelRatio?: ExportQuality; onError?: (message: string) => void;
@@ -31,19 +32,6 @@ function objectPositionFraction(value: string | undefined) {
 function getObjectPosition(style: CSSStyleDeclaration) {
     const [horizontal, vertical] = style.objectPosition.trim().split(/\s+/);
     return { x: objectPositionFraction(horizontal), y: objectPositionFraction(vertical ?? horizontal) };
-}
-
-async function canvasToPngBlob(canvas: HTMLCanvasElement) {
-    if (canvas.toBlob) {
-        const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-        if (blob) return blob;
-        throw new Error('The browser could not encode the original-resolution PNG.');
-    }
-
-    const response = await fetch(canvas.toDataURL('image/png'));
-    const blob = await response.blob();
-    if (!blob.size) throw new Error('The browser could not encode the original-resolution PNG.');
-    return blob;
 }
 
 /**
@@ -171,7 +159,7 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
         if (!node || exportingRef.current) return false;
         exportingRef.current = true;
         try {
-            const { toBlob, getFontEmbedCSS } = await import('html-to-image');
+            const { toCanvas, getFontEmbedCSS } = await import('html-to-image');
             await document.fonts?.ready;
             await Promise.all(Array.from(node.querySelectorAll('img')).map(image => image.decode()));
             await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
@@ -191,10 +179,19 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
                 filter: (element: HTMLElement) => !element.classList?.contains('export-ignore'),
                 style: { boxShadow: 'none', transform: 'none' } };
             const needsWarmup = /AppleWebKit/.test(navigator.userAgent) && !/(Chrome|Chromium|Edg|OPR)\//.test(navigator.userAgent);
-            if (needsWarmup) await toBlob(node, { ...options, pixelRatio: Math.min(1, ratio) });
+            const renderBlob = async (renderOptions: typeof options) => {
+                const canvas = await toCanvas(node, renderOptions);
+                try {
+                    return await canvasToPngBlob(canvas);
+                } finally {
+                    canvas.width = 0;
+                    canvas.height = 0;
+                }
+            };
+            if (needsWarmup) await renderBlob({ ...options, pixelRatio: Math.min(1, ratio) });
             const blob = originalPhoto
                 ? await createOriginalResolutionBlob(node, originalPhoto, width, height, output.width, output.height, ratio, fontEmbedCSS)
-                : await toBlob(node, options);
+                : await renderBlob(options);
             if (!blob) throw new Error('Image generation returned an empty result.');
             if (pixelRatio === 'original') await verifyPngDimensions(blob, output.width, output.height);
             const url = URL.createObjectURL(blob);

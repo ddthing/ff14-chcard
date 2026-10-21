@@ -1,9 +1,30 @@
-export const createImage = (url: string): Promise<HTMLImageElement> =>
+import { readBlobAsDataUrl } from './imageFile'
+import { canvasToPngBlob } from './png'
+
+export const createImage = (url: string, signal?: AbortSignal): Promise<HTMLImageElement> =>
   new Promise((resolve, reject) => {
     const image = new Image()
-    image.addEventListener('load', () => resolve(image))
-    image.addEventListener('error', (error) => reject(error))
-    image.setAttribute('crossOrigin', 'anonymous') // needed to avoid cross-origin issues on CodeSandbox
+    let settled = false
+    const finish = (callback: () => void) => {
+      if (settled) return
+      settled = true
+      signal?.removeEventListener('abort', abort)
+      image.onload = null
+      image.onerror = null
+      callback()
+    }
+    const abort = () => finish(() => {
+      image.src = ''
+      reject(signal?.reason)
+    })
+    if (signal?.aborted) {
+      abort()
+      return
+    }
+    image.onload = () => finish(() => resolve(image))
+    image.onerror = error => finish(() => reject(error))
+    signal?.addEventListener('abort', abort, { once: true })
+    image.setAttribute('crossOrigin', 'anonymous')
     image.src = url
   })
 
@@ -32,15 +53,18 @@ class CropProcessingError extends Error {}
  * rotated-source canvas and the additional ImageData copy used by the old path.
  */
 export default async function getCroppedImg(
-  imageSrc: string,
+  imageSrc: string | HTMLImageElement,
   pixelCrop: { x: number; y: number; width: number; height: number },
   rotation = 0,
-  flip = { horizontal: false, vertical: false }
+  flip = { horizontal: false, vertical: false },
+  signal?: AbortSignal
 ): Promise<string | null> {
   let image: HTMLImageElement
   try {
-    image = await createImage(imageSrc)
+    signal?.throwIfAborted()
+    image = typeof imageSrc === 'string' ? await createImage(imageSrc, signal) : imageSrc
   } catch {
+    signal?.throwIfAborted()
     throw new CropProcessingError('The source image could not be decoded for cropping.')
   }
 
@@ -97,13 +121,21 @@ export default async function getCroppedImg(
     ctx.translate(-image.naturalWidth / 2, -image.naturalHeight / 2)
     ctx.drawImage(image, 0, 0)
 
-    const output = canvas.toDataURL('image/png')
+    const blob = await canvasToPngBlob(canvas, signal)
+    // The raster is no longer needed while FileReader builds the storage value.
+    canvas.width = 0
+    canvas.height = 0
+    const output = await readBlobAsDataUrl(blob, { signal })
     if (!output.startsWith('data:image/png;base64,')) {
       throw new CropProcessingError('The browser could not encode the crop as a full-resolution PNG.')
     }
     return output
   } catch (error) {
+    signal?.throwIfAborted()
     if (error instanceof CropProcessingError) throw error
     throw new CropProcessingError('The browser could not render or encode the crop at its original resolution.')
+  } finally {
+    canvas.width = 0
+    canvas.height = 0
   }
 }
