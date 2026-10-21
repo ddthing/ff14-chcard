@@ -1,5 +1,5 @@
 import { type KeyboardEvent, type ReactNode, type Ref, useEffect, useRef, useState } from 'react';
-import { AlertTriangle, ArrowUpRight, Check, LoaderCircle, Focus, MoveHorizontal, Redo2, Undo2, ZoomIn, PanelLeftClose, PanelLeftOpen, Moon, RectangleHorizontal, RectangleVertical, ShieldCheck } from 'lucide-react';
+import { AlertTriangle, Check, LoaderCircle, Focus, MoveHorizontal, Redo2, Undo2, ZoomIn, PanelLeftClose, PanelLeftOpen, Moon, RectangleHorizontal, RectangleVertical } from 'lucide-react';
 import type { Language } from '../types';
 import { useWindowScale } from '../hooks/useWindowScale';
 import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
@@ -22,7 +22,6 @@ interface MainLayoutProps {
     editorTitle?: string;
     onStartTour?: () => void;
     onOpenLibrary?: () => void;
-    onExploreDesigns?: () => void;
     focusMode: boolean;
     onFocusModeChange: (focused: boolean) => void;
     mobileEditorRef?: Ref<MobileEditorSheetHandle>;
@@ -71,7 +70,6 @@ export function MainLayout({
     editorTitle,
     onStartTour,
     onOpenLibrary,
-    onExploreDesigns,
     focusMode,
     onFocusModeChange: setFocusMode,
     mobileEditorRef,
@@ -79,7 +77,6 @@ export function MainLayout({
     const containerRef = useRef<HTMLDivElement>(null);
     const focusButtonRef = useRef<HTMLButtonElement>(null);
     const [darkCanvas, setDarkCanvas] = useState(false);
-    const name = usePlayerSelector(state => state.playerInfo.name);
     const copy = editorCopy[lang];
     const persistenceStatus = usePlayerSelector(state => state.persistenceStatus);
     const [noticeOpen, setNoticeOpen] = useState(true);
@@ -143,13 +140,9 @@ export function MainLayout({
             <a href="#main-content" className="skip-link">{i18n[lang].layout.skipToContent}</a>
             <GlobalHeader lang={lang} onLanguageChange={onLanguageChange} onStartTour={onStartTour ? () => { setFocusMode(false); onStartTour(); } : undefined} />
             <main id="main-content" aria-labelledby="page-title" className="studio-main">
-                <div className="studio-intro">
-                    <div className="studio-intro-title"><p className="studio-eyebrow"><span aria-hidden="true" />{copy.edition}</p><h1 id="page-title">{copy.title} <span>{copy.titleAccent}</span></h1></div>
-                    <div className="studio-intro-aside"><p>{copy.description}</p><button type="button" onClick={onExploreDesigns}>{copy.presets}<ArrowUpRight size={15} aria-hidden="true" /></button></div>
-                </div>
+                <h1 id="page-title" className="sr-only">{studioCopy.workspace}</h1>
                 <div className="studio-workspace-toolbar" role="group" aria-label={workspaceCopy.tools} data-tour="export-controls">
                     <div className="studio-workspace-tools-meta">
-                        <div className="studio-document"><span className="studio-document-kicker">{copy.document}</span><span className="studio-document-name">{name || copy.untitled}</span></div>
                         <HistoryControls lang={lang} />
                         <DraftStatus lang={lang} expanded={noticeOpen} onInspect={() => setNoticeOpen(value => !value)} />
                     </div>
@@ -166,8 +159,7 @@ export function MainLayout({
                     >
                         <section id="editor-panel" tabIndex={-1} aria-labelledby="editor-title" className="studio-editor">
                             <div className="studio-panel-heading">
-                                <div><span className="studio-panel-kicker" aria-hidden="true">CHARACTER STUDIO</span><h2 id="editor-title" key={editorTitle} className="studio-editor-current-title">{editorTitle || studioCopy.editor}</h2></div>
-                                <span className="studio-panel-mark" aria-hidden="true">✳</span>
+                                <h2 id="editor-title" key={editorTitle} className="studio-editor-current-title">{editorTitle || studioCopy.editor}</h2>
                             </div>
                             <div className="studio-form">{form}</div>
                         </section>
@@ -204,12 +196,11 @@ export function MainLayout({
                         </div>
                         <div className="studio-stage-footer">
                             <div className="studio-layout-switch" role="group" aria-label={copy.layout}><button type="button" aria-pressed={layoutType === 'header'} onClick={() => updatePlayerField('layout', 'header')}><RectangleHorizontal size={14} aria-hidden="true" />{i18n[lang].form.layoutHeader}</button><button type="button" aria-pressed={layoutType === 'left-portrait'} onClick={() => updatePlayerField('layout', 'left-portrait')}><RectangleVertical size={14} aria-hidden="true" />{i18n[lang].form.layoutPortrait}</button></div>
-                            <span className="studio-stage-note">{focusMode ? copy.focusHint : copy.canvasNote}</span>
+                            {focusMode && <span className="studio-stage-note">{copy.focusHint}</span>}
                             <span className="studio-native-size" aria-label={copy.dimensions}>{cardSize.width} × {cardSize.height}</span>
                         </div>
                     </section>
                 </div>
-                <div className="studio-privacy-note"><ShieldCheck size={12} aria-hidden="true" />{copy.private}<span aria-hidden="true">FINAL FANTASY XIV · FAN PROJECT</span></div>
             </main>
             <Footer />
         </div>
