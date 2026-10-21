@@ -68,7 +68,7 @@ test('original quality exports the full photo pixel resolution above the legacy 
     expect(photoSticker).toEqual([255, 0, 255, 255]);
 
     await page.getByRole('tab', { name: '기본', exact: true }).click();
-    await page.getByRole('button', { name: '세로형', exact: true }).click();
+    await page.getByRole('tabpanel', { name: '기본', exact: true }).getByRole('button', { name: '세로형', exact: true }).click();
     await expect(page.locator('#card-preview')).toHaveAttribute('data-layout', 'left-portrait');
     await expect.poll(async () => {
         const expectedForPortrait = await page.locator('#card-preview').evaluate(card => {

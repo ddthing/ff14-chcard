@@ -8,6 +8,17 @@ FF14 Character Card는 파이널 판타지 XIV 플레이어가 자신의 캐릭�
 
 계정 없이 시작할 수 있고, 캐릭터 이미지는 브라우저 안에서 처리됩니다. 정보를 입력하고 디자인을 고른 뒤, 완성된 카드를 고화질 PNG로 저장하세요.
 
+## 스튜디오 업데이트
+
+- 크림색 종이와 짙은 잉크색을 바탕으로 헤더·편집 패널·미리보기·문서 도구줄을 재설계했습니다. 데스크톱에서는 작업을 한 화면에 유지하고 모바일에서는 기존 3단 편집 패널을 사용합니다.
+- **시그니처 스타일 4종**: 에디토리얼, 녹턴, 보타니카, 아카이브. 컬러·폰트·사진 구도·배경 효과를 한 번에 적용합니다. 사진·프로필·직업·스티커는 유지되며 실행 취소 한 번으로 이전 스타일로 돌아갑니다.
+- **집중 보기**: 데스크톱 편집 패널을 접고 카드를 크게 확인할 수 있습니다. 같은 버튼이나 `Esc`로 돌아오며, PNG 출력 크기는 바뀌지 않습니다.
+- **작업 배경 전환과 배치 바로가기**: 카드의 밝기를 확인할 때 작업 배경만 어둡게 바꿀 수 있고, 미리보기 아래에서 가로·세로 배치를 전환할 수 있습니다.
+- 스티커 포인터 이벤트를 화면 프레임당 한 번으로 모으고, 변하지 않은 좌표 갱신과 불필요한 사진 크기 측정을 생략합니다. 놓기 직전 위치와 취소 시 원래 위치는 보존합니다.
+- 원본 PNG 인코딩이 끝나면 대형 캔버스 메모리를 반환합니다. 원본 해상도 업로드·저장과 기존 프로필 저장 형식은 유지합니다.
+
+추가한 UI는 한국어·영어·일본어, 키보드 조작, 동작 줄이기 설정을 지원합니다.
+
 ## 무엇을 만들 수 있나요?
 
 - 캐릭터 이름, 서버, 지역, 활동 시간, 플레이 스타일을 담은 프로필 카드
@@ -68,7 +79,7 @@ FF14 Character Card는 파이널 판타지 XIV 플레이어가 자신의 캐릭�
 - **UI**: React 19, React Router, TypeScript
 - **Build**: Vite 7
 - **Styling**: Tailwind CSS v4, 로컬 디자인 토큰 패키지
-- **Motion**: Framer Motion
+- **Motion**: CSS transitions and requestAnimationFrame
 - **Icons**: Lucide React
 - **Image export**: html-to-image
 - **Image crop**: react-easy-crop
@@ -99,6 +110,8 @@ npm run dev
 | `npm run lint` | ESLint 검사 |
 | `npm run preview` | 프로덕션 빌드 결과 로컬 확인 |
 | `npm run test:e2e` | Chromium 기능·접근성·PNG 출력 회귀 검사 |
+
+이미 실행 중인 개발 서버로 검사할 때는 `PLAYWRIGHT_BASE_URL`을 해당 로컬 URL로 지정할 수 있습니다. 설치된 Chromium 계열 브라우저는 `PLAYWRIGHT_CHROMIUM_EXECUTABLE`에 실행 파일 경로를 지정해 사용합니다.
 
 ## 저장소 구조
 
@@ -153,7 +166,6 @@ public/
 | --- | --- | --- | --- |
 | React / React DOM | UI 렌더링 | MIT | [facebook/react](https://github.com/facebook/react) |
 | React Router | 클라이언트 라우팅 | MIT | [remix-run/react-router](https://github.com/remix-run/react-router) |
-| Framer Motion | 인터랙션과 애니메이션 | MIT | [motiondivision/motion](https://github.com/motiondivision/motion) |
 | html-to-image | 카드의 PNG 변환 | MIT | [bubkoo/html-to-image](https://github.com/bubkoo/html-to-image) |
 | react-easy-crop | 이미지 자르기 | MIT | [ValentinH/react-easy-crop](https://github.com/ValentinH/react-easy-crop) |
 | react-helmet-async | 문서 메타데이터 | Apache-2.0 | [staylor/react-helmet-async](https://github.com/staylor/react-helmet-async) |

@@ -9,7 +9,7 @@ test('desktop editor rail expands, labels the active section, and keeps roving t
     const rail = page.locator('nav.u040');
     await expect(rail).toHaveAttribute('data-orientation', 'vertical');
     for (const id of ['basic', 'job', 'style', 'design', 'stickers', 'slot']) await expect(page.locator(`#profile-tab-${id}`)).toHaveCount(1);
-    await expect.poll(() => rail.evaluate(element => element.getBoundingClientRect().width)).toBe(76);
+    await expect.poll(() => rail.evaluate(element => element.getBoundingClientRect().width)).toBe(68);
     await expect(page.locator('#editor-title')).toHaveText('기본');
     await page.locator('input[name="character-name"]').fill('Seriane');
     const editor = page.locator('#editor-panel');
@@ -17,9 +17,9 @@ test('desktop editor rail expands, labels the active section, and keeps roving t
 
     await page.getByRole('button', { name: '편집 메뉴 펼치기', exact: true }).click();
     await expect(rail).toHaveAttribute('data-expanded', 'true');
-    await expect.poll(() => rail.evaluate(element => element.getBoundingClientRect().width)).toBe(200);
+    await expect.poll(() => rail.evaluate(element => element.getBoundingClientRect().width)).toBe(180);
     const expandedLeft = await editor.evaluate(element => element.getBoundingClientRect().left);
-    expect(expandedLeft - collapsedLeft).toBe(124);
+    expect(expandedLeft - collapsedLeft).toBe(112);
     await expect(rail.getByRole('tab', { name: '기본', exact: true }).locator('span')).toHaveCSS('opacity', '1');
 
     const basic = rail.getByRole('tab', { name: '기본', exact: true });

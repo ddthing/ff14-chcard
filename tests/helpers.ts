@@ -73,7 +73,7 @@ export async function chooseQuality(page: Page, quality: 'original' | 'standard'
 }
 export async function exportPng(page: Page) {
     const pending = page.waitForEvent('download');
-    const save = page.getByRole('button', { name: /^(이미지 저장|Save Image|画像を保存)$/ }).first();
+    const save = page.getByRole('button', { name: /^(.* PNG 저장|Save .* PNG|.* PNGを保存)$/ });
     await save.click();
     const download = await pending;
     const stream = await download.createReadStream();

@@ -35,10 +35,11 @@ function EditorHome() {
     const t = i18n[language].studio;
     const [pixelRatio, setPixelRatio] = useState<ExportQuality>('original');
     const [activeTab, setActiveTab] = useState<EditorTabId>('basic');
+    const [focusMode, setFocusMode] = useState(false);
     const [tourOpen, setTourOpen] = useState(false);
     const mobileEditorRef = useRef<MobileEditorSheetHandle>(null);
     const previousTourDetent = useRef<0 | 1 | 2>(1);
-    const selectEditorTab = useCallback((tab: EditorTabId) => { setActiveTab(tab); mobileEditorRef.current?.setDetent(1); }, []);
+    const selectEditorTab = useCallback((tab: EditorTabId) => { setFocusMode(false); setActiveTab(tab); mobileEditorRef.current?.setDetent(1); }, []);
     const editSticker = useCallback(() => selectEditorTab('stickers'), [selectEditorTab]);
     const previousTourTab = useRef<EditorTabId>('basic');
     const startTour = useCallback(() => { previousTourTab.current = activeTab; previousTourDetent.current = mobileEditorRef.current?.getDetent() ?? 1; setTourOpen(true); }, [activeTab]);
@@ -103,7 +104,7 @@ function EditorHome() {
         {tourOpen && <Suspense fallback={null}><GuidedTour open={tourOpen} lang={language} steps={tourSteps} onClose={closeTour} /></Suspense>}
         {isRendering && <div className="fixed inset-0 z-[100] cursor-wait bg-black/10" aria-hidden="true" />}
         <div inert={isRendering ? true : undefined} aria-hidden={isRendering || undefined}>
-            <MainLayout lang={language} layoutType={layout} cardSize={cardSize} onLanguageChange={updateLanguage} form={form} preview={preview} mobileEditorRef={mobileEditorRef} onOpenLibrary={() => selectEditorTab('slot')} navigation={<EditorRail activeTab={activeTab} onTabChange={selectEditorTab} lang={language} />} editorTitle={editorTitle} onStartTour={startTour} exportControls={<ExportSplitButton lang={language} quality={pixelRatio} onQualityChange={setPixelRatio} onDownload={handleDownload} isRendering={isRendering} outputSize={outputSize} />} />
+            <MainLayout focusMode={focusMode} onFocusModeChange={setFocusMode} lang={language} layoutType={layout} cardSize={cardSize} onLanguageChange={updateLanguage} form={form} preview={preview} mobileEditorRef={mobileEditorRef} onOpenLibrary={() => selectEditorTab('slot')} onExploreDesigns={() => selectEditorTab('design')} navigation={<EditorRail activeTab={activeTab} onTabChange={selectEditorTab} lang={language} />} editorTitle={editorTitle} onStartTour={startTour} exportControls={<ExportSplitButton lang={language} quality={pixelRatio} onQualityChange={setPixelRatio} onDownload={handleDownload} isRendering={isRendering} outputSize={outputSize} />} />
         </div>
     </>;
 }

@@ -300,7 +300,7 @@ export function ExportSplitButton({ lang, quality, onQualityChange, onDownload, 
                 <button
                     className="u010-main"
                     type="button"
-                    aria-label={copy.layout.saveImage}
+                    aria-label={saveLabel}
                     aria-describedby={selectedQualityDescriptionId}
                     aria-busy={busy}
                     disabled={busy}
