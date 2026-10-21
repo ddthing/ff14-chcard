@@ -1,10 +1,29 @@
 import { expect, test } from '@playwright/test';
-import { exportPng, seed } from './helpers';
+import { exportPng, pixels, seed } from './helpers';
 
 const cropFile = {
     name: 'pipeline.svg', mimeType: 'image/svg+xml',
     buffer: Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="700" height="280"><rect width="700" height="280" fill="#b13042"/></svg>'),
 };
+
+test('mobile portrait and landscape can upload, edit, and download the full PNG', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await seed(page);
+    for (const viewport of [{ width: 390, height: 844 }, { width: 844, height: 390 }]) {
+        await page.setViewportSize(viewport);
+        await page.locator('#card-preview input[type="file"]').setInputFiles(cropFile);
+        const dialog = page.getByRole('dialog');
+        await expect(dialog).toBeVisible();
+        await dialog.getByRole('button', { name: '자동 채우기', exact: true }).click();
+        await expect(dialog).toHaveCount(0);
+        const png = await exportPng(page);
+        expect(png.width).toBe(700);
+        expect(png.height).toBeGreaterThan(280);
+        const [photoPixel] = await pixels(page, png.png, [{ x: 350, y: 140, width: 1, height: 1 }]);
+        expect(photoPixel).toEqual([177, 48, 66, 255]);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    }
+});
 
 for (const action of ['적용하기', '자동 채우기']) {
     test(`${action}: cancelling a pending crop never overwrites the existing photo`, async ({ page }) => {
