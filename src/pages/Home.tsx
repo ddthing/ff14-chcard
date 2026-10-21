@@ -104,7 +104,7 @@ function EditorHome() {
         {tourOpen && <Suspense fallback={null}><GuidedTour open={tourOpen} lang={language} steps={tourSteps} onClose={closeTour} /></Suspense>}
         {isRendering && <div className="fixed inset-0 z-[100] cursor-wait bg-black/10" aria-hidden="true" />}
         <div inert={isRendering ? true : undefined} aria-hidden={isRendering || undefined}>
-            <MainLayout focusMode={focusMode} onFocusModeChange={setFocusMode} lang={language} layoutType={layout} cardSize={cardSize} onLanguageChange={updateLanguage} form={form} preview={preview} mobileEditorRef={mobileEditorRef} onOpenLibrary={() => selectEditorTab('slot')} onExploreDesigns={() => selectEditorTab('design')} navigation={<EditorRail activeTab={activeTab} onTabChange={selectEditorTab} lang={language} />} editorTitle={editorTitle} onStartTour={startTour} exportControls={<ExportSplitButton lang={language} quality={pixelRatio} onQualityChange={setPixelRatio} onDownload={handleDownload} isRendering={isRendering} outputSize={outputSize} />} />
+            <MainLayout focusMode={focusMode} onFocusModeChange={setFocusMode} lang={language} layoutType={layout} cardSize={cardSize} onLanguageChange={updateLanguage} form={form} preview={preview} mobileEditorRef={mobileEditorRef} onOpenLibrary={() => selectEditorTab('slot')} navigation={<EditorRail activeTab={activeTab} onTabChange={selectEditorTab} lang={language} />} editorTitle={editorTitle} onStartTour={startTour} exportControls={<ExportSplitButton lang={language} quality={pixelRatio} onQualityChange={setPixelRatio} onDownload={handleDownload} isRendering={isRendering} outputSize={outputSize} />} />
         </div>
     </>;
 }

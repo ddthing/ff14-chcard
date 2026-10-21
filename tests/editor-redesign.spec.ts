@@ -10,7 +10,7 @@ test('focus view preserves the card, exports at native size and exits with Escap
     const card = page.locator('#card-preview');
     const originalSize = await nativeSize(page);
     const originalName = await card.locator('.sheet-name').innerText();
-    await expect(page.locator('.studio-intro h1')).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toHaveText(i18n.ko.studio.workspace);
     await expect(focus).toHaveAttribute('aria-pressed', 'false');
 
     await focus.click();
@@ -18,7 +18,7 @@ test('focus view preserves the card, exports at native size and exits with Escap
     await expect(focus).toHaveAttribute('aria-pressed', 'true');
     await expect(page.locator('#editor-panel')).toBeHidden();
     await expect(page.locator('nav.u040')).toBeHidden();
-    await expect(page.locator('.studio-intro-aside button')).toBeHidden();
+    await expect(page.locator('.studio-intro')).toHaveCount(0);
     await expect(card).toBeVisible();
     await expect(card.locator('.sheet-name')).toHaveText(originalName);
     expect(await nativeSize(page)).toEqual(originalSize);
@@ -110,14 +110,12 @@ test('resizing focus view to mobile restores the editing controls', async ({ pag
     await expect(page.locator('#editor-panel')).toBeVisible();
 });
 
-test('focus view keeps hidden introductory actions out of keyboard navigation', async ({ page }) => {
+test('focus view keeps hidden editor controls out of keyboard navigation', async ({ page }) => {
     await seed(page);
     await page.getByRole('button', { name: editorCopy.ko.focus, exact: true }).click();
-    const explore = page.locator('.studio-intro-aside button');
-    await expect(explore).toBeHidden();
+    await expect(page.locator('.studio-intro')).toHaveCount(0);
     for (let step = 0; step < 14; step++) {
         await page.keyboard.press('Shift+Tab');
-        await expect(explore).not.toBeFocused();
         expect(await page.evaluate(() => Boolean(document.activeElement?.closest('#editor-panel, nav.u040')))).toBe(false);
     }
 });
@@ -126,7 +124,7 @@ for (const language of ['ko', 'en', 'ja'] as const) {
     test(`${language}: the studio remains usable at 320px and 390px`, async ({ page }) => {
         await seed(page, { language });
         const copy = editorCopy[language];
-        await expect(page.locator('.studio-intro h1')).toHaveText(`${copy.title} ${copy.titleAccent}`);
+        await expect(page.getByRole('heading', { level: 1 })).toHaveText(i18n[language].studio.workspace);
         const footer = page.locator('.studio-stage-footer');
         await expect(footer.getByRole('button', { name: i18n[language].form.layoutHeader, exact: true })).toBeVisible();
         await expect(footer.getByRole('button', { name: i18n[language].form.layoutPortrait, exact: true })).toBeVisible();
