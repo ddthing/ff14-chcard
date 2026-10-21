@@ -121,7 +121,7 @@ test('quality menu changes PNG dimensions without exporting until the save butto
         page.on('download', () => { downloads += 1; });
         const size = await nativeSize(page);
         const dimensions = page.getByLabel(i18n[language].studio.outputSize, { exact: true });
-        const save = page.getByRole('button', { name: i18n[language].layout.saveImage, exact: true });
+        const save = page.locator('.u010-main');
 
         await chooseQuality(page, 'high', language);
         await expect(dimensions).toHaveText(`${size.width * 2} × ${size.height * 2} px`);

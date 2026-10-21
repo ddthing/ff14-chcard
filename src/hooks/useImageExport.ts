@@ -80,10 +80,11 @@ async function createOriginalResolutionBlob(
     host.style.cssText = 'position:fixed;left:-100000px;top:0;z-index:-1;opacity:0;pointer-events:none;';
     host.appendChild(clone);
     document.body.appendChild(host);
+    let overlayCanvas: HTMLCanvasElement | undefined;
 
     try {
         const { toCanvas } = await import('html-to-image');
-        const overlayCanvas = await toCanvas(clone, {
+        overlayCanvas = await toCanvas(clone, {
             width,
             height,
             pixelRatio: ratio,
@@ -152,6 +153,12 @@ async function createOriginalResolutionBlob(
 
         return await canvasToPngBlob(overlayCanvas);
     } finally {
+        // Original-resolution cards can occupy hundreds of MB. Release their
+        // raster backing immediately after encoding, including failed exports.
+        if (overlayCanvas) {
+            overlayCanvas.width = 0;
+            overlayCanvas.height = 0;
+        }
         host.remove();
     }
 }

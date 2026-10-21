@@ -21,23 +21,40 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
     const [transformStart, setTransformStart] = useState<TransformStart | null>(null);
     const interactionSnapshotRef = useRef<Sticker[] | null>(null);
     const interactionRectRef = useRef<DOMRect | null>(null);
+    const pendingMoveRef = useRef<(() => void) | null>(null);
+    const animationFrameRef = useRef<number | null>(null);
+
+    const discardPendingMove = useCallback(() => {
+        if (animationFrameRef.current !== null) cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+        pendingMoveRef.current = null;
+    }, []);
+
+    const flushPendingMove = useCallback(() => {
+        const pendingMove = pendingMoveRef.current;
+        discardPendingMove();
+        pendingMove?.();
+    }, [discardPendingMove]);
 
     const beginInteraction = useCallback(() => {
         interactionSnapshotRef.current = stickers?.map(sticker => ({ ...sticker })) ?? [];
     }, [stickers]);
 
-    const handlePointerMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
+    const applyPointerPosition = useCallback((clientX: number, clientY: number) => {
         if (!constraintsRef.current || (!draggingId && !transformingId)) return;
 
         const rect = interactionRectRef.current ?? constraintsRef.current.getBoundingClientRect();
-        const px = e.clientX - rect.left;
-        const py = e.clientY - rect.top;
+        if (rect.width <= 0 || rect.height <= 0) return;
+        const px = clientX - rect.left;
+        const py = clientY - rect.top;
 
         if (draggingId) {
             const xPx = Math.max(0, Math.min(px, rect.width));
             const yPx = Math.max(0, Math.min(py, rect.height));
             const newX = Number(((xPx / rect.width) * 100).toFixed(1));
             const newY = Number(((yPx / rect.height) * 100).toFixed(1));
+            const current = stickers?.find(sticker => sticker.id === draggingId);
+            if (!current || (current.x === newX && current.y === newY)) return;
 
             updateStickers(stickers?.map((s) =>
                 s.id === draggingId ? { ...s, x: newX, y: newY } : s
@@ -56,7 +73,7 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
             let newRot = sticker.rotation;
 
             if (transformAction === 'scale') {
-                const scaleMultiplier = currentDist / transformStart.dist;
+                const scaleMultiplier = currentDist / Math.max(0.001, transformStart.dist);
                 newScale = transformStart.scale * scaleMultiplier;
                 newScale = Math.max(0.1, Math.min(3, newScale));
             } else if (transformAction === 'rotate') {
@@ -65,27 +82,46 @@ export function useStickerInteraction({ stickers, updateStickers, constraintsRef
                 if (newRot < 0) newRot += 360;
             }
 
+            const scale = Number(newScale.toFixed(2));
+            const rotation = Math.round(newRot);
+            if (sticker.scale === scale && sticker.rotation === rotation) return;
             updateStickers(stickers?.map((s) =>
-                s.id === transformingId ? { ...s, scale: Number(newScale.toFixed(2)), rotation: Math.round(newRot) } : s
+                s.id === transformingId ? { ...s, scale, rotation } : s
             ) || []);
         }
     }, [draggingId, transformingId, transformAction, transformStart, stickers, updateStickers, constraintsRef]);
 
+    const handlePointerMove = useCallback((event: React.PointerEvent<HTMLDivElement>) => {
+        if (!draggingId && !transformingId) return;
+        const { clientX, clientY } = event;
+        // High-refresh pointers can emit several events per paint. Keep only
+        // the latest coordinates so the store, history, and preview update once.
+        pendingMoveRef.current = () => applyPointerPosition(clientX, clientY);
+        if (animationFrameRef.current === null) {
+            animationFrameRef.current = requestAnimationFrame(flushPendingMove);
+        }
+    }, [draggingId, transformingId, applyPointerPosition, flushPendingMove]);
+
     const handlePointerUp = useCallback(() => {
+        // A release can arrive before the next frame; preserve its last move.
+        flushPendingMove();
         setDraggingId(null);
         setTransformingId(null);
         setTransformAction(null);
         setTransformStart(null);
         interactionSnapshotRef.current = null;
         interactionRectRef.current = null;
-    }, []);
+    }, [flushPendingMove]);
 
     const handlePointerCancel = useCallback(() => {
+        discardPendingMove();
         const snapshot = interactionSnapshotRef.current;
         if (snapshot) updateStickers(snapshot);
         interactionSnapshotRef.current = null;
         handlePointerUp();
-    }, [handlePointerUp, updateStickers]);
+    }, [discardPendingMove, handlePointerUp, updateStickers]);
+
+    useEffect(() => discardPendingMove, [discardPendingMove]);
 
     useEffect(() => {
         if (!draggingId && !transformingId) return;

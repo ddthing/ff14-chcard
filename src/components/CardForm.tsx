@@ -3,6 +3,7 @@ import type { PlayerInfo } from '../types';
 import { ChevronLeft, ChevronRight, ContactRound, Swords, Tags, Paintbrush, ImagePlus, X, Archive, Layers } from 'lucide-react';
 import { i18n } from '../utils/i18n';
 import { ColorPalettePicker } from './ColorPalettePicker';
+import { DesignPresetPicker } from './DesignPresetPicker';
 import { FontPicker } from './FontPicker';
 import { BackgroundEffectsSection } from './form/BackgroundEffectsSection';
 const ImageCropperModal = lazy(() => import('./ImageCropperModal').then(module => ({ default: module.ImageCropperModal })));
@@ -29,7 +30,7 @@ type CardFormProps = {
 
 export function CardForm({ activeTab: controlledTab, onTabChange, externalNavigation = false }: CardFormProps = {}) {
     const playerInfo = usePlayerSelector(s => s.playerInfo);
-    const { setPlayerInfo, updateImage: onImageChange } = usePlayerActions();
+    const { setPlayerInfo, commitPlayerChange, updateImage: onImageChange } = usePlayerActions();
     const panelRef = useRef<HTMLDivElement>(null);
     const scrollPositionsRef = useRef<Partial<Record<EditorTabId, number>>>({});
     const imageTriggerRef = useRef<HTMLButtonElement>(null);
@@ -375,6 +376,11 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                     className={`space-y-5 relative z-20${activeTab === 'design' ? ' animate-tab-in' : ''}`}
                     data-tour="design-section"
                 >
+                        <DesignPresetPicker
+                            player={playerInfo}
+                            lang={lang}
+                            onSelect={preset => commitPlayerChange(previous => ({ ...previous, ...preset.settings }))}
+                        />
                         {/* Point Color ──────────────────────────────────────── */}
                         <Section title={t.pointColor}>
                             <div className="space-y-2.5">

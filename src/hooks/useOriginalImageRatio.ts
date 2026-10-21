@@ -12,21 +12,36 @@ export function useOriginalImageRatio(ref: RefObject<HTMLDivElement | null>) {
         if (!cardRoot) return;
 
         let photo: HTMLImageElement | null = null;
-        const resizeObserver = new ResizeObserver(refresh);
-        const mutationObserver = new MutationObserver(refresh);
+        let frame: number | null = null;
+        const scheduleRefresh = () => {
+            if (frame !== null) return;
+            frame = requestAnimationFrame(() => {
+                frame = null;
+                refresh();
+            });
+        };
+        const resizeObserver = new ResizeObserver(scheduleRefresh);
+        const mutationObserver = new MutationObserver(records => {
+            // Sticker transforms and form text never change the source-photo
+            // ratio. Avoid synchronous layout reads for those frequent edits.
+            if (records.some(record => record.target === cardRoot
+                || (record.target instanceof Element && record.target.closest('.sheet-image')))) {
+                scheduleRefresh();
+            }
+        });
 
         function refresh() {
             const nextPhoto = cardRoot?.querySelector<HTMLImageElement>(CHARACTER_PHOTO_SELECTOR) ?? null;
             if (nextPhoto !== photo) {
                 if (photo) {
-                    photo.removeEventListener('load', refresh);
-                    photo.removeEventListener('error', refresh);
+                    photo.removeEventListener('load', scheduleRefresh);
+                    photo.removeEventListener('error', scheduleRefresh);
                     resizeObserver.unobserve(photo);
                 }
                 photo = nextPhoto;
                 if (photo) {
-                    photo.addEventListener('load', refresh);
-                    photo.addEventListener('error', refresh);
+                    photo.addEventListener('load', scheduleRefresh);
+                    photo.addEventListener('error', scheduleRefresh);
                     resizeObserver.observe(photo);
                 }
             }
@@ -47,8 +62,9 @@ export function useOriginalImageRatio(ref: RefObject<HTMLDivElement | null>) {
         return () => {
             mutationObserver.disconnect();
             resizeObserver.disconnect();
-            photo?.removeEventListener('load', refresh);
-            photo?.removeEventListener('error', refresh);
+            if (frame !== null) cancelAnimationFrame(frame);
+            photo?.removeEventListener('load', scheduleRefresh);
+            photo?.removeEventListener('error', scheduleRefresh);
         };
     }, [ref]);
 

@@ -17,6 +17,7 @@ type Listener = () => void;
 interface PlayerContextType {
     playerInfo: PlayerInfo;
     setPlayerInfo: (info: PlayerInfoUpdater) => void;
+    commitPlayerChange: (info: PlayerInfoUpdater) => void;
     updatePlayerField: <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => void;
     updateLanguage: (lang: Language) => void;
     updateImage: (image: string | undefined) => void;
@@ -53,6 +54,7 @@ interface PlayerStore {
     subscribe: (listener: Listener) => () => void;
     subscribePlayerInfo: (listener: Listener) => () => void;
     setPlayerInfo: (info: PlayerInfoUpdater) => void;
+    commitPlayerChange: (info: PlayerInfoUpdater) => void;
     updatePlayerField: <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => void;
     updateLanguage: (lang: Language) => void;
     updateImage: (image: string | undefined) => void;
@@ -344,6 +346,14 @@ function createPlayerStore(): PlayerStore {
         setPlayerInfo(prev => ({ ...prev, [field]: value }));
     };
 
+    const commitPlayerChange = (nextInfo: PlayerInfoUpdater) => {
+        // Discrete commands must not merge into typing, even when a preset
+        // happens to change only one continuously edited field such as color.
+        lastEdit = null;
+        setPlayerInfo(nextInfo);
+        lastEdit = null;
+    };
+
     const restoreHistory = (direction: 'undo' | 'redo') => {
         const source = direction === 'undo' ? past : future;
         const destination = direction === 'undo' ? future : past;
@@ -588,6 +598,7 @@ function createPlayerStore(): PlayerStore {
         subscribe,
         subscribePlayerInfo,
         setPlayerInfo,
+        commitPlayerChange,
         updatePlayerField,
         updateLanguage,
         updateImage,
@@ -680,6 +691,7 @@ export function usePlayerActions(): PlayerActions {
     const store = usePlayerStore();
     return useMemo(() => ({
         setPlayerInfo: store.setPlayerInfo,
+        commitPlayerChange: store.commitPlayerChange,
         updatePlayerField: store.updatePlayerField,
         updateLanguage: store.updateLanguage,
         updateImage: store.updateImage,
@@ -703,6 +715,7 @@ export function usePlayer() {
     return useMemo(() => ({
         playerInfo: snapshot.playerInfo,
         setPlayerInfo: store.setPlayerInfo,
+        commitPlayerChange: store.commitPlayerChange,
         updatePlayerField: store.updatePlayerField,
         updateLanguage: store.updateLanguage,
         updateImage: store.updateImage,
