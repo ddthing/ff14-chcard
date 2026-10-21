@@ -24,12 +24,24 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
     const dialogRef = useRef<HTMLDivElement>(null);
     const closeButtonRef = useRef<HTMLButtonElement>(null);
     const onCancelRef = useRef(onCancel);
+    const processingRef = useRef<AbortController | null>(null);
     const titleId = useId();
     const descriptionId = useId();
 
     useEffect(() => {
         onCancelRef.current = onCancel;
     }, [onCancel]);
+
+    const handleCancel = useCallback(() => {
+        processingRef.current?.abort();
+        processingRef.current = null;
+        onCancelRef.current();
+    }, []);
+
+    useEffect(() => () => {
+        processingRef.current?.abort();
+        processingRef.current = null;
+    }, [imageSrc]);
 
     useEffect(() => {
         const previousBodyOverflow = document.body.style.overflow;
@@ -44,7 +56,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
         const handleKeyDown = (event: globalThis.KeyboardEvent) => {
             if (event.key === 'Escape') {
                 event.preventDefault();
-                onCancelRef.current();
+                handleCancel();
                 return;
             }
 
@@ -88,58 +100,48 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                 focusTarget.focus();
             }
         };
-    }, [returnFocusRef]);
+    }, [returnFocusRef, handleCancel]);
 
     const onCropComplete = useCallback((_croppedArea: unknown, croppedAreaPixels: { x: number; y: number; width: number; height: number }) => {
         setCroppedAreaPixels(croppedAreaPixels);
     }, []);
 
-    const handleApply = async () => {
-        if (!croppedAreaPixels || isProcessing) return;
+    const processCrop = async (autoFill: boolean) => {
+        if (processingRef.current || (!autoFill && !croppedAreaPixels)) return;
+        const controller = new AbortController();
+        processingRef.current = controller;
         setIsProcessing(true);
         setProcessingError(null);
         try {
-            const croppedImage = await getCroppedImg(imageSrc, croppedAreaPixels, 0);
-            if (croppedImage) {
+            // Reuse the decoded source for both crop modes.
+            const image = await createImage(imageSrc, controller.signal);
+            let area = croppedAreaPixels;
+            if (autoFill) {
+                const width = image.naturalWidth;
+                const height = image.naturalHeight;
+                const cropWidth = Math.min(width, height * aspectRatio);
+                const cropHeight = Math.min(height, width / aspectRatio);
+                area = { x: (width - cropWidth) / 2, y: (height - cropHeight) / 2, width: cropWidth, height: cropHeight };
+            }
+            if (!area) return;
+            const croppedImage = await getCroppedImg(image, area, 0, undefined, controller.signal);
+            if (croppedImage && !controller.signal.aborted && processingRef.current === controller) {
                 onApply(croppedImage);
             }
         } catch {
-            setProcessingError(i18n[lang].preview.cropError);
+            if (!controller.signal.aborted && processingRef.current === controller) {
+                setProcessingError(i18n[lang].preview.cropError);
+            }
         } finally {
-            setIsProcessing(false);
+            if (processingRef.current === controller) {
+                processingRef.current = null;
+                setIsProcessing(false);
+            }
         }
     };
 
-    const handleAutoFill = async () => {
-        if (isProcessing) return;
-        setIsProcessing(true);
-        setProcessingError(null);
-        try {
-            const image = await createImage(imageSrc);
-            const imgRatio = image.width / image.height;
-            let cropWidth = image.width;
-            let cropHeight = image.height;
-            let x = 0;
-            let y = 0;
-
-            if (imgRatio > aspectRatio) {
-                cropWidth = image.height * aspectRatio;
-                x = (image.width - cropWidth) / 2;
-            } else {
-                cropHeight = image.width / aspectRatio;
-                y = (image.height - cropHeight) / 2;
-            }
-
-            const croppedImage = await getCroppedImg(imageSrc, { x, y, width: cropWidth, height: cropHeight }, 0);
-            if (croppedImage) {
-                onApply(croppedImage);
-            }
-        } catch {
-            setProcessingError(i18n[lang].preview.cropError);
-        } finally {
-            setIsProcessing(false);
-        }
-    };
+    const handleApply = () => processCrop(false);
+    const handleAutoFill = () => processCrop(true);
 
     const handleCropKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
         const step = event.shiftKey ? 10 : 2;
@@ -185,7 +187,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                     <h2 id={titleId} className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
                         {t.adjustImageArea}
                     </h2>
-                    <button ref={closeButtonRef} type="button" onClick={onCancel} className="text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2" style={{ color: 'var(--text-muted)' }}>
+                    <button ref={closeButtonRef} type="button" onClick={handleCancel} className="text-sm font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2" style={{ color: 'var(--text-muted)' }}>
                         {t.cancel}
                     </button>
                 </div>
@@ -250,7 +252,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                         
                         <div className="flex gap-3">
                             <button
-                                onClick={onCancel}
+                                onClick={handleCancel}
                                 type="button"
                                 disabled={isProcessing}
                                 className="flex-1 py-3 rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2"

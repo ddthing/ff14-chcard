@@ -16,7 +16,7 @@ export class ImageFileError extends Error {
     }
 }
 
-function readAsDataUrl(file: File, options: ReadImageFileOptions): Promise<string> {
+export function readBlobAsDataUrl(file: Blob, options: ReadImageFileOptions = {}): Promise<string> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         let settled = false;
@@ -117,7 +117,7 @@ function yieldForProgressRender(signal?: AbortSignal): Promise<void> {
 export async function readImageFile(file: File, options: ReadImageFileOptions = {}): Promise<string> {
     if (!file.type.startsWith('image/')) throw new ImageFileError('invalid-type');
 
-    const dataUrl = await readAsDataUrl(file, options);
+    const dataUrl = await readBlobAsDataUrl(file, options);
     // Let React paint the last measured FileReader bytes before switching to
     // the separate, indeterminate image-decode phase.
     if (options.onProgress) await yieldForProgressRender(options.signal);
