@@ -52,7 +52,7 @@ export function ThemeToggle({ lang }: { lang: Language }) {
             type="button"
             onClick={toggleTheme}
             title={theme === 'light' ? labels.dark : labels.light}
-            className="flex size-9 items-center justify-center rounded-full transition-[color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
+            className="studio-header-control studio-theme-toggle flex items-center justify-center rounded-full transition-[color,background-color,box-shadow] duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
             style={{ color: 'var(--text-muted)' }}
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--text-primary)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-muted)')}

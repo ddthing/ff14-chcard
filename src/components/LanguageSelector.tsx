@@ -10,8 +10,9 @@ interface LanguageSelectorProps {
 export function LanguageSelector({ currentLang, onLanguageChange }: LanguageSelectorProps) {
     return (
         <label className="studio-language">
-            <Globe size={14} aria-hidden="true" />
+            <Globe size={16} aria-hidden="true" />
             <select
+                className="studio-header-control"
                 aria-label={LANGUAGES.find(language => language.id === currentLang)!.selection}
                 value={currentLang}
                 onChange={event => onLanguageChange(normalizeLanguage(event.target.value))}
