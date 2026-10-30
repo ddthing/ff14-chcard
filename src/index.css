@@ -9,11 +9,11 @@
 
 :root {
  --background:#fafafa; --foreground:#171717; --card:#fff; --card-foreground:var(--foreground); --popover:var(--card); --popover-foreground:var(--foreground);
- --primary:#262626; --primary-foreground:#fafafa; --secondary:#f5f5f5; --secondary-foreground:var(--foreground); --muted:#f5f5f5; --muted-foreground:#737373;
+ --primary:#262626; --primary-foreground:#fafafa; --secondary:#f5f5f5; --secondary-foreground:var(--foreground); --muted:#f5f5f5; --muted-foreground:#6b6b6b;
  --accent:#f5f5f5; --accent-foreground:#262626; --destructive:#b91c1c; --border:#e5e5e5; --input:#d4d4d4; --ring:#737373;
  --surface-50:var(--card); --surface-100:var(--card); --surface-200:var(--background); --surface-300:var(--secondary); --surface-400:var(--border); --surface-500:var(--muted);
  --bg-app:var(--background); --bg-panel:var(--card); --bg-slot:var(--muted); --text-primary:var(--foreground); --text-secondary:#525252; --text-muted:var(--muted-foreground);
- --border-subtle:#e5e5e5; --border-default:var(--border); --border-medium:var(--input); --border-strong:var(--foreground); --error:var(--destructive); --success:#23866b; --accent-strong:var(--primary);
+ --border-subtle:#e5e5e5; --border-default:var(--border); --border-medium:var(--input); --border-strong:var(--foreground); --error:var(--destructive); --success:#1f715b; --accent-strong:var(--primary);
  --studio-accent:var(--primary); --studio-canvas:#e5e5e5; --studio-dot:#ccc;
  --radius:0px; --radius-xs:0px; --radius-sm:0px; --radius-md:0px; --radius-lg:0px; --radius-xl:0px; --radius-2xl:0px; --radius-3xl:0px; --radius-4xl:0px; --radius-full:9999px;
  --shadow-color-1:#17171712; --shadow-color-2:#17171708; --shadow-color-focus:#17171724; --header-bg:var(--background); --glass-highlight:#ffffffe6; color-scheme:light;
