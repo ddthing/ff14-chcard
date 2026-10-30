@@ -314,7 +314,7 @@ export function SlotSection() {
     };
 
     return (
-        <section className="flex flex-col gap-4 h-full" aria-busy={!storageReady || isBusy}>
+        <section className="flex min-w-0 flex-col gap-4" aria-busy={!storageReady || isBusy}>
             <div className="flex flex-col gap-3">
                 <span className="text-[12px] font-bold" style={{ color: 'var(--text-primary)' }}>{t.saveCurrentProfile}</span>
                 <div className="flex gap-2">
@@ -370,7 +370,7 @@ export function SlotSection() {
                 </p>
             )}
 
-            <div className="flex flex-col gap-3 flex-1 overflow-y-auto">
+            <div className="flex flex-col gap-3">
                 <span className="text-[12px] font-bold" style={{ color: 'var(--text-primary)' }}>{t.savedSlots} ({slots.length})</span>
                 
                 {!storageReady ? (
@@ -389,7 +389,7 @@ export function SlotSection() {
                     slots.map(slot => (
                         <div
                             key={slot.id}
-                            className="group flex min-w-0 items-center justify-between gap-2 rounded-[10px] p-3 transition-[color,background-color,border-color,box-shadow]"
+                            className="group flex min-w-0 shrink-0 items-center justify-between gap-2 rounded-[10px] p-3 transition-[color,background-color,border-color,box-shadow]"
                             style={{ backgroundColor: 'var(--surface-200)', border: '1px solid var(--border-subtle)' }}
                             onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-medium)')}
                             onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}

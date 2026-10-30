@@ -16,7 +16,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.u336 button {
+.u336 .u336-hd button {
   color: inherit;
   font: inherit;
 }
@@ -40,6 +40,7 @@
   overflow: hidden;
   color: var(--ux-ink);
   font-size: 19px;
+  line-height: 28px;
   font-weight: 700;
   letter-spacing: -.03em;
   text-overflow: ellipsis;

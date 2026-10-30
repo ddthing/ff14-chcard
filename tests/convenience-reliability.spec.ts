@@ -43,3 +43,30 @@ test('small-screen PNG actions stay one line in every existing locale', async ({
     await expect.poll(() => page.locator('.u010-main').evaluate(button => button.clientHeight)).toBeLessThanOrEqual(44);
     await expect(page.locator('.u010-quality-label')).toContainText('元の解像度');
 });
+
+test('library save keeps readable text in the mobile sheet across sizes and themes', async ({ page }) => {
+    await seed(page);
+    for (const dark of [false, true]) {
+        if (dark) await page.getByRole('button', { name: '다크 모드로 변경', exact: true }).click();
+        for (const viewport of [{ width: 320, height: 568 }, { width: 768, height: 1024 }, { width: 1024, height: 768 }]) {
+            await page.setViewportSize(viewport);
+            await page.locator('#profile-tab-slot').click();
+            const save = page.getByRole('button', { name: '저장', exact: true });
+            await save.scrollIntoViewIfNeeded();
+            const contrast = await save.evaluate(button => {
+                const luminance = (color: string) => {
+                    const [r, g, b] = color.match(/[\d.]+/g)!.slice(0, 3).map(Number).map(value => {
+                        const channel = value / 255;
+                        return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+                    });
+                    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+                };
+                const style = getComputedStyle(button);
+                const fg = luminance(style.color);
+                const bg = luminance(style.backgroundColor);
+                return (Math.max(fg, bg) + 0.05) / (Math.min(fg, bg) + 0.05);
+            });
+            expect(contrast, `${viewport.width}px dark=${dark}`).toBeGreaterThanOrEqual(4.5);
+        }
+    }
+});
