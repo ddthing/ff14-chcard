@@ -10,8 +10,8 @@ import { JobList } from './preview/JobList';
 import { usePlayer } from '../contexts/PlayerContext';
 import { useStickerInteraction } from '../hooks/useStickerInteraction';
 import { useFontLoader } from '../hooks/useFontLoader';
-import { useCharacterImageUpload, type CharacterImageUploadCopy } from '../hooks/useCharacterImageUpload';
-import type { Sticker } from '../types';
+import { cancelActiveCharacterImageUpload, useCharacterImageUpload, type CharacterImageUploadCopy } from '../hooks/useCharacterImageUpload';
+import type { ImageCrop, ImageEditMetadata, Sticker } from '../types';
 import { CharacterImageUpload } from './CharacterImageUpload';
 import { StickerContextMenu } from './StickerContextMenu';
 
@@ -28,7 +28,7 @@ const ImageCropperModal = lazy(() => import('./ImageCropperModal').then(module =
  */
 interface CardPreviewProps {
     id?: string;
-    onImageChange?: (image: string | undefined) => void;
+    onImageChange?: (image: string | undefined, edit?: ImageEditMetadata) => void;
     onStickerEdit?: () => void;
 }
 
@@ -182,9 +182,16 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
         ) || []);
     }, [playerInfo.stickers, removeSticker, selectStickerForEditing, updateStickers]);
 
-    const handleCropApply = (croppedImageBase64: string) => {
+    const editCurrentImage = () => {
+        if (!image) return;
+        cancelActiveCharacterImageUpload();
+        setCropImageSrc(playerInfo.originalImage ?? image);
+    };
+
+    const handleCropApply = (croppedImageBase64: string, imageCrop: ImageCrop) => {
+        if (!cropImageSrc) return;
         dismissImageUpload();
-        onImageChange?.(croppedImageBase64);
+        onImageChange?.(croppedImageBase64, { originalImage: cropImageSrc, imageCrop });
         setCropImageSrc(null);
     };
 
@@ -259,6 +266,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
             {cropImageSrc && (
                 <Suspense fallback={null}><ImageCropperModal
                     imageSrc={cropImageSrc}
+                    initialCrop={cropImageSrc === playerInfo.originalImage ? playerInfo.imageCrop : undefined}
                     onApply={handleCropApply}
                     onCancel={handleCropCancel}
                     returnFocusRef={imageTriggerRef}
@@ -288,7 +296,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                     ref={imageTriggerRef}
                     aria-label={t.clickToEdit}
                     className={`${playerInfo.layout === 'left-portrait' ? 'w-[320px] min-h-[720px]' : 'w-full h-[280px]'} sheet-image relative overflow-hidden group cursor-pointer shrink-0 border-0 p-0 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]`}
-                    onClick={openImagePicker}
+                    onClick={editCurrentImage}
                     onDragOver={event => event.preventDefault()}
                     onDrop={handleImageDrop}
                     title={t.clickToEdit}

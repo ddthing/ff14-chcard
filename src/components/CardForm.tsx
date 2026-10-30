@@ -1,5 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from 'react';
-import type { PlayerInfo } from '../types';
+import type { ImageCrop, PlayerInfo } from '../types';
 import { ChevronLeft, ChevronRight, ContactRound, Swords, Tags, Paintbrush, ImagePlus, X, Archive, Layers } from 'lucide-react';
 import { i18n } from '../utils/i18n';
 import { ColorPalettePicker } from './ColorPalettePicker';
@@ -18,7 +18,7 @@ import { StickerSection } from './form/StickerSection';
 import { SlotSection } from './form/SlotSection';
 
 import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
-import { useCharacterImageUpload, type CharacterImageUploadCopy } from '../hooks/useCharacterImageUpload';
+import { cancelActiveCharacterImageUpload, useCharacterImageUpload, type CharacterImageUploadCopy } from '../hooks/useCharacterImageUpload';
 import { CharacterImageUpload } from './CharacterImageUpload';
 import type { EditorTabId } from './editorTabs';
 
@@ -79,11 +79,18 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
         setPlayerInfo(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleCropApply = useCallback((croppedBase64: string) => {
+    const editCurrentImage = () => {
+        if (!playerInfo.image) return;
+        cancelActiveCharacterImageUpload();
+        setCropImageSrc(playerInfo.originalImage ?? playerInfo.image);
+    };
+
+    const handleCropApply = useCallback((croppedBase64: string, imageCrop: ImageCrop) => {
+        if (!cropImageSrc) return;
         dismissImageUpload();
-        onImageChange(croppedBase64);
+        onImageChange(croppedBase64, { originalImage: cropImageSrc, imageCrop });
         setCropImageSrc(null);
-    }, [dismissImageUpload, onImageChange]);
+    }, [cropImageSrc, dismissImageUpload, onImageChange]);
 
     const handleCropCancel = useCallback(() => {
         dismissImageUpload();
@@ -157,6 +164,7 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
             {cropImageSrc && (
                 <Suspense fallback={null}><ImageCropperModal
                     imageSrc={cropImageSrc}
+                    initialCrop={cropImageSrc === playerInfo.originalImage ? playerInfo.imageCrop : undefined}
                     onApply={handleCropApply}
                     onCancel={handleCropCancel}
                     returnFocusRef={imageTriggerRef}
@@ -276,7 +284,7 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                                             <button
                                                 ref={imageTriggerRef}
                                                 type="button"
-                                                onClick={openImagePicker}
+                                                onClick={editCurrentImage}
                                                 className="w-full py-2 text-[11px] font-semibold rounded-[8px] flex items-center justify-center gap-1.5 transition-colors"
                                                 style={{ backgroundColor: 'var(--surface-300)', border: '1px solid var(--border-default)', color: 'var(--text-secondary)' }}
                                                 onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.backgroundColor = 'var(--surface-400)')}
@@ -287,6 +295,7 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                                             <button
                                                 type="button"
                                                 onClick={() => {
+                                                    cancelActiveCharacterImageUpload();
                                                     dismissImageUpload();
                                                     onImageChange(undefined);
                                                 }}

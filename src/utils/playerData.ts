@@ -1,7 +1,7 @@
 import { normalizeLanguage } from './languages';
 import { PROFILE_SCHEMA_VERSION } from '../constants/storage';
 import { JOBS, getJobMaxLevel } from '../data/jobs';
-import type { PlayerInfo, Region, Sticker } from '../types';
+import type { ImageCrop, PlayerInfo, Region, Sticker } from '../types';
 
 const JOB_IDS = new Set(JOBS.map(job => job.id));
 const FONT_IDS = new Set([
@@ -65,6 +65,15 @@ function clamp(value: number, min: number, max: number): number {
     return Math.min(max, Math.max(min, value));
 }
 
+function normalizeImageCrop(value: unknown): ImageCrop | undefined {
+    if (!isRecord(value)) return undefined;
+    const { x, y, width, height } = value;
+    if (typeof x !== 'number' || typeof y !== 'number' || typeof width !== 'number' || typeof height !== 'number'
+        || ![x, y, width, height].every(Number.isFinite)
+        || x < 0 || y < 0 || width <= 0 || height <= 0 || x + width > 100.001 || y + height > 100.001) return undefined;
+    return { x, y, width, height };
+}
+
 function normalizeStickers(value: unknown): Sticker[] {
     if (!Array.isArray(value)) return [];
 
@@ -104,6 +113,9 @@ export function normalizePlayerInfo(value: unknown): PlayerInfo {
     const font = typeof source.font === 'string' && FONT_IDS.has(source.font)
         ? source.font
         : DEFAULT_PLAYER_INFO.font;
+    const image = typeof source.image === 'string' && source.image.length > 0 ? source.image : undefined;
+    const originalImage = image && typeof source.originalImage === 'string' && source.originalImage.length > 0
+        ? source.originalImage : undefined;
 
     return {
         name: stringValue(source.name),
@@ -116,7 +128,9 @@ export function normalizePlayerInfo(value: unknown): PlayerInfo {
             : [],
         activeTime: stringValue(source.activeTime),
         comment: stringValue(source.comment),
-        image: typeof source.image === 'string' && source.image.length > 0 ? source.image : undefined,
+        image,
+        originalImage,
+        imageCrop: originalImage ? normalizeImageCrop(source.imageCrop) : undefined,
         font,
         mainJob,
         isNicknameChanged: booleanValue(source.isNicknameChanged),
