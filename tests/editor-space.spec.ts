@@ -20,8 +20,8 @@ test('desktop prioritizes the editing workspace at normal and short viewport hei
 
 test('the original service title and one help control fit narrow mobile screens in all languages', async ({ page }) => {
     await seed(page);
-    for (const [language, switchName] of [['ko', null], ['en', 'EN 언어'], ['ja', 'JA language']] as const) {
-        if (switchName) await page.getByRole('button', { name: switchName, exact: true }).click();
+    for (const language of ['ko', 'en', 'ja', 'fr', 'de', 'zh-Hans', 'zh-Hant'] as const) {
+        await page.locator('header select').selectOption(language);
         for (const width of [320, 390, 844]) {
             await page.setViewportSize({ width, height: width === 844 ? 390 : 844 });
             await expect(page.locator('.studio-brand')).toHaveText(i18n[language].layout.headerTitle);

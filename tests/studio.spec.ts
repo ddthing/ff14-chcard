@@ -82,10 +82,10 @@ test('every editor tab fits narrow mobile viewports', async ({ page }) => {
 test('all locales update the document, controls and creation credit', async ({ page }) => {
     await seed(page);
     await expect(page.locator('.sheet-credit > span')).toHaveText('제작:');
-    await page.getByRole('button', { name: 'EN 언어', exact: true }).click();
+    await page.locator('header select').selectOption('en');
     await expect(page.locator('html')).toHaveAttribute('lang', 'en');
     await expect(page.locator('.sheet-credit > span')).toHaveText('Created by');
-    await page.getByRole('button', { name: 'JA language', exact: true }).click();
+    await page.locator('header select').selectOption('ja');
     await expect(page.locator('html')).toHaveAttribute('lang', 'ja');
     await expect(page.locator('.sheet-credit > span')).toHaveText('制作:');
 });

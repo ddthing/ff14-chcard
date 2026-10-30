@@ -1,3 +1,7 @@
+import fr from './locales/fr-faqContent';
+import de from './locales/de-faqContent';
+import zhHans from './locales/zh-Hans-faqContent';
+import zhHant from './locales/zh-Hant-faqContent';
 import type { Language } from '../types';
 
 export interface FaqItem {
@@ -12,6 +16,7 @@ export interface FaqCopy {
 }
 
 export const faqContent = {
+    fr, de, 'zh-Hans': zhHans, 'zh-Hant': zhHant,
     ko: {
         pageTitle: '자주 묻는 질문 (FAQ)',
         intro: 'FF14 캐릭터 카드 생성기 사용 시 자주 문의하시는 내용을 정리했습니다. 원하는 답변을 찾지 못하셨다면 문의하기 페이지를 통해 연락해 주세요.',

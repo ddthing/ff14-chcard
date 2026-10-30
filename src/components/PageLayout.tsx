@@ -1,4 +1,5 @@
-import { type ReactNode } from 'react';
+import { useLayoutEffect, type ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { GlobalHeader } from './GlobalHeader';
 import { Footer } from './Footer';
 import { usePlayerActions, usePlayerSelector } from '../contexts/PlayerContext';
@@ -11,8 +12,15 @@ interface PageLayoutProps {
 }
 
 export function PageLayout({ children, title }: PageLayoutProps) {
+    const { pathname, hash } = useLocation();
     const lang = usePlayerSelector(snapshot => snapshot.playerInfo.language);
     const { updateLanguage } = usePlayerActions();
+
+    useLayoutEffect(() => {
+        const target = hash ? document.getElementById(hash.slice(1)) : null;
+        if (target) target.scrollIntoView({ block: 'start', behavior: 'instant' });
+        else window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+    }, [pathname, hash]);
 
     return (
         <div className="min-h-screen flex flex-col transition-colors duration-200" style={{ backgroundColor: 'var(--surface-200)', color: 'var(--text-primary)' }}>

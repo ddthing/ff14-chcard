@@ -6,6 +6,10 @@ export function ThemeToggle({ lang }: { lang: Language }) {
     const labels = {
         ko: { light: '라이트 모드로 변경', dark: '다크 모드로 변경' },
         en: { light: 'Switch to light mode', dark: 'Switch to dark mode' },
+        fr: { light: 'Passer au thème clair', dark: 'Passer au thème sombre' },
+        de: { light: 'Helles Design verwenden', dark: 'Dunkles Design verwenden' },
+        'zh-Hans': { light: '切换为浅色模式', dark: '切换为深色模式' },
+        'zh-Hant': { light: '切換為淺色模式', dark: '切換為深色模式' },
         ja: { light: 'ライトモードに変更', dark: 'ダークモードに変更' },
     }[lang];
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
@@ -30,7 +34,7 @@ export function ThemeToggle({ lang }: { lang: Language }) {
         }
         const themeColor = document.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
         if (themeColor) {
-            themeColor.content = theme === 'dark' ? '#1e211e' : '#f2f1ed';
+            themeColor.content = theme === 'dark' ? '#171717' : '#fafafa';
         }
         try {
             localStorage.setItem('theme', theme);

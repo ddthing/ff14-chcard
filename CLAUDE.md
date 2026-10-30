@@ -4,7 +4,7 @@
 - **Goal**: Final Fantasy XIV Screenshot-based Character Card Generator
 - **Tech Stack**: React 18+ / TypeScript / Vite / Tailwind CSS
 - **Deployment**: Cloudflare Pages
-- **Primary Languages**: Korean (ko), English (en), Japanese (ja)
+- **Interface Locales**: Korean (ko), English (en), Japanese (ja), French (fr), German (de), Simplified Chinese (zh-Hans), Traditional Chinese (zh-Hant)
 
 ## 🏗️ Folder Structure (Target Architecture)
 This project adheres to a strict, modular, and feature-focused architecture suitable for scalable frontend apps.

@@ -16,7 +16,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 
-.u336 button {
+.u336 .u336-hd button {
   color: inherit;
   font: inherit;
 }
@@ -40,6 +40,7 @@
   overflow: hidden;
   color: var(--ux-ink);
   font-size: 19px;
+  line-height: 28px;
   font-weight: 700;
   letter-spacing: -.03em;
   text-overflow: ellipsis;
@@ -62,7 +63,7 @@
   margin-left: -30px;
   padding: 0;
   border: 0;
-  border-radius: 9px;
+  border-radius: var(--radius-sm);
   background: none;
   cursor: grab;
 }
@@ -118,7 +119,7 @@
     overflow: hidden;
     border: 1px solid var(--ux-line);
     border-bottom: 0;
-    border-radius: 26px 26px 0 0;
+    border-radius: var(--radius-sm);
     background: var(--ux-surface);
     box-shadow: 0 -8px 30px -10px rgba(0, 0, 0, .35);
     color: var(--ux-ink);

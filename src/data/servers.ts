@@ -3,6 +3,10 @@ import type { Region, Language } from '../types';
 export const REGIONS: Region[] = ['KR', 'Global'];
 
 export const REGION_NAMES: Record<Language, Record<Region, string>> = {
+    fr: { KR: 'Serveurs coréens', Global: 'Serveurs globaux' },
+    de: { KR: 'Koreanische Server', Global: 'Globale Server' },
+    'zh-Hans': { KR: '韩国服务器', Global: '全球服务器' },
+    'zh-Hant': { KR: '韓國伺服器', Global: '全球伺服器' },
     ko: { KR: '한국 서버', Global: '글로벌 서버' },
     en: { KR: 'Korean Server', Global: 'Global Server' },
     ja: { KR: '韓国サーバー', Global: 'グローバルサーバー' }
@@ -19,6 +23,7 @@ export const DATA_CENTERS: Record<Region, string[]> = {
 };
 
 const DC_DISPLAY_NAMES: Record<Language, Record<string, string>> = {
+    fr: { Korea: 'Corée' }, de: { Korea: 'Korea' }, 'zh-Hans': { Korea: '韩国' }, 'zh-Hant': { Korea: '韓國' },
     ko: { 'Korea': '한국' },
     en: { 'Korea': 'Korea' },
     ja: { 'Korea': '韓国' }

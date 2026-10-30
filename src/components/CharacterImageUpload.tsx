@@ -67,7 +67,7 @@ export function CharacterImageUpload({ inputRef, job, openPicker, handleFileChan
             />
             {mode === 'dropzone' && (
                 <button ref={triggerRef} className="u032-zone" type="button" aria-label={ariaLabel} onClick={openPicker}>
-                    <svg className="u032-dash" aria-hidden="true"><rect width="100%" height="100%" rx="25" /></svg>
+                    <svg className="u032-dash" aria-hidden="true"><rect width="100%" height="100%" rx="0" /></svg>
                     <span className="u032-orb" aria-hidden="true">
                         <svg viewBox="0 0 28 28"><path d="M8.5 20.5H7a5 5 0 0 1-.6-10 7 7 0 0 1 13.4-1.6A5.5 5.5 0 0 1 21 20.5h-1.5M14 13v10M10.5 16.5L14 13l3.5 3.5" /></svg>
                     </span>

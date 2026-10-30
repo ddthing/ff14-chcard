@@ -1,6 +1,7 @@
+import { normalizeLanguage } from './languages';
 import { PROFILE_SCHEMA_VERSION } from '../constants/storage';
 import { JOBS, getJobMaxLevel } from '../data/jobs';
-import type { Language, PlayerInfo, Region, Sticker } from '../types';
+import type { PlayerInfo, Region, Sticker } from '../types';
 
 const JOB_IDS = new Set(JOBS.map(job => job.id));
 const FONT_IDS = new Set([
@@ -95,7 +96,7 @@ export function normalizePlayerInfo(value: unknown): PlayerInfo {
     const mainJob = typeof source.mainJob === 'string' && jobs.includes(source.mainJob)
         ? source.mainJob
         : undefined;
-    const language: Language = source.language === 'en' || source.language === 'ja' ? source.language : 'ko';
+    const language = normalizeLanguage(source.language);
     const region: Region = source.region === 'Global' ? 'Global' : 'KR';
     const pointColor = typeof source.pointColor === 'string' && /^#[0-9a-f]{6}$/i.test(source.pointColor)
         ? source.pointColor

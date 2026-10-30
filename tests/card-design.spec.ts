@@ -185,8 +185,8 @@ test('background controls explain main-job requirement in every language', async
     await page.getByRole('tab', { name: '꾸미기', exact: true }).click();
     await expect(page.getByRole('checkbox', { name: '주 직업 워터마크', exact: true })).toBeDisabled();
     await expect(page.getByText('직업 탭에서 주 직업을 먼저 선택하세요.', { exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'EN 언어', exact: true }).click();
+    await page.locator('header select').selectOption('en');
     await expect(page.getByRole('checkbox', { name: 'Main job watermark', exact: true })).toBeDisabled();
-    await page.getByRole('button', { name: 'JA language', exact: true }).click();
+    await page.locator('header select').selectOption('ja');
     await expect(page.getByRole('checkbox', { name: 'メインジョブの透かし', exact: true })).toBeDisabled();
 });

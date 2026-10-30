@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import { i18n } from '../src/utils/i18n';
 import { seed } from './helpers';
 
-for (const language of ['ko', 'en', 'ja'] as const) {
+for (const language of ['ko', 'en', 'ja', 'fr', 'de', 'zh-Hans', 'zh-Hant'] as const) {
     test(`${language}: crop controls remain reachable after portrait and landscape rotation`, async ({ page }) => {
         await page.setViewportSize({ width: 390, height: 844 });
         await seed(page, { language });

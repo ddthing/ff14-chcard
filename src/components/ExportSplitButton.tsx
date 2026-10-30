@@ -77,7 +77,7 @@ export function ExportSplitButton({ lang, quality, onQualityChange, onDownload, 
         const previousLabel = previousLabelRef.current;
         previousLabelRef.current = saveLabel;
         setLabelRoll({ from: previousLabel, to: saveLabel });
-        const timeout = window.setTimeout(() => setLabelRoll(null), 520);
+        const timeout = window.setTimeout(() => setLabelRoll(null), 200);
         return () => window.clearTimeout(timeout);
     }, [saveLabel]);
 
@@ -289,7 +289,7 @@ export function ExportSplitButton({ lang, quality, onQualityChange, onDownload, 
         <div ref={rootRef} className="ux u010" data-open={menuVisible ? '1' : '0'} data-state={busy ? 'busy' : done ? 'done' : 'idle'}>
             <div className="u010-output-info">
                 <div className="u010-output-row">
-                    <span className="u010-quality-label">{studio.quality}</span>
+                    <span className="u010-quality-label">{selectedLabel}</span>
                     <output className="u010-output-size" aria-label={studio.outputSize}>
                         {outputSize.width} × {outputSize.height} px
                     </output>
@@ -319,6 +319,7 @@ export function ExportSplitButton({ lang, quality, onQualityChange, onDownload, 
                             </>
                         ) : <span className="u010-label">{saveLabel}</span>}
                     </span>
+                    <span className="u010-compact-label" aria-hidden="true">PNG</span>
                     <span className="u010-bar" aria-hidden="true" />
                 </button>
                 <span id={selectedQualityDescriptionId} className="u010-visually-hidden">{selectedLabel}</span>

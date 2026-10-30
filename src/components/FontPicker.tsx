@@ -127,7 +127,7 @@ export function FontPicker({ value, onChange, lang, active = true, disabled = fa
         const aboveSpace = Math.max(0, rect.top - viewportTop - MENU_GAP - VIEWPORT_GUTTER);
         const opensAbove = belowSpace < fullHeight && aboveSpace > belowSpace;
         const availableHeight = opensAbove ? aboveSpace : belowSpace;
-        const maxHeight = Math.min(fullHeight, availableHeight);
+        const maxHeight = Math.max(0, Math.min(fullHeight, availableHeight, viewportHeight - VIEWPORT_GUTTER * 2));
         const desiredTop = opensAbove
             ? rect.top - MENU_GAP - maxHeight
             : rect.bottom + MENU_GAP;
@@ -148,13 +148,14 @@ export function FontPicker({ value, onChange, lang, active = true, disabled = fa
         const list = listRef.current;
         if (!list) return;
 
-        const optionTop = activeIndex * OPTION_HEIGHT + VIEWPORT_GUTTER - list.scrollTop;
-        const optionBottom = optionTop + OPTION_HEIGHT;
-        if (optionTop < 0) {
-            list.scrollTop = activeIndex * OPTION_HEIGHT + VIEWPORT_GUTTER;
-        } else if (optionBottom > list.clientHeight) {
-            list.scrollTop = activeIndex * OPTION_HEIGHT + VIEWPORT_GUTTER + OPTION_HEIGHT - list.clientHeight;
-        }
+        const option = list.querySelectorAll<HTMLElement>('[role="option"]')[activeIndex];
+        if (!option) return;
+        const bounds = list.getBoundingClientRect();
+        const optionBounds = option.getBoundingClientRect();
+        const top = bounds.top + list.clientTop;
+        const bottom = top + list.clientHeight;
+        if (optionBounds.top < top) list.scrollTop -= top - optionBounds.top;
+        else if (optionBounds.bottom > bottom) list.scrollTop += optionBounds.bottom - bottom;
     }, [activeIndex]);
 
     const handleTypeahead = useCallback((typedText: string) => {
@@ -282,6 +283,10 @@ export function FontPicker({ value, onChange, lang, active = true, disabled = fa
             resizeObserver?.disconnect();
         };
     }, [menuIsVisible, activeIndex, scrollActiveOptionIntoView, updatePopupPosition]);
+
+    useSafeLayoutEffect(() => {
+        if (menuIsVisible) scrollActiveOptionIntoView();
+    }, [menuIsVisible, position?.maxHeight, scrollActiveOptionIntoView]);
 
     const menuStyle: CSSProperties = {
         top: position?.top ?? 0,

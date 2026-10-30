@@ -1,5 +1,5 @@
 export type Region = 'KR' | 'Global';
-export type Language = 'ko' | 'en' | 'ja';
+export type Language = 'ko' | 'en' | 'ja' | 'fr' | 'de' | 'zh-Hans' | 'zh-Hant';
 
 export interface Job {
     id: string;

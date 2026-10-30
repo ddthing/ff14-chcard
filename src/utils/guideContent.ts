@@ -1,3 +1,7 @@
+import fr from './locales/fr-guideContent';
+import de from './locales/de-guideContent';
+import zhHans from './locales/zh-Hans-guideContent';
+import zhHant from './locales/zh-Hant-guideContent';
 import type { Language } from '../types';
 import type { RoleGroup } from './guideReference';
 
@@ -60,6 +64,7 @@ export interface GuideCopy {
 }
 
 export const guideContent = {
+    fr, de, 'zh-Hans': zhHans, 'zh-Hant': zhHant,
     ko: {
         title: 'FF14 캐릭터 카드 제작 가이드',
         eyebrow: '카드 제작 참고서',
