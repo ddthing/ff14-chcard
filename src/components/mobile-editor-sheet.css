@@ -89,8 +89,8 @@
   flex: none;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   margin-right: 12px;
   border: 1px solid var(--ux-line);
   border-radius: var(--radius-sm);

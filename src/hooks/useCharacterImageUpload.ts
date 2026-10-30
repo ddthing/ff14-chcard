@@ -38,6 +38,13 @@ interface ActiveUploadSession {
 
 let activeUploadSession: ActiveUploadSession | null = null;
 
+/** A new edit supersedes a pending file read, even from the other image control. */
+export function cancelActiveCharacterImageUpload(): void {
+    const previous = activeUploadSession;
+    activeUploadSession = null;
+    previous?.invalidate();
+}
+
 export interface CharacterImageUploadController {
     setInputRef: RefCallback<HTMLInputElement>;
     job: CharacterImageUploadJob | null;
@@ -67,11 +74,7 @@ export function useCharacterImageUpload({ onImageReady, onSelectionStart }: Char
     }, []);
 
     const startFile = useCallback((file: File) => {
-        if (activeUploadSession) {
-            const previous = activeUploadSession;
-            activeUploadSession = null;
-            previous.invalidate();
-        }
+        cancelActiveCharacterImageUpload();
 
         controllerRef.current?.abort();
         completedRequestIdRef.current = null;

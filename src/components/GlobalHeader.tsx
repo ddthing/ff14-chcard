@@ -11,8 +11,8 @@ export function GlobalHeader({ lang, onLanguageChange, onStartTour }: GlobalHead
             <span className="studio-brand-title" lang={lang}>{i18n[lang].layout.headerTitle}</span>
         </Link>
         <div className="flex shrink-0 items-center gap-2 md:gap-4">
-            {onStartTour ? <button type="button" className="studio-tour-trigger studio-tour-trigger--header" onClick={onStartTour}><CircleHelp size={14} aria-hidden="true" />{i18n[lang].tour.start}</button>
-                : <Link to="/guide" className="studio-guide">{i18n[lang].studio.guide}<ArrowUpRight size={13} aria-hidden="true" /></Link>}
+            {onStartTour ? <button type="button" className="studio-header-control studio-tour-trigger studio-tour-trigger--header" onClick={onStartTour}><CircleHelp size={16} aria-hidden="true" />{i18n[lang].tour.start}</button>
+                : <Link to="/guide" className="studio-header-control studio-guide">{i18n[lang].studio.guide}<ArrowUpRight size={16} aria-hidden="true" /></Link>}
             <LanguageSelector currentLang={lang} onLanguageChange={onLanguageChange} /><ThemeToggle lang={lang} />
         </div>
     </div></header>;

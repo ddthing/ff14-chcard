@@ -20,6 +20,19 @@ export interface Sticker {
     rotation: number; // 0 to 360
 }
 
+/** Crop rectangle in percentages of the retained source image. */
+export interface ImageCrop {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
+export interface ImageEditMetadata {
+    originalImage: string;
+    imageCrop: ImageCrop;
+}
+
 export interface PlayerInfo {
     name: string;
     region: Region;
@@ -30,6 +43,8 @@ export interface PlayerInfo {
     activeTime: string; // e.g. "평일 저녁 / 주말 상시"
     comment: string;
     image?: string; // base64 or object URL
+    originalImage?: string;
+    imageCrop?: ImageCrop;
     font: string;
     mainJob?: string; // Job ID of the main job
     isNicknameChanged: boolean; // 인게임과 다른 닉네임 여부

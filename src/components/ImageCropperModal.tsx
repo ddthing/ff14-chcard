@@ -3,19 +3,20 @@ import { useState, useCallback, useEffect, useId, useRef, type KeyboardEvent as 
 import Cropper from 'react-easy-crop';
 import getCroppedImg, { createImage } from '../utils/cropImage';
 import { ZoomIn, Maximize } from 'lucide-react';
-import type { Language } from '../types';
+import type { ImageCrop, Language } from '../types';
 import { i18n } from '../utils/i18n';
 
 interface ImageCropperModalProps {
     imageSrc: string;
-    onApply: (croppedImageBase64: string) => void;
+    onApply: (croppedImageBase64: string, imageCrop: ImageCrop) => void;
+    initialCrop?: ImageCrop;
     onCancel: () => void;
     lang: Language;
     aspectRatio?: number;
     returnFocusRef?: RefObject<HTMLButtonElement | null>;
 }
 
-export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRatio = 700 / 280, returnFocusRef }: ImageCropperModalProps) {
+export function ImageCropperModal({ imageSrc, onApply, onCancel, initialCrop, lang, aspectRatio = 700 / 280, returnFocusRef }: ImageCropperModalProps) {
     const [crop, setCrop] = useState({ x: 0, y: 0 });
     const [zoom, setZoom] = useState(1);
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
@@ -126,7 +127,12 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
             if (!area) return;
             const croppedImage = await getCroppedImg(image, area, 0, undefined, controller.signal);
             if (croppedImage && !controller.signal.aborted && processingRef.current === controller) {
-                onApply(croppedImage);
+                onApply(croppedImage, {
+                    x: area.x / image.naturalWidth * 100,
+                    y: area.y / image.naturalHeight * 100,
+                    width: area.width / image.naturalWidth * 100,
+                    height: area.height / image.naturalHeight * 100,
+                });
             }
         } catch {
             if (!controller.signal.aborted && processingRef.current === controller) {
@@ -196,6 +202,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                 <div className="image-cropper-area relative min-h-0 flex-1 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]" style={{ backgroundColor: 'var(--surface-200)' }} tabIndex={0} aria-label={t.dragToMove} onKeyDown={handleCropKeyDown}>
                     <Cropper
                         image={imageSrc}
+                        initialCroppedAreaPercentages={initialCrop}
                         crop={crop}
                         zoom={zoom}
                         aspect={aspectRatio}

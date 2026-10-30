@@ -7,7 +7,7 @@ import {
     useSyncExternalStore,
     type ReactNode,
 } from 'react';
-import type { PlayerInfo, Language, Sticker } from '../types';
+import type { PlayerInfo, Language, Sticker, ImageEditMetadata } from '../types';
 import { normalizePlayerInfo } from '../utils/playerData';
 import { readStoredValue, writeStoredValue } from '../utils/profileStorage';
 
@@ -20,7 +20,7 @@ interface PlayerContextType {
     commitPlayerChange: (info: PlayerInfoUpdater) => void;
     updatePlayerField: <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => void;
     updateLanguage: (lang: Language) => void;
-    updateImage: (image: string | undefined) => void;
+    updateImage: (image: string | undefined, edit?: ImageEditMetadata) => void;
     selectedStickerId: string | null;
     setSelectedStickerId: (id: string | null) => void;
     removedSticker: { sticker: Sticker; index: number } | null;
@@ -57,7 +57,7 @@ interface PlayerStore {
     commitPlayerChange: (info: PlayerInfoUpdater) => void;
     updatePlayerField: <K extends keyof PlayerInfo>(field: K, value: PlayerInfo[K]) => void;
     updateLanguage: (lang: Language) => void;
-    updateImage: (image: string | undefined) => void;
+    updateImage: (image: string | undefined, edit?: ImageEditMetadata) => void;
     setSelectedStickerId: (id: string | null) => void;
     removeSticker: (id: string) => void;
     commitStickerChange: (update: (stickers: Sticker[]) => Sticker[]) => void;
@@ -165,7 +165,7 @@ function writeLegacyPlayerInfo(playerInfo: PlayerInfo, metadata: LegacyWriteMeta
 }
 
 function hasProfileMedia(playerInfo: PlayerInfo): boolean {
-    return Boolean(playerInfo.image) || Boolean(playerInfo.stickers?.some(sticker => sticker.url.length > 0));
+    return Boolean(playerInfo.image || playerInfo.originalImage) || Boolean(playerInfo.stickers?.some(sticker => sticker.url.length > 0));
 }
 
 function writeLightweightLegacyPlayerInfo(
@@ -177,6 +177,7 @@ function writeLightweightLegacyPlayerInfo(
     const lightweightPlayerInfo: PlayerInfo = {
         ...playerInfo,
         image: undefined,
+        originalImage: undefined,
         stickers: (playerInfo.stickers ?? []).map(sticker => ({ ...sticker, url: '' })),
     };
     return writeLegacyPlayerInfo(lightweightPlayerInfo, {
@@ -192,9 +193,10 @@ function mergeOmittedLegacyMedia(legacy: LegacyPlayerInfo, indexedDbValue: unkno
     if (!legacy.imageOmitted && !legacy.stickerUrlsOmitted && !preserveUnknownMedia) return legacy.playerInfo;
 
     const canonicalPlayerInfo = normalizePlayerInfo(indexedDbValue);
-    const image = legacy.imageOmitted || (preserveUnknownMedia && !legacy.playerInfo.image)
-        ? canonicalPlayerInfo.image
-        : legacy.playerInfo.image;
+    const useCanonicalImage = legacy.imageOmitted || (preserveUnknownMedia && !legacy.playerInfo.image);
+    const image = useCanonicalImage ? canonicalPlayerInfo.image : legacy.playerInfo.image;
+    const originalImage = useCanonicalImage ? canonicalPlayerInfo.originalImage : legacy.playerInfo.originalImage;
+    const imageCrop = useCanonicalImage ? canonicalPlayerInfo.imageCrop : legacy.playerInfo.imageCrop;
     const canonicalStickers = new Map((canonicalPlayerInfo.stickers ?? []).map(sticker => [sticker.id, sticker]));
     const legacyStickers = Array.isArray(legacy.rawPlayerInfo.stickers) ? legacy.rawPlayerInfo.stickers : [];
     const stickers = legacy.stickerUrlsOmitted || preserveUnknownMedia
@@ -214,7 +216,7 @@ function mergeOmittedLegacyMedia(legacy: LegacyPlayerInfo, indexedDbValue: unkno
         }
     }
 
-    return normalizePlayerInfo({ ...legacy.rawPlayerInfo, image, stickers });
+    return normalizePlayerInfo({ ...legacy.rawPlayerInfo, image, originalImage, imageCrop, stickers });
 }
 
 async function writeIndexedDbPlayerInfo(playerInfo: PlayerInfo, existingRevision?: string): Promise<string> {
@@ -385,8 +387,16 @@ function createPlayerStore(): PlayerStore {
         setPlayerInfo(prev => ({ ...prev, language }));
     };
 
-    const updateImage = (image: string | undefined) => {
-        setPlayerInfo(prev => ({ ...prev, image }));
+    const updateImage = (image: string | undefined, edit?: ImageEditMetadata) => {
+        const originalImage = image ? edit?.originalImage : undefined;
+        const imageCrop = image ? edit?.imageCrop : undefined;
+        const current = snapshot.playerInfo;
+        const previousCrop = current.imageCrop;
+        const sameCrop = previousCrop === imageCrop || (previousCrop && imageCrop
+            && previousCrop.x === imageCrop.x && previousCrop.y === imageCrop.y
+            && previousCrop.width === imageCrop.width && previousCrop.height === imageCrop.height);
+        if (image === current.image && originalImage === current.originalImage && sameCrop) return;
+        commitPlayerChange(prev => ({ ...prev, image, originalImage, imageCrop }));
     };
 
     const setSelectedStickerId = (id: string | null) => {
