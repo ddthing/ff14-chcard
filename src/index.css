@@ -8,18 +8,20 @@
    =================================================== */
 
 :root {
- --background:#f2f1ed; --foreground:#292822; --card:#fcfbf8; --card-foreground:var(--foreground); --popover:var(--card); --popover-foreground:var(--foreground);
- --primary:#303c33; --primary-foreground:#fcfbf8; --secondary:#eeede7; --secondary-foreground:var(--foreground); --muted:#e9e8e1; --muted-foreground:#66665b;
- --accent:#eaece5; --accent-foreground:#303c33; --destructive:#b3392d; --border:#dedcd3; --input:#d2cfc4; --ring:#79796c;
+ --background:#fafafa; --foreground:#171717; --card:#fff; --card-foreground:var(--foreground); --popover:var(--card); --popover-foreground:var(--foreground);
+ --primary:#262626; --primary-foreground:#fafafa; --secondary:#f5f5f5; --secondary-foreground:var(--foreground); --muted:#f5f5f5; --muted-foreground:#737373;
+ --accent:#f5f5f5; --accent-foreground:#262626; --destructive:#b91c1c; --border:#e5e5e5; --input:#d4d4d4; --ring:#737373;
  --surface-50:var(--card); --surface-100:var(--card); --surface-200:var(--background); --surface-300:var(--secondary); --surface-400:var(--border); --surface-500:var(--muted);
- --bg-app:var(--background); --bg-panel:var(--card); --bg-slot:var(--muted); --text-primary:var(--foreground); --text-secondary:#626257; --text-muted:var(--muted-foreground);
- --border-subtle:#e4e2d9; --border-default:var(--border); --border-medium:var(--input); --border-strong:var(--foreground); --error:var(--destructive); --success:#3e6556; --accent-strong:var(--primary);
- --studio-accent:#a44630; --studio-canvas:#e9e8e0; --studio-dot:#cac8bb; --radius:8px; --radius-xs:4px; --radius-sm:6px; --radius-md:8px; --radius-lg:12px; --radius-xl:16px; --radius-2xl:20px; --radius-3xl:24px; --radius-4xl:26px; --radius-full:9999px;
- --shadow-color-1:#29282212; --shadow-color-2:#29282208; --shadow-color-focus:#303c3324; --header-bg:var(--background); --glass-highlight:#fcfbf8e6; color-scheme:light;
+ --bg-app:var(--background); --bg-panel:var(--card); --bg-slot:var(--muted); --text-primary:var(--foreground); --text-secondary:#525252; --text-muted:var(--muted-foreground);
+ --border-subtle:#e5e5e5; --border-default:var(--border); --border-medium:var(--input); --border-strong:var(--foreground); --error:var(--destructive); --success:#23866b; --accent-strong:var(--primary);
+ --studio-accent:var(--primary); --studio-canvas:#e5e5e5; --studio-dot:#ccc;
+ --radius:0px; --radius-xs:0px; --radius-sm:0px; --radius-md:0px; --radius-lg:0px; --radius-xl:0px; --radius-2xl:0px; --radius-3xl:0px; --radius-4xl:0px; --radius-full:9999px;
+ --shadow-color-1:#17171712; --shadow-color-2:#17171708; --shadow-color-focus:#17171724; --header-bg:var(--background); --glass-highlight:#ffffffe6; color-scheme:light;
+ --font-sans:'Pretendard Variable',Pretendard,'Noto Sans CJK SC','Noto Sans CJK TC','Microsoft YaHei','Microsoft JhengHei','PingFang SC','PingFang TC',sans-serif;
 }
 .dark {
- --background:#1e211e; --foreground:#efeee6; --card:#272b26; --primary:#e3e8d9; --primary-foreground:#272b26; --secondary:#32372f; --muted:#343a31; --muted-foreground:#b4b7a9; --accent:#343d32; --accent-foreground:var(--foreground);
- --destructive:#ff9f8e; --border:#44493f; --input:#50574a; --ring:#b5bba9; --text-secondary:#c0c3b5; --border-subtle:#3b4036; --success:#aec7a6; --studio-accent:#e5a58b; --studio-canvas:#22271f; --studio-dot:#3b4434; --shadow-color-1:#00000030; --shadow-color-2:#00000018; color-scheme:dark;
+ --background:#171717; --foreground:#fafafa; --card:#262626; --primary:#fafafa; --primary-foreground:#171717; --secondary:#303030; --muted:#303030; --muted-foreground:#a3a3a3; --accent:#303030; --accent-foreground:var(--foreground);
+ --destructive:#fca5a5; --border:#404040; --input:#525252; --ring:#a3a3a3; --text-secondary:#d4d4d4; --border-subtle:#404040; --success:#6ee7b7; --studio-canvas:#202020; --studio-dot:#404040; --shadow-color-1:#00000030; --shadow-color-2:#00000018; color-scheme:dark;
 }
 /* ===== Base ===== */
 * {
@@ -120,20 +122,20 @@ button:not(:disabled),
  * Each rule targets BOTH the container itself AND all descendants (via *)
  * so h1, span, p, etc. properly inherit the selected font.
  * ========================= */
-.card-preview.font-pretendard, .card-preview.font-pretendard *     { font-family: 'Pretendard Variable', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-mona, .card-preview.font-mona *                 { font-family: 'Mona12', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-gmarket, .card-preview.font-gmarket *           { font-family: 'GMarketSans', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-police, .card-preview.font-police *             { font-family: 'NostalgicPoliceFairness', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-myungjo, .card-preview.font-myungjo *           { font-family: 'BookkMyungjo', 'Pretendard', 'Meiryo', serif !important; }
-.card-preview.font-seabreeze, .card-preview.font-seabreeze *       { font-family: 'OngleIpSeaBreeze', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-schoolsafe, .card-preview.font-schoolsafe *     { font-family: 'SchoolSafeOuting', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-hancom, .card-preview.font-hancom *             { font-family: 'HancomMalrangmalrang', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-cafe24, .card-preview.font-cafe24 *             { font-family: 'Cafe24SuperMagic', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-gangwon, .card-preview.font-gangwon *           { font-family: 'GangwonEducationModuche', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-cookierun, .card-preview.font-cookierun *       { font-family: 'CookieRun', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-galmuri9, .card-preview.font-galmuri9 *         { font-family: 'Galmuri9', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-seogung, .card-preview.font-seogung *           { font-family: 'Seogung', 'Pretendard', 'Meiryo', sans-serif !important; }
-.card-preview.font-cloudsanscode, .card-preview.font-cloudsanscode * { font-family: 'CloudSansCode', 'Pretendard', 'Meiryo', sans-serif !important; }
+.card-preview.font-pretendard, .card-preview.font-pretendard *     { font-family: 'Pretendard Variable', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-mona, .card-preview.font-mona *                 { font-family: 'Mona12', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-gmarket, .card-preview.font-gmarket *           { font-family: 'GMarketSans', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-police, .card-preview.font-police *             { font-family: 'NostalgicPoliceFairness', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-myungjo, .card-preview.font-myungjo *           { font-family: 'BookkMyungjo', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', serif !important; }
+.card-preview.font-seabreeze, .card-preview.font-seabreeze *       { font-family: 'OngleIpSeaBreeze', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-schoolsafe, .card-preview.font-schoolsafe *     { font-family: 'SchoolSafeOuting', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-hancom, .card-preview.font-hancom *             { font-family: 'HancomMalrangmalrang', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-cafe24, .card-preview.font-cafe24 *             { font-family: 'Cafe24SuperMagic', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-gangwon, .card-preview.font-gangwon *           { font-family: 'GangwonEducationModuche', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-cookierun, .card-preview.font-cookierun *       { font-family: 'CookieRun', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-galmuri9, .card-preview.font-galmuri9 *         { font-family: 'Galmuri9', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-seogung, .card-preview.font-seogung *           { font-family: 'Seogung', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-cloudsanscode, .card-preview.font-cloudsanscode * { font-family: 'CloudSansCode', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
 
 /* ===== Utilities ===== */
 

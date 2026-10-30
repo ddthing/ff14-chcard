@@ -6,7 +6,7 @@ This project currently uses the following active design contract. It takes prece
 - Color: Neutral
 - Icons: Lucide (`lucide-react`)
 - Radius: None (`--radius` and UI radius utilities resolve to `0`)
-- Light/dark semantic tokens: the shadcn Neutral OKLCH values in `src/index.css`
+- Light/dark semantic tokens: the neutral semantic values in `src/index.css`
 - Card boundary: `.card-preview` and `src/components/preview/*` retain their existing visual output unless explicitly changed by the user
 
 The shared `@ff14-glamour/design-system` package remains the import foundation. App-level overrides are intentional so this consumer can adopt Nova without changing other projects that install the package.

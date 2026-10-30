@@ -10,7 +10,6 @@
  --sheet-icon:var(--sheet-icon-dark); --sheet-accent-text:var(--sheet-accent-text-dark); --sheet-accent-surface:var(--sheet-accent-surface-dark); --sheet-job-ink:#fff;
  --sheet-paper-texture-opacity:.16; --sheet-paper-texture-filter:invert(1); --sheet-paper-texture-blend:screen;
 }
-.character-sheet::after { content:''; position:absolute; inset:0; border:1px solid var(--sheet-line); pointer-events:none; z-index:10; }
 .sheet-image { background:var(--sheet-wash); }
 .sheet-image > img { display:block; }
 .sheet-image-edit { position:absolute; right:20px; bottom:20px; padding:10px 14px; border:1px solid #fff5; border-radius:3px; background:#1d241bd9; color:#fff; font-size:12px; opacity:0; transition:opacity 150ms; }

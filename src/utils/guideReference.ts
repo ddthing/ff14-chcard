@@ -1,3 +1,4 @@
+import { getJobName } from '../data/jobNames';
 import type { Job, Language } from '../types';
 import { JOBS } from '../data/jobs';
 import { getAllWorldsGrouped } from '../data/servers';
@@ -51,9 +52,7 @@ const ROLE_GROUPS: Array<{ id: RoleGroup; matches: (role: Job['role']) => boolea
 ];
 
 function getJobLabel(job: Job, lang: Language) {
-    if (lang === 'ko') return job.nameKr;
-    if (lang === 'ja') return job.nameJa;
-    return job.name;
+    return getJobName(job, lang);
 }
 
 export function getGuideReference(lang: Language): GuideReference {

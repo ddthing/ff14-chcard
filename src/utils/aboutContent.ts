@@ -1,3 +1,7 @@
+import fr from './locales/fr-aboutContent';
+import de from './locales/de-aboutContent';
+import zhHans from './locales/zh-Hans-aboutContent';
+import zhHant from './locales/zh-Hant-aboutContent';
 import type { Language } from '../types';
 
 export interface AboutSection {
@@ -16,6 +20,7 @@ export interface AboutCopy {
 }
 
 export const aboutContent = {
+    fr, de, 'zh-Hans': zhHans, 'zh-Hant': zhHant,
     ko: {
         title: '소개',
         eyebrow: '서비스의 범위와 원칙',

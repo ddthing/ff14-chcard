@@ -7,9 +7,7 @@ test.beforeEach(async ({ page }) => { await page.route('https://cdn.jsdelivr.net
 
 async function switchLanguage(page: import('@playwright/test').Page, from: Language, to: Language) {
     if (from === to) return;
-    const suffix = from === 'ko' ? '언어' : from === 'ja' ? '言語' : 'language';
-    const target = to === 'ko' ? 'KR' : to === 'en' ? 'EN' : 'JA';
-    await page.getByRole('button', { name: `${target} ${suffix}`, exact: true }).click();
+    await page.locator('header select').selectOption(to);
 }
 
 test('mobile preview remains visible as the edit sheet moves through its detents', async ({ page }) => {

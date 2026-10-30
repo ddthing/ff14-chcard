@@ -77,7 +77,7 @@ export function ExportSplitButton({ lang, quality, onQualityChange, onDownload, 
         const previousLabel = previousLabelRef.current;
         previousLabelRef.current = saveLabel;
         setLabelRoll({ from: previousLabel, to: saveLabel });
-        const timeout = window.setTimeout(() => setLabelRoll(null), 520);
+        const timeout = window.setTimeout(() => setLabelRoll(null), 200);
         return () => window.clearTimeout(timeout);
     }, [saveLabel]);
 

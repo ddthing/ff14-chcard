@@ -167,14 +167,14 @@ test('tour can close mid-step, restores focus and tab, leaves profile history in
 test('guided tour uses the current language and remains usable in dark mode with reduced motion', async ({ page }) => {
     await seed(page);
     const locales = [
-        { button: 'EN 언어', label: 'Create a character card', start: 'How to use', title: 'Add a screenshot', next: 'Next' },
-        { button: 'JA language', label: 'キャラクターカードの作り方', start: '使い方', title: '写真を追加', next: '次へ' },
-        { button: 'KR 言語', label: '카드 만들기 안내', start: '사용방법', title: '사진 넣기', next: '다음' },
+        { language: 'en', label: 'Create a character card', start: 'How to use', title: 'Add a screenshot', next: 'Next' },
+        { language: 'ja', label: 'キャラクターカードの作り方', start: '使い方', title: '写真を追加', next: '次へ' },
+        { language: 'ko', label: '카드 만들기 안내', start: '사용방법', title: '사진 넣기', next: '다음' },
     ];
     await page.getByRole('button', { name: '다크 모드로 변경', exact: true }).click();
     expect(await page.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
     for (const locale of locales) {
-        await page.getByRole('button', { name: locale.button, exact: true }).click();
+        await page.locator('header select').selectOption(locale.language);
         await expect(page.locator('.studio-tour-trigger:visible')).toHaveText(locale.start);
         await page.locator('.studio-tour-trigger:visible').click();
         const dialog = page.getByTestId('guided-tour-dialog');

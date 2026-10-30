@@ -1,3 +1,7 @@
+import fr from './locales/fr-presetCopy';
+import de from './locales/de-presetCopy';
+import zhHans from './locales/zh-Hans-presetCopy';
+import zhHant from './locales/zh-Hant-presetCopy';
 import type { DesignPreset } from '../data/designPresets';
 import type { Language } from '../types';
 
@@ -11,6 +15,7 @@ interface PresetCopy {
 }
 
 export const presetCopy: Record<Language, PresetCopy> = {
+    fr, de, 'zh-Hans': zhHans, 'zh-Hant': zhHant,
     ko: {
         title: '시그니처 스타일',
         hint: '컬러, 폰트, 구도를 한 번에. 마음에 드는 조합에서 시작하세요.',

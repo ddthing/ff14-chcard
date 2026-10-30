@@ -38,7 +38,7 @@
     align-items: center;
     gap: 12px;
     border: 1px solid var(--ux-line-2);
-    border-radius: 8px;
+    border-radius:var(--radius-sm);
     padding: 0 14px;
     background: var(--ux-surface-2);
     color: var(--ux-ink);
@@ -100,7 +100,7 @@
     overscroll-behavior: contain;
     margin: 0;
     border: 1px solid var(--ux-line-2);
-    border-radius: 14px;
+    border-radius:var(--radius-sm);
     padding: 6px;
     background: var(--ux-surface);
     box-shadow: 0 0 0 1px var(--ux-line-2), 0 28px 56px -24px var(--ux-shadow-strong);
@@ -130,7 +130,7 @@
     right: 6px;
     left: 6px;
     height: 46px;
-    border-radius: 12px;
+    border-radius:var(--radius-sm);
     background: var(--ux-surface-2);
     transform: translateY(calc(var(--i, 0) * 46px));
     transition: transform .35s var(--ux-spring);
@@ -150,7 +150,7 @@
     min-width: 0;
     align-items: center;
     gap: 12px;
-    border-radius: 12px;
+    border-radius:var(--radius-sm);
     padding: 0 10px;
     color: var(--ux-ink);
     cursor: pointer;

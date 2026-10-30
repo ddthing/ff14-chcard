@@ -1,3 +1,7 @@
+import fr from './locales/fr-pageMeta';
+import de from './locales/de-pageMeta';
+import zhHans from './locales/zh-Hans-pageMeta';
+import zhHant from './locales/zh-Hant-pageMeta';
 import type { Language } from '../types';
 
 export interface PageMeta {
@@ -6,6 +10,7 @@ export interface PageMeta {
 }
 
 export const pageMeta = {
+    fr, de, 'zh-Hans': zhHans, 'zh-Hant': zhHant,
     ko: {
         home: {
             title: 'FF14 캐릭터 카드 생성기 - 파판14 캐릭터 시트 만들기',

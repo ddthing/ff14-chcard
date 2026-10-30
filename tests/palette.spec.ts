@@ -108,12 +108,12 @@ test('palette fits narrow screens, keeps readable text, and honors reduced motio
 test('palette labels and actions are translated in Korean, English and Japanese', async ({ page }) => {
     await seed(page);
     const locales = [
-        { button: 'EN 언어', title: 'Color palette', shuffle: 'Shuffle', design: 'Design' },
-        { button: 'JA language', title: 'カラーパレット', shuffle: 'シャッフル', design: 'デザイン' },
-        { button: 'KR 言語', title: '색 팔레트', shuffle: '새로 섞기', design: '꾸미기' },
+        { language: 'en', title: 'Color palette', shuffle: 'Shuffle', design: 'Design' },
+        { language: 'ja', title: 'カラーパレット', shuffle: 'シャッフル', design: 'デザイン' },
+        { language: 'ko', title: '색 팔레트', shuffle: '새로 섞기', design: '꾸미기' },
     ];
     for (const locale of locales) {
-        await page.getByRole('button', { name: locale.button, exact: true }).click();
+        await page.locator('header select').selectOption(locale.language);
         await page.getByRole('tab', { name: locale.design, exact: true }).click();
         await expect(page.getByRole('group', { name: locale.title, exact: true }).first()).toBeVisible();
         await expect(page.getByRole('button', { name: locale.shuffle, exact: true })).toBeVisible();
@@ -124,9 +124,9 @@ test('palette labels and actions are translated in Korean, English and Japanese'
 test('shuffle action keeps readable text and icon across themes, widths, locales and disabled state', async ({ page }) => {
     await seed(page);
     const locales = [
-        { button: 'EN 언어', shuffle: 'Shuffle', design: 'Design', dark: 'Switch to dark mode', light: 'Switch to light mode' },
-        { button: 'JA language', shuffle: 'シャッフル', design: 'デザイン', dark: 'ダークモードに変更', light: 'ライトモードに変更' },
-        { button: 'KR 言語', shuffle: '새로 섞기', design: '꾸미기', dark: '다크 모드로 변경', light: '라이트 모드로 변경' },
+        { language: 'en', shuffle: 'Shuffle', design: 'Design', dark: 'Switch to dark mode', light: 'Switch to light mode' },
+        { language: 'ja', shuffle: 'シャッフル', design: 'デザイン', dark: 'ダークモードに変更', light: 'ライトモードに変更' },
+        { language: 'ko', shuffle: '새로 섞기', design: '꾸미기', dark: '다크 모드로 변경', light: '라이트 모드로 변경' },
     ];
     const contrast = async (button: import('@playwright/test').Locator) => button.evaluate(element => {
         const parse = (value: string) => value.match(/[\d.]+/g)!.slice(0, 3).map(Number).map(channel => {
@@ -161,7 +161,7 @@ test('shuffle action keeps readable text and icon across themes, widths, locales
     });
 
     for (const locale of locales) {
-        await page.getByRole('button', { name: locale.button, exact: true }).click();
+        await page.locator('header select').selectOption(locale.language);
         await page.getByRole('tab', { name: locale.design, exact: true }).click();
         const shuffle = page.getByRole('button', { name: locale.shuffle, exact: true });
         await expect(shuffle).toBeVisible();

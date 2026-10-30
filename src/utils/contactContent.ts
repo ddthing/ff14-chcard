@@ -1,3 +1,7 @@
+import fr from './locales/fr-contactContent';
+import de from './locales/de-contactContent';
+import zhHans from './locales/zh-Hans-contactContent';
+import zhHant from './locales/zh-Hant-contactContent';
 import type { Language } from '../types';
 
 export const contactContent: Record<Language, {
@@ -17,6 +21,7 @@ export const contactContent: Record<Language, {
     copyFailed: string;
     newWindow: string;
 }> = {
+    fr, de, 'zh-Hans': zhHans, 'zh-Hant': zhHant,
     ko: {
         title: '문의하기 (Contact)', h1: '연락처 및 버그 제보',
         p1: '서비스 오류, 기능 제안, 기타 문의사항은 아래 채널을 이용해주세요.',

@@ -1,6 +1,11 @@
+import { localeActivities } from './localeExtras';
 import type { Language } from '../types';
+import fr from './locales/fr';
+import de from './locales/de';
+import zhHans from './locales/zh-Hans';
+import zhHant from './locales/zh-Hant';
 
-export const i18n = {
+const baseI18n = {
     ko: {
         workspace: {"tools":"편집 도구","editPanel":"편집 설정","collapsed":"접힘","half":"절반","full":"전체","changeHeight":"편집 패널 높이 바꾸기","expand":"편집 패널 펼치기","collapse":"편집 패널 접기","archive":"보관함"},
         layers: {"title":"레이어","front":"맨 앞","back":"맨 뒤","selected":"선택됨","empty":"스티커를 추가하면 여기에 표시됩니다.","actions":"스티커 작업","order":"앞에서 뒤 순서","properties":"선택한 스티커","select":"스티커 {number} 선택","moveToFront":"맨 앞으로","moveToBack":"맨 뒤로"},
@@ -826,6 +831,8 @@ export const i18n = {
     }
 };
 
+export const i18n = { ...baseI18n, fr, de, 'zh-Hans': zhHans, 'zh-Hant': zhHant } satisfies Record<Language, typeof baseI18n.en>;
+
 export const ACTIVE_TIMES_KO = [
     '평일 저녁 / 주말 상시',
     '평일 야간 / 주말 랜덤',
@@ -860,7 +867,8 @@ export const ACTIVE_TIMES_JA = [
 export const getActiveTimes = (lang: Language) => {
     if (lang === 'ko') return ACTIVE_TIMES_KO;
     if (lang === 'ja') return ACTIVE_TIMES_JA;
-    return ACTIVE_TIMES_EN;
+    if (lang === 'en') return ACTIVE_TIMES_EN;
+    return localeActivities[lang].times;
 };
 
 export const PLAYSTYLES_KO = [
@@ -887,15 +895,15 @@ export const PLAYSTYLES_JA = [
 export const getPlaystyles = (lang: Language) => {
     if (lang === 'ko') return PLAYSTYLES_KO;
     if (lang === 'ja') return PLAYSTYLES_JA;
-    return PLAYSTYLES_EN;
+    if (lang === 'en') return PLAYSTYLES_EN;
+    return localeActivities[lang].styles;
 };
 
 export const playstyleTranslate = (tag: string, toLang: Language) => {
     if (toLang === 'ko') return tag;
     const index = PLAYSTYLES_KO.indexOf(tag);
     if (index === -1) return tag;
-    if (toLang === 'ja') return PLAYSTYLES_JA[index];
-    return PLAYSTYLES_EN[index];
+    return getPlaystyles(toLang)[index];
 };
 
 /**

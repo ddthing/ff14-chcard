@@ -23,7 +23,7 @@
   height: 100%;
   min-height: 0;
   color: var(--ux-ink);
-  transition: width .6s var(--ux-spring), min-width .6s var(--ux-spring);
+  transition: width .18s var(--ux-ease), min-width .18s var(--ux-ease);
 }
 
 .u040.is-wide { --rw: 200px; }
@@ -54,7 +54,7 @@
   overflow: hidden;
   background: var(--ux-ink);
   color: var(--ux-page);
-  transition: width .6s var(--ux-spring);
+  transition: width .18s var(--ux-ease);
 }
 
 .u040-top {
@@ -91,7 +91,7 @@
 }
 
 .u040-tog svg {
-  transition: transform .5s var(--ux-spring);
+  transition: transform .18s var(--ux-ease);
 }
 
 .u040.is-wide .u040-tog svg { transform: rotate(180deg); }
@@ -129,7 +129,7 @@
   border-radius: 0;
   background: color-mix(in srgb, var(--ux-page) 15%, transparent);
   transform: translateY(var(--u040-y));
-  transition: transform .5s var(--ux-spring);
+  transition: transform .18s var(--ux-ease);
   pointer-events: none;
 }
 
@@ -194,8 +194,8 @@
 .u040.is-wide .u040-it span {
   opacity: 1;
   transform: none;
-  transition: opacity .3s var(--ux-ease), transform .5s var(--ux-spring);
-  transition-delay: calc(.12s + var(--i) * 35ms);
+  transition: opacity .3s var(--ux-ease), transform .18s var(--ux-ease);
+  transition-delay: 0s;
 }
 
 @media (hover: none) and (min-width: 960px) {
@@ -225,7 +225,7 @@
     width: var(--u040-highlight-width);
     height: 58px;
     transform: translateX(var(--u040-x));
-    transition: transform .5s var(--ux-spring);
+    transition: transform .18s var(--ux-ease);
   }
 
   .u040-hl::before {

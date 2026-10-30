@@ -1,3 +1,4 @@
+import { getJobName } from '../../data/jobNames';
 import { useState, useRef, useEffect, type KeyboardEvent } from 'react';
 import { Swords, Hammer, Leaf, ChevronDown, Check, RotateCcw } from 'lucide-react';
 import { JOBS, getJobMaxLevel } from '../../data/jobs';
@@ -43,9 +44,7 @@ export function JobSelectionSection() {
     }, []);
 
     const getJobDisplayName = (job: typeof JOBS[0]) => {
-        if (lang === 'ko') return job.nameKr;
-        if (lang === 'ja') return job.nameJa;
-        return job.nameEn;
+        return getJobName(job, lang, true);
     };
 
     const selectedMainJob = JOBS.find(job => job.id === playerInfo.mainJob);

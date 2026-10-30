@@ -111,7 +111,7 @@ test('all locales retain readable, accessible preset controls at narrow widths a
     ] as const;
     for (const locale of locales) {
         await page.setViewportSize({ width: 1440, height: 1000 });
-        if (locale.switch) await page.getByRole('button', { name: locale.switch, exact: true }).click();
+        await page.locator('header select').selectOption(locale.lang);
         await page.locator('#profile-tab-design').click();
         const picker = page.getByRole('group', { name: presetCopy[locale.lang].title, exact: true });
         await expect(picker).toBeVisible();

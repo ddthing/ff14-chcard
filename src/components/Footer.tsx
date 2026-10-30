@@ -1,3 +1,4 @@
+import { navigationCopy } from '../utils/localeExtras';
 import { Link } from 'react-router-dom';
 import { usePlayerSelector } from '../contexts/PlayerContext';
 import { i18n } from '../utils/i18n';
@@ -22,7 +23,7 @@ export function Footer() {
                     {t.projectNotice}
                 </Link>
 
-                <nav aria-label={lang === 'ko' ? '사이트 안내' : lang === 'ja' ? 'サイト案内' : 'Site navigation'}>
+                <nav aria-label={navigationCopy[lang].nav}>
                     <ul className="flex flex-wrap items-center gap-x-4 gap-y-2 text-[11px] font-medium text-[var(--text-secondary)] md:justify-end">
                         {[
                             { to: '/guide', label: t.guide },
