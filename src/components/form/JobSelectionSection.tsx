@@ -203,8 +203,8 @@ export function JobSelectionSection() {
                 >
                     {t.job}
                 </h2>
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-1">
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-1">
                         <button
                             type="button"
                             onClick={() => handleBulkSelect('battle', 100)}
@@ -234,7 +234,7 @@ export function JobSelectionSection() {
                     <button
                         type="button"
                         onClick={() => handleBulkSelect('clear', 0)}
-                        className="flex items-center gap-1 text-[10px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
+                        className="flex shrink-0 items-center gap-1 whitespace-nowrap text-[10px] font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)]"
                         style={{ color: 'var(--text-muted)' }}
                         onMouseEnter={e => ((e.currentTarget as HTMLButtonElement).style.color = 'var(--destructive)')}
                         onMouseLeave={e => ((e.currentTarget as HTMLButtonElement).style.color = 'var(--text-muted)')}
@@ -307,7 +307,7 @@ export function JobSelectionSection() {
                             aria-label={selectedMainJobName ? `${selectedMainJobName} · ${t.mainJobSelect}` : t.mainJobSelect}
                             className={`${inputClass} flex items-center justify-between cursor-pointer focus-visible:outline-none`}
                         >
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                                 {selectedMainJob ? (() => {
                                     const job = selectedMainJob;
                                     return (

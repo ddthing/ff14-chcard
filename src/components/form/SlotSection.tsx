@@ -389,35 +389,35 @@ export function SlotSection() {
                     slots.map(slot => (
                         <div
                             key={slot.id}
-                            className="group flex items-center justify-between rounded-[10px] p-3 transition-[color,background-color,border-color,box-shadow]"
+                            className="group flex min-w-0 items-center justify-between gap-2 rounded-[10px] p-3 transition-[color,background-color,border-color,box-shadow]"
                             style={{ backgroundColor: 'var(--surface-200)', border: '1px solid var(--border-subtle)' }}
                             onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--border-medium)')}
                             onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--border-subtle)')}
                         >
-                            <div className="flex items-center gap-3">
+                            <div className="flex min-w-0 flex-1 items-center gap-3">
                                 {slot.data.image ? (
                                         <img
                                         src={slot.data.image} 
                                         alt="" 
                                         width={40}
                                         height={40}
-                                        className="h-10 w-10 rounded-[8px] object-cover"
+                                        className="h-10 w-10 shrink-0 rounded-[8px] object-cover"
                                         style={{ border: '1px solid var(--border-subtle)' }} 
                                     />
                                 ) : (
                                     <div 
-                                        className="w-10 h-10 rounded-[8px] flex items-center justify-center text-[9px] font-bold"
+                                        className="w-10 h-10 shrink-0 rounded-[8px] flex items-center justify-center text-[9px] font-bold"
                                         style={{ backgroundColor: 'var(--surface-300)', border: '1px dashed var(--border-medium)', color: 'var(--text-muted)' }}
                                     >
                                         IMG
                                     </div>
                                 )}
-                                <div className="flex flex-col">
-                                    <span className="text-[13px] font-bold" style={{ color: 'var(--text-primary)' }}>{slot.name}</span>
+                                <div className="flex min-w-0 flex-1 flex-col">
+                                    <span className="line-clamp-2 break-all text-[13px] font-bold" title={slot.name} style={{ color: 'var(--text-primary)' }}>{slot.name}</span>
                                     <span className="text-[10px]" style={{ color: 'var(--text-muted)' }}>{slot.date}</span>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-1.5 opacity-100 transition-opacity md:opacity-0 md:group-focus-within:opacity-100 md:group-hover:opacity-100">
+                            <div className="flex shrink-0 items-center gap-1.5">
                                 <button
                                     type="button"
                                     onClick={() => handleLoad(slot)}

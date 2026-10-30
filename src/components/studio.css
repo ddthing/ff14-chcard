@@ -186,3 +186,8 @@
  .image-cropper-controls > div:last-child > div { display:contents; }
  .image-cropper-cancel { display:none; }
 }
+@media (max-width:959px) {
+  .studio-workspace-export .u010-labs { display:none; }
+  .studio-workspace-export .u010-compact-label { display:inline; font-size:12px; white-space:nowrap; }
+  .studio-workspace-export :is(.u010-main,.u010-caret) { height:44px; }
+}
