@@ -306,7 +306,8 @@ test('design and sticker tabs restore their own scroll positions independently',
     await page.setViewportSize({ width: 375, height: 600 });
     await seed(page, { stickers: Array.from({ length: 16 }, (_, index) => ({ id: `scroll-${index}`, url, x: 5 + index * 5, y: 50, scale: 0.5, rotation: 0 })) });
     const sheet = page.getByRole('region', { name: i18n.ko.workspace.editPanel, exact: true });
-    await sheet.getByRole('button', { name: new RegExp(i18n.ko.workspace.changeHeight) }).press('ArrowUp');
+    // Short screens use the same handle as an edit/preview switch.
+    await sheet.locator('.u336-gr').press('ArrowUp');
     const content = page.locator('.studio-tab-content');
 
     await page.locator('#profile-tab-job').click();

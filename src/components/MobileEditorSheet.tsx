@@ -37,9 +37,10 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
     const runtimeRef = useRef<Pick<MobileEditorSheetHandle, 'setDetent' | 'getDetent'> | null>(null);
     const [detent, setDetentState] = useState<MobileEditorDetent>(1);
     const [isMobile, setIsMobile] = useState(false);
+    const [isCompact, setIsCompact] = useState(false);
     const copy = i18n[lang].workspace;
     const detentLabel = copy[DETENT_NAMES[detent]];
-    const handleLabel = `${copy.changeHeight}: ${detentLabel}`;
+    const handleLabel = isCompact ? (detent === 0 ? i18n[lang].studio.edit : i18n[lang].studio.preview) : `${copy.changeHeight}: ${detentLabel}`;
 
     useImperativeHandle(forwardedRef, () => ({
         setDetent(nextDetent) {
@@ -72,6 +73,9 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
         const viewport = window.visualViewport;
         const previousViewportHeight = page.style.getPropertyValue('--studio-visual-viewport-height');
         const previousViewportTop = page.style.getPropertyValue('--studio-visual-viewport-top');
+        const preview = workspace.querySelector<HTMLElement>('#preview-panel');
+        let compact = false;
+        let regularDetent = detentRef.current;
         const detents = [0, 0, 0];
         let y = 0;
         let target = 0;
@@ -103,6 +107,11 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
             root.style.setProperty('--p', progress.toFixed(3));
             workspace.style.setProperty('--studio-editor-progress', progress.toFixed(3));
             workspace.style.setProperty('--studio-sheet-top', `${Math.max(0, y).toFixed(1)}px`);
+            if (preview) {
+                preview.inert = compact && detentRef.current !== 0;
+                if (preview.inert) preview.setAttribute('aria-hidden', 'true');
+                else preview.removeAttribute('aria-hidden');
+            }
         };
 
         const stopAnimation = () => {
@@ -135,7 +144,7 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
                 root.style.removeProperty('transform');
                 return;
             }
-            if (prefersReducedMotion) {
+            if (prefersReducedMotion || compact) {
                 y = target;
                 velocity = 0;
                 paint();
@@ -149,11 +158,17 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
 
         const updateDetents = () => {
             const height = workspace.clientHeight;
-            detents[2] = Math.min(FULL_PEEK_HEIGHT, Math.round(height * 0.12));
-            const collapsedVisible = Math.min(COLLAPSED_HEIGHT, Math.max(128, height * 0.35));
-            detents[0] = Math.max(detents[2], height - collapsedVisible);
-            detents[1] = Math.max(detents[2], Math.min(Math.round(height * 0.5), detents[0] - 40));
-            detents[1] = Math.min(detents[0], detents[1]);
+            if (compact) {
+                detents[0] = Math.max(0, height - 44);
+                detents[1] = 0;
+                detents[2] = 0;
+            } else {
+                detents[2] = Math.min(FULL_PEEK_HEIGHT, Math.round(height * 0.12));
+                const collapsedVisible = Math.min(COLLAPSED_HEIGHT, Math.max(128, height * 0.35));
+                detents[0] = Math.max(detents[2], height - collapsedVisible);
+                detents[1] = Math.max(detents[2], Math.min(Math.round(height * 0.5), detents[0] - 40));
+                detents[1] = Math.min(detents[0], detents[1]);
+            }
             if (!isDragging) {
                 target = detents[detentRef.current];
                 y = target;
@@ -196,7 +211,7 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
         };
 
         const setDetent = (requested: MobileEditorDetent) => {
-            const next = clampDetent(requested);
+            const next = compact && requested > 0 ? 2 : clampDetent(requested);
             detentRef.current = next;
             setDetentState(next);
             target = detents[next];
@@ -210,6 +225,7 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
         };
 
         const onPointerDown = (event: PointerEvent) => {
+            if (compact) return;
             if (!(event.target instanceof Node) || !header.contains(event.target)) return;
             if (!mobileMedia.matches || (event.pointerType === 'mouse' && event.button !== 0)) return;
             if (isDragging) return;
@@ -262,6 +278,10 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
 
         const onHandleClick = (event: MouseEvent) => {
             if (event.detail > 0 && performance.now() - dragEnd < 350) return;
+            if (compact) {
+                setDetent(detentRef.current === 0 ? 2 : 0);
+                return;
+            }
             setDetent(detentRef.current === 2 ? 0 : clampDetent(detentRef.current + 1));
         };
 
@@ -271,7 +291,7 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
                 setDetent(clampDetent(detentRef.current + 1));
             } else if (event.key === 'ArrowDown') {
                 event.preventDefault();
-                setDetent(clampDetent(detentRef.current - 1));
+                setDetent(compact ? 0 : clampDetent(detentRef.current - 1));
             }
         };
 
@@ -286,9 +306,24 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
         const syncResponsiveMode = () => {
             setIsMobile(mobileMedia.matches);
             updatePageViewport();
+            const nextCompact = mobileMedia.matches && (viewport?.height ?? window.innerHeight) <= 600;
+            if (nextCompact !== compact) {
+                if (nextCompact) {
+                    regularDetent = detentRef.current;
+                    detentRef.current = 2;
+                } else {
+                    detentRef.current = regularDetent;
+                }
+                compact = nextCompact;
+                setIsCompact(compact);
+                setDetentState(detentRef.current);
+            }
+            if (compact) page.dataset.compactEditor = 'true';
+            else delete page.dataset.compactEditor;
             if (mobileMedia.matches) {
                 updateDetents();
             } else {
+                if (preview) { preview.inert = false; preview.removeAttribute('aria-hidden'); }
                 stopAnimation();
                 root.style.removeProperty('transform');
                 root.style.removeProperty('--studio-sheet-height');
@@ -299,8 +334,7 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
         };
 
         const onViewportResize = () => {
-            updatePageViewport();
-            updateDetents();
+            syncResponsiveMode();
             scheduleFieldAlignment();
         };
 
@@ -354,6 +388,8 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
             workspace.style.removeProperty('--studio-editor-progress');
             workspace.style.removeProperty('--studio-sheet-top');
             root.style.removeProperty('--studio-sheet-height');
+            delete page.dataset.compactEditor;
+            if (preview) { preview.inert = false; preview.removeAttribute('aria-hidden'); }
         };
     }, []);
 
@@ -364,6 +400,7 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
             role="region"
             aria-label={copy.editPanel}
             data-detent={DETENT_NAMES[detent]}
+            data-compact={isCompact ? 'true' : undefined}
         >
             <div className="studio-mobile-sheet-top">
                 <div className="u336-hd">
@@ -379,6 +416,7 @@ export const MobileEditorSheet = forwardRef<MobileEditorSheetHandle, MobileEdito
                         title={detent === 2 ? copy.collapse : copy.expand}
                     >
                         <span className="sr-only">{handleLabel}</span>
+                        <span className="studio-compact-view-label" aria-hidden="true">{handleLabel}</span>
                     </button>
                 </div>
                 {onStartTour && (

@@ -319,6 +319,7 @@ export function ExportSplitButton({ lang, quality, onQualityChange, onDownload, 
                             </>
                         ) : <span className="u010-label">{saveLabel}</span>}
                     </span>
+                    <span className="u010-compact-label" aria-hidden="true">PNG</span>
                     <span className="u010-bar" aria-hidden="true" />
                 </button>
                 <span id={selectedQualityDescriptionId} className="u010-visually-hidden">{selectedLabel}</span>

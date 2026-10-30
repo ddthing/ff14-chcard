@@ -176,12 +176,12 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
         <div className="fixed inset-0 z-[180] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200" role="dialog" aria-modal="true" aria-labelledby={titleId} aria-describedby={descriptionId} aria-busy={isProcessing}>
             <div 
                 ref={dialogRef}
-                className="image-cropper-dialog w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col h-[min(600px,calc(100dvh-32px))] animate-in zoom-in-[0.98] duration-300"
+                className="image-cropper-dialog w-full max-w-2xl rounded-2xl overflow-hidden flex flex-col h-[min(600px,calc(100dvh-32px))]"
                 style={{ backgroundColor: 'var(--surface-100)', border: '1px solid var(--border-medium)' }}
             >
                 {/* Header */}
                 <div 
-                    className="p-4 shrink-0 flex justify-between items-center [@media(max-height:600px)]:py-3"
+                    className="image-cropper-header p-4 shrink-0 flex justify-between items-center [@media(max-height:600px)]:py-3"
                     style={{ borderBottom: '1px solid var(--border-subtle)' }}
                 >
                     <h2 id={titleId} className="text-lg font-bold" style={{ color: 'var(--text-primary)' }}>
@@ -193,7 +193,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                 </div>
 
                 {/* Cropper Container */}
-                <div className="relative min-h-0 flex-1 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]" style={{ backgroundColor: 'var(--surface-200)' }} tabIndex={0} aria-label={t.dragToMove} onKeyDown={handleCropKeyDown}>
+                <div className="image-cropper-area relative min-h-0 flex-1 overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[var(--border-medium)]" style={{ backgroundColor: 'var(--surface-200)' }} tabIndex={0} aria-label={t.dragToMove} onKeyDown={handleCropKeyDown}>
                     <Cropper
                         image={imageSrc}
                         crop={crop}
@@ -206,7 +206,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                 </div>
 
                 {/* Controls */}
-                <div className="p-6 space-y-6 shrink-0 [@media(max-height:600px)]:p-4 [@media(max-height:600px)]:space-y-3" style={{ backgroundColor: 'var(--surface-100)' }}>
+                <div className="image-cropper-controls p-6 space-y-6 shrink-0 [@media(max-height:600px)]:p-4 [@media(max-height:600px)]:space-y-3" style={{ backgroundColor: 'var(--surface-100)' }}>
                     {/* Zoom Slider */}
                     <div className="flex items-center gap-4">
                         <ZoomIn size={20} aria-hidden="true" style={{ color: 'var(--text-muted)' }} />
@@ -255,7 +255,7 @@ export function ImageCropperModal({ imageSrc, onApply, onCancel, lang, aspectRat
                                 onClick={handleCancel}
                                 type="button"
                                 disabled={isProcessing}
-                                className="flex-1 py-3 rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2"
+                                className="image-cropper-cancel flex-1 py-3 rounded-xl font-semibold text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--border-medium)] focus-visible:ring-offset-2"
                                 style={{ 
                                     backgroundColor: 'transparent', 
                                     border: '1px solid var(--border-medium)', 
