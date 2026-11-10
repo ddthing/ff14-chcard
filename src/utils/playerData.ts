@@ -1,6 +1,7 @@
 import { normalizeLanguage } from './languages';
 import { PROFILE_SCHEMA_VERSION } from '../constants/storage';
 import { JOBS, getJobMaxLevel } from '../data/jobs';
+import { isCardFinish } from '../data/designPresets';
 import { isLocalImageData } from './imageFile';
 import type { ImageCrop, PlayerInfo, Region, Sticker } from '../types';
 
@@ -141,6 +142,7 @@ export function normalizePlayerInfo(value: unknown): PlayerInfo {
         layout: source.layout === 'left-portrait' ? 'left-portrait' : 'header',
         language,
         pointColor,
+        cardFinish: isCardFinish(source.cardFinish) ? source.cardFinish : undefined,
         cornerWash: booleanValue(source.cornerWash),
         jobWatermark: booleanValue(source.jobWatermark),
         stickers: normalizeStickers(source.stickers),

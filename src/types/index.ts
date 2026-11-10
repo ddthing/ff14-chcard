@@ -1,5 +1,6 @@
 export type Region = 'KR' | 'Global';
 export type Language = 'ko' | 'en' | 'ja' | 'fr' | 'de' | 'zh-Hans' | 'zh-Hant';
+export type CardFinish = 'editorial' | 'nocturne' | 'botanica' | 'archive';
 
 export interface Job {
     id: string;
@@ -54,6 +55,7 @@ export interface PlayerInfo {
     layout?: 'header' | 'left-portrait';
     language: Language;
     pointColor: string;
+    cardFinish?: CardFinish;
     cornerWash?: boolean;
     jobWatermark?: boolean;
     stickers?: Sticker[];

@@ -56,3 +56,9 @@ export const presetCopy: Record<Language, PresetCopy> = {
         },
     },
 };
+
+export const resetCardSurfaceCopy: Record<Language, string> = {
+    ko: '기본 카드 표면', en: 'Use basic card surface', ja: '基本のカード表面に戻す',
+    fr: 'Surface de carte de base', de: 'Kartenoberfläche zurücksetzen',
+    'zh-Hans': '恢复默认卡片表面', 'zh-Hant': '恢復預設卡片表面',
+};

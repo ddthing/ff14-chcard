@@ -78,6 +78,46 @@
 .sheet-jobs-paired { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:24px; }
 .sheet-jobs-paired > [data-job-type="battle"] { grid-column:1 / -1; }
 .sheet-jobs-paired > :not([data-job-type="battle"]) .sheet-job-grid { grid-template-columns:repeat(3,minmax(0,1fr)); }
+
+/* Signature looks belong to the exported artwork. The application theme
+   continues to control the classic sheet and the editor surrounding it. */
+.character-sheet[data-card-finish] {
+ --sheet-paper:var(--sheet-finish-paper); --sheet-ink:#282a27; --sheet-muted:#5b5e56;
+ --sheet-line:color-mix(in srgb,var(--sheet-ink) 19%,var(--sheet-paper));
+ --sheet-wash:color-mix(in srgb,var(--sheet-ink) 7%,var(--sheet-paper)); --sheet-job-ink:#282a27;
+ --sheet-paper-texture-opacity:.22; --sheet-paper-texture-filter:none; --sheet-paper-texture-blend:multiply;
+}
+.character-sheet[data-card-finish] .sheet-label { font-size:11px; font-weight:600; }
+.character-sheet[data-card-finish] .sheet-world { font-weight:550; }
+.character-sheet[data-card-finish] .sheet-mainjob { border-inline-start:3px solid var(--sheet-icon); }
+.character-sheet[data-card-finish] .sheet-note > p { font-size:15px; }
+
+.character-sheet[data-card-finish="editorial"] .sheet-body { padding-block-start:30px; }
+.character-sheet[data-card-finish="editorial"] .sheet-profile { padding-block-end:16px; border-block-end:1px solid var(--sheet-line); }
+.character-sheet[data-card-finish="editorial"] .sheet-name { font-size:46px; font-weight:650; letter-spacing:-.035em; }
+.character-sheet[data-card-finish="editorial"] .sheet-mainjob { background:transparent; border-block:0; border-inline-end:0; }
+.character-sheet[data-card-finish="editorial"][data-layout="left-portrait"] .sheet-name { font-size:38px; }
+
+.character-sheet[data-card-finish="nocturne"] {
+ --sheet-ink:#f0f3fa; --sheet-muted:#b9c7d9; --sheet-job-ink:#f0f3fa;
+ --sheet-paper-texture-opacity:.13; --sheet-paper-texture-filter:invert(1); --sheet-paper-texture-blend:screen;
+}
+.character-sheet[data-card-finish="nocturne"] .sheet-mainjob { border-block-color:var(--sheet-line); }
+.character-sheet[data-card-finish="nocturne"] .sheet-world-mark { background:var(--sheet-icon); }
+.character-sheet[data-card-finish="nocturne"] .sheet-name { letter-spacing:-.045em; }
+
+.character-sheet[data-card-finish="botanica"] .sheet-mainjob {
+ background:linear-gradient(100deg,var(--sheet-accent-surface),var(--sheet-paper));
+}
+.character-sheet[data-card-finish="botanica"] .sheet-tags > span { border-inline:0; background:transparent; }
+.character-sheet[data-card-finish="botanica"] .sheet-world-mark { border-radius:50%; transform:none; }
+
+.character-sheet[data-card-finish="archive"] .sheet-profile { padding-block-end:14px; border-block-end:1px dashed var(--sheet-line); }
+.character-sheet[data-card-finish="archive"] .sheet-mainjob { background:transparent; border-style:solid; }
+.character-sheet[data-card-finish="archive"] .sheet-job { border-block-end:1px solid var(--sheet-line); }
+.character-sheet[data-card-finish="archive"] .sheet-footer { border-top-style:dashed; }
+.character-sheet[data-card-finish="archive"] .sheet-name { letter-spacing:-.02em; }
+
 @media (forced-colors:active) {
  .sheet-mainjob,.sheet-tags > span,.sheet-note,.sheet-footer { border-color:CanvasText; }
  .sheet-emblem-icon,.sheet-job-icon { background:CanvasText; forced-color-adjust:none; }
