@@ -1,5 +1,7 @@
 // <!-- Lucian UX/UI Prompt #031 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#031 -->
 import {
+    lazy,
+    Suspense,
     useCallback,
     useEffect,
     useId,
@@ -16,6 +18,7 @@ import type { Language } from '../types';
 import { getFonts, i18n } from '../utils/i18n';
 import './font-picker.css';
 
+const ReaticFontImport = lazy(() => import('./ReaticFontImport'));
 const useSafeLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 const CLOSE_ANIMATION_MS = 450;
 const MENU_GAP = 8;
@@ -326,6 +329,12 @@ export function FontPicker({ value, onChange, lang, active = true, disabled = fa
                     <ChevronDown className="u031-car" size={16} aria-hidden="true" />
                 </button>
             </div>
+
+            {isAvailable && value === 'font-reatic' && (
+                <Suspense fallback={null}>
+                    <ReaticFontImport locale={lang} />
+                </Suspense>
+            )}
 
             {isRendered && active && !disabled && typeof document !== 'undefined' && createPortal(
                 <div

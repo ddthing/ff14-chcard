@@ -59,6 +59,11 @@ export function useFontLoader(fontId: string) {
     useEffect(() => {
         if (!fontId || fontId === 'font-pretendard') return;
         
+        if (fontId === 'font-reatic') {
+            void import('../utils/reaticFont').then(({ ensureReaticFont }) => ensureReaticFont());
+            return;
+        }
+
         const styleId = `dynamic-font-${fontId}`;
         
         // Prevent injecting the same font multiple times

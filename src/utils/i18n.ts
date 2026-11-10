@@ -98,6 +98,7 @@ const baseI18n = {
             saveImage: '이미지 저장',
             exportErrorCors: '저장 실패 — 브라우저 보안 정책 충돌.\nChrome 사용을 권장하며, 브라우저 확장 프로그램이 활성화된 경우 잠시 꺼보세요.',
             exportErrorGeneric: '저장에 실패했습니다.',
+            exportErrorReatic: '디자인에서 리틱체 Regular 파일을 등록한 후 다시 저장해 주세요.',
             exportErrorOriginal: '원본 해상도 저장에 실패했습니다. 다른 저장 품질을 선택해 다시 시도해주세요.',
             errorDetails: '세부 정보',
             reset: '초기화',
@@ -373,6 +374,7 @@ const baseI18n = {
             saveImage: 'Save Image',
             exportErrorCors: 'Save failed — a browser security policy blocked the export.\nChrome is recommended. If browser extensions are active, try disabling them temporarily.',
             exportErrorGeneric: 'Save failed.',
+            exportErrorReatic: 'Add the REATIC Regular file in Design, then save again.',
             exportErrorOriginal: 'Original-resolution export failed. Choose another export quality and try again.',
             errorDetails: 'Details',
             reset: 'Reset',
@@ -647,6 +649,7 @@ const baseI18n = {
             saveImage: '画像を保存',
             exportErrorCors: '保存に失敗しました — ブラウザのセキュリティポリシーにより書き出しがブロックされました。\nChromeの利用をおすすめします。ブラウザ拡張機能が有効な場合は、一時的に無効にしてお試しください。',
             exportErrorGeneric: '保存に失敗しました。',
+            exportErrorReatic: 'デザインでリティック体の Regular ファイルを登録してから、再度保存してください。',
             exportErrorOriginal: '元の解像度での保存に失敗しました。別の保存画質を選択して、もう一度お試しください。',
             errorDetails: '詳細',
             reset: 'リセット',
@@ -935,6 +938,7 @@ export const FONTS_KO = [
     { id: 'font-cookierun', name: '쿠키런' },
     { id: 'font-galmuri9', name: '갈무리9' },
     { id: 'font-seogung', name: '서궁' },
+    { id: 'font-reatic', name: '리틱체' },
     { id: 'font-cloudsanscode', name: '구름 산스 코드' }
 ];
 
@@ -952,6 +956,7 @@ export const FONTS_EN = [
     { id: 'font-cookierun', name: 'CookieRun' },
     { id: 'font-galmuri9', name: 'Galmuri9' },
     { id: 'font-seogung', name: 'Seogung' },
+    { id: 'font-reatic', name: 'REATIC' },
     { id: 'font-cloudsanscode', name: 'Cloud Sans Code' }
 ];
 
@@ -969,6 +974,7 @@ export const FONTS_JA = [
     { id: 'font-cookierun', name: 'クッキーラン' },
     { id: 'font-galmuri9', name: 'ガルムリ9' },
     { id: 'font-seogung', name: '西宮' },
+    { id: 'font-reatic', name: 'リティック体' },
     { id: 'font-cloudsanscode', name: 'クルムSansコード' }
 ];
 

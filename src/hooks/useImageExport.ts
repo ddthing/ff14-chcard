@@ -3,7 +3,7 @@ import { canvasToPngBlob } from '../utils/png';
 import { getExportDimensions, getOriginalImagePixelRatio, type ExportQuality } from '../utils/exportDimensions';
 interface UseImageExportOptions {
     filename?: string; pixelRatio?: ExportQuality; onError?: (message: string) => void;
-    errorCopy?: { cors: string; generic: string; details: string; original?: string };
+    errorCopy?: { cors: string; generic: string; details: string; original?: string; reatic?: string };
 }
 async function verifyPngDimensions(blob: Blob, expectedWidth: number, expectedHeight: number) {
     const header = new Uint8Array(await blob.slice(0, 24).arrayBuffer());
@@ -159,6 +159,13 @@ export function useImageExport({ filename = 'ff14-card', pixelRatio = 2, onError
         if (!node || exportingRef.current) return false;
         exportingRef.current = true;
         try {
+            if (node.classList.contains('font-reatic')) {
+                const { ensureReaticFont } = await import('../utils/reaticFont');
+                if (!await ensureReaticFont()) {
+                    onError?.(errorCopy?.reatic ?? 'Add the REATIC Regular file before saving.');
+                    return false;
+                }
+            }
             const { toCanvas, getFontEmbedCSS } = await import('html-to-image');
             await document.fonts?.ready;
             await Promise.all(Array.from(node.querySelectorAll('img')).map(image => image.decode()));

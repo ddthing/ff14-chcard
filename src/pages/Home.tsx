@@ -64,7 +64,7 @@ function EditorHome() {
     const exportErrorHandledRef = useRef(false);
     const { exportRef, download } = useImageExport({
         filename: 'ff14-' + (name || 'sheet'), pixelRatio,
-        errorCopy: { cors: i18n[language].layout.exportErrorCors, generic: i18n[language].layout.exportErrorGeneric, original: i18n[language].layout.exportErrorOriginal, details: i18n[language].layout.errorDetails },
+        errorCopy: { cors: i18n[language].layout.exportErrorCors, generic: i18n[language].layout.exportErrorGeneric, original: i18n[language].layout.exportErrorOriginal, details: i18n[language].layout.errorDetails, reatic: i18n[language].layout.exportErrorReatic },
         onError: message => {
             exportErrorHandledRef.current = true;
             if (exportToastRef.current) updateToast(exportToastRef.current, message, 'error');
