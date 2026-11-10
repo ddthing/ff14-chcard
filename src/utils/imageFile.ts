@@ -1,6 +1,16 @@
 export type ImageFileErrorCode = 'invalid-type' | 'read-failed' | 'aborted';
 export type ImageReadPhase = 'reading' | 'validating';
 
+const MAX_IMAGE_BYTES = 32 * 1024 * 1024;
+const MAX_IMAGE_PIXELS = 64_000_000;
+const MAX_ENCODED_IMAGE_LENGTH = Math.ceil(MAX_IMAGE_BYTES / 3) * 4 + 256;
+
+export function isLocalImageData(value: unknown): value is string {
+    return typeof value === 'string'
+        && value.length <= MAX_ENCODED_IMAGE_LENGTH
+        && /^data:image\/[a-z\d.+-]+;base64,[a-z\d+/]/i.test(value);
+}
+
 export interface ReadImageFileOptions {
     signal?: AbortSignal;
     onProgress?: (loaded: number, total: number) => void;
@@ -83,6 +93,7 @@ function validateImageDecodes(dataUrl: string, signal?: AbortSignal): Promise<vo
         }
 
         image.onload = () => image.naturalWidth > 0 && image.naturalHeight > 0
+            && image.naturalWidth * image.naturalHeight <= MAX_IMAGE_PIXELS
             ? finish(resolve)
             : finish(() => reject(new ImageFileError('read-failed')));
         image.onerror = () => finish(() => reject(new ImageFileError('read-failed')));
@@ -116,6 +127,7 @@ function yieldForProgressRender(signal?: AbortSignal): Promise<void> {
 
 export async function readImageFile(file: File, options: ReadImageFileOptions = {}): Promise<string> {
     if (!file.type.startsWith('image/')) throw new ImageFileError('invalid-type');
+    if (!file.size || file.size > MAX_IMAGE_BYTES) throw new ImageFileError('read-failed');
 
     const dataUrl = await readBlobAsDataUrl(file, options);
     // Let React paint the last measured FileReader bytes before switching to

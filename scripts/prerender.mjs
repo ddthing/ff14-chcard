@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, unlink, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
@@ -38,3 +38,18 @@ for (const route of publicRoutes) {
     await writeFile(outputPath, createPage(template, page), 'utf8');
     console.log(`prerendered ${route} -> ${outputPath}`);
 }
+
+// Start fetching the editor as soon as the home document is parsed. The
+// informational routes keep their independent, smaller bundles.
+const manifestPath = join(distDirectory, '.vite', 'manifest.json');
+const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
+const editor = Object.values(manifest).find(chunk => chunk.isDynamicEntry && chunk.name === 'Home');
+if (!editor?.file) throw new Error('Editor chunk is missing from the client manifest');
+const preloads = [
+    `<link rel="modulepreload" crossorigin href="/${editor.file}">`,
+    ...(editor.imports ?? []).filter(key => key !== 'index.html')
+        .map(key => `<link rel="modulepreload" crossorigin href="/${manifest[key].file}">`),
+    ...(editor.css ?? []).map(file => `<link rel="preload" as="style" href="/${file}">`),
+];
+await writeFile(join(distDirectory, 'index.html'), template.replace('</head>', `  ${preloads.join('\n  ')}\n</head>`), 'utf8');
+await unlink(manifestPath);

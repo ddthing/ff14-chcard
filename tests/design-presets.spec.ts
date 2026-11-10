@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import type { PlayerInfo } from '../src/types';
 import { DESIGN_PRESETS } from '../src/data/designPresets';
 import { presetCopy } from '../src/utils/presetCopy';
-import { readStoredValue, seed } from './helpers';
+import { exportPng, pixels, readStoredValue, seed } from './helpers';
 
 test('signature looks preserve the profile and media, undo atomically, and survive reload', async ({ page }) => {
     const stickerUrl = 'data:image/svg+xml;base64,' + Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40"><circle cx="20" cy="20" r="18" fill="purple"/></svg>').toString('base64');
@@ -21,6 +21,7 @@ test('signature looks preserve the profile and media, undo atomically, and survi
         await button.click();
         await expect(button).toHaveAttribute('aria-pressed', 'true');
         await expect(card).toHaveAttribute('data-layout', preset.settings.layout);
+        await expect(card).toHaveAttribute('data-card-finish', preset.id);
         await expect(card).toHaveClass(new RegExp(preset.settings.font));
         await expect.poll(async () => (await readStoredValue<PlayerInfo>(page, 'currentProfile'))?.pointColor).toBe(preset.settings.pointColor);
         const current = (await readStoredValue<PlayerInfo>(page, 'currentProfile'))!;
@@ -52,6 +53,28 @@ test('signature looks preserve the profile and media, undo atomically, and survi
     await page.locator('#profile-tab-design').click();
     await expect(picker.locator('[data-preset="botanica"]')).toHaveAttribute('aria-pressed', 'true');
     await expect(card.locator('[data-sticker-id="kept-sticker"]')).toHaveCount(1);
+});
+
+test('signature finishes change exported artwork and keep the photo and app theme independent', async ({ page }) => {
+    await seed(page);
+    await page.locator('#profile-tab-design').click();
+    const picker = page.getByTestId('design-presets');
+    const card = page.locator('#card-preview');
+    const photo = await card.locator('.sheet-image > img').getAttribute('src');
+    for (const [id, dark] of [['editorial', false], ['nocturne', true]] as const) {
+        await picker.locator(`[data-preset="${id}"]`).click();
+        const background = await card.locator('.sheet-body').evaluate(node => getComputedStyle(node).backgroundColor);
+        const png = await exportPng(page);
+        const x = png.width - 12;
+        const y = png.height - 12;
+        const [pixel] = await pixels(page, png.png, [{ x, y, width: 1, height: 1 }]);
+        expect(pixel[0] < 120).toBe(dark);
+        await page.locator('header button[aria-pressed]').click();
+        expect(await card.locator('.sheet-body').evaluate(node => getComputedStyle(node).backgroundColor)).toBe(background);
+        await expect(card.locator('.sheet-image > img')).toHaveAttribute('src', photo!);
+    }
+    await page.getByRole('button', { name: '기본 카드 표면' }).click();
+    await expect(card).not.toHaveAttribute('data-card-finish');
 });
 
 test('a preset that only changes color stays separate from edits before and after it', async ({ page }) => {

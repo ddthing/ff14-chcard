@@ -1,6 +1,7 @@
 // Lucian UX/UI Prompt #122 · MIT License (c) 2026 Seokwoooo · https://lucianlabs.dev/uxui-prompt/#122
 import { lazy, Suspense, forwardRef, useCallback, useMemo, useRef, useState, type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type PointerEvent as ReactPointerEvent } from 'react';
 import { JOBS } from '../data/jobs';
+import { CARD_FINISH_PAPER } from '../data/designPresets';
 import { ImagePlus, Maximize2, X, RotateCw } from 'lucide-react';
 import { i18n } from '../utils/i18n';
 import { CardProfileHeader } from './preview/CardProfileHeader';
@@ -48,8 +49,10 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
     const lang = playerInfo.language;
     const t = i18n[lang].preview;
     const pointColor = /^#[0-9a-f]{6}$/i.test(playerInfo.pointColor) ? playerInfo.pointColor : '#57534e';
-    const lightAccentSurface = getAccentSurface(pointColor, '#ffffff');
-    const darkAccentSurface = getAccentSurface(pointColor, '#252b24');
+    const finish = playerInfo.cardFinish;
+    const finishPaper = finish ? CARD_FINISH_PAPER[finish] : undefined;
+    const lightAccentSurface = getAccentSurface(pointColor, finishPaper ?? '#ffffff');
+    const darkAccentSurface = getAccentSurface(pointColor, finishPaper ?? '#252b24');
 
     const imageTriggerRef = useRef<HTMLButtonElement>(null);
     const constraintsRef = useRef<HTMLDivElement>(null);
@@ -254,6 +257,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
             className={'card-preview character-sheet max-w-none overflow-hidden relative flex origin-top ' + (playerInfo.layout === 'left-portrait' ? 'w-[880px] flex-row min-h-[720px] ' : 'w-[700px] flex-col ') + font}
             style={{
                 '--sheet-accent': pointColor,
+                '--sheet-finish-paper': finishPaper,
                 '--sheet-accent-surface-light': lightAccentSurface,
                 '--sheet-accent-surface-dark': darkAccentSurface,
                 '--sheet-icon-light': getAccessibleAccentColor(pointColor, lightAccentSurface),
@@ -261,7 +265,7 @@ export const CardPreview = forwardRef<HTMLDivElement, CardPreviewProps>(({ id, o
                 '--sheet-accent-text-light': getAccessibleAccentColor(pointColor, lightAccentSurface, 4.5),
                 '--sheet-accent-text-dark': getAccessibleAccentColor(pointColor, darkAccentSurface, 4.5),
             } as CSSProperties}
-            ref={ref} id={id} data-layout={playerInfo.layout || 'header'}
+            ref={ref} id={id} data-layout={playerInfo.layout || 'header'} data-card-finish={finish}
         >
             {cropImageSrc && (
                 <Suspense fallback={null}><ImageCropperModal

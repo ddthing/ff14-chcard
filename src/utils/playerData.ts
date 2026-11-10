@@ -1,6 +1,8 @@
 import { normalizeLanguage } from './languages';
 import { PROFILE_SCHEMA_VERSION } from '../constants/storage';
 import { JOBS, getJobMaxLevel } from '../data/jobs';
+import { isCardFinish } from '../data/designPresets';
+import { isLocalImageData } from './imageFile';
 import type { ImageCrop, PlayerInfo, Region, Sticker } from '../types';
 
 const JOB_IDS = new Set(JOBS.map(job => job.id));
@@ -78,7 +80,7 @@ function normalizeStickers(value: unknown): Sticker[] {
     if (!Array.isArray(value)) return [];
 
     return value.flatMap((candidate, index) => {
-        if (!isRecord(candidate) || typeof candidate.url !== 'string' || candidate.url.length === 0) return [];
+        if (!isRecord(candidate) || !isLocalImageData(candidate.url)) return [];
 
         return [{
             id: stringValue(candidate.id, `migrated-sticker-${index}`),
@@ -113,8 +115,8 @@ export function normalizePlayerInfo(value: unknown): PlayerInfo {
     const font = typeof source.font === 'string' && FONT_IDS.has(source.font)
         ? source.font
         : DEFAULT_PLAYER_INFO.font;
-    const image = typeof source.image === 'string' && source.image.length > 0 ? source.image : undefined;
-    const originalImage = image && typeof source.originalImage === 'string' && source.originalImage.length > 0
+    const image = isLocalImageData(source.image) ? source.image : undefined;
+    const originalImage = image && isLocalImageData(source.originalImage)
         ? source.originalImage : undefined;
 
     return {
@@ -140,6 +142,7 @@ export function normalizePlayerInfo(value: unknown): PlayerInfo {
         layout: source.layout === 'left-portrait' ? 'left-portrait' : 'header',
         language,
         pointColor,
+        cardFinish: isCardFinish(source.cardFinish) ? source.cardFinish : undefined,
         cornerWash: booleanValue(source.cornerWash),
         jobWatermark: booleanValue(source.jobWatermark),
         stickers: normalizeStickers(source.stickers),

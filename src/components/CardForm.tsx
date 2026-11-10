@@ -389,6 +389,7 @@ export function CardForm({ activeTab: controlledTab, onTabChange, externalNaviga
                             player={playerInfo}
                             lang={lang}
                             onSelect={preset => commitPlayerChange(previous => ({ ...previous, ...preset.settings }))}
+                            onResetSurface={() => commitPlayerChange(previous => ({ ...previous, cardFinish: undefined }))}
                         />
                         {/* Point Color ──────────────────────────────────────── */}
                         <Section title={t.pointColor}>

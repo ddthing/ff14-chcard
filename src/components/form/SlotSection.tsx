@@ -5,12 +5,14 @@ import type { PlayerInfo } from '../../types';
 import { Button } from '../ui/Button';
 import { i18n } from '../../utils/i18n';
 import { normalizePlayerInfo } from '../../utils/playerData';
+import { isLocalImageData } from '../../utils/imageFile';
 import { readStoredValue, writeStoredValue } from '../../utils/profileStorage';
 
 const SLOTS_STORAGE_KEY = 'slots';
 const LEGACY_SLOTS_STORAGE_KEY = 'ff14-chcard-slots';
 const PENDING_SLOTS_STORAGE_KEY = 'ff14-chcard-slots-pending';
 const LOCAL_STORAGE_FALLBACK_LIMIT = 1_000_000;
+const MAX_BACKUP_BYTES = 256 * 1024 * 1024;
 
 interface SlotData {
     id: string;
@@ -34,6 +36,14 @@ function normalizeSlots(value: unknown): SlotData[] {
             data: normalizePlayerInfo(record.data),
         }];
     });
+}
+
+function hasInvalidBackupMedia(value: unknown): boolean {
+    if (typeof value !== 'object' || value === null) return false;
+    const { image, originalImage, stickers } = value as Record<string, unknown>;
+    const invalid = (media: unknown) => media != null && media !== '' && !isLocalImageData(media);
+    return invalid(image) || invalid(originalImage) || (Array.isArray(stickers) &&
+        stickers.some(sticker => sticker && typeof sticker === 'object' && invalid(sticker.url)));
 }
 
 function readLocalStorageValue(key: string): { available: true; value: string | null } | { available: false } {
@@ -298,10 +308,15 @@ export function SlotSection() {
 
         await runBusy(async () => {
             try {
+                if (file.size > MAX_BACKUP_BYTES) throw new Error('backup too large');
                 const parsed: unknown = JSON.parse(await file.text());
                 if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) throw new Error('invalid backup');
                 const record = parsed as Record<string, unknown>;
                 if (record.format !== 'ff14-chcard-backup') throw new Error('invalid backup');
+                if (hasInvalidBackupMedia(record.currentProfile) || (Array.isArray(record.slots) &&
+                    record.slots.some(slot => slot && typeof slot === 'object' && hasInvalidBackupMedia(slot.data)))) {
+                    throw new Error('invalid backup media');
+                }
                 const importedSlots = normalizeSlots(record.slots);
                 if (!window.confirm(t.importConfirm)) return;
                 if (!await saveSlots(importedSlots)) return;
