@@ -156,6 +156,7 @@ export default {
         "saveImage": "儲存圖片",
         "exportErrorCors": "儲存失敗，瀏覽器安全原則阻擋了匯出。請嘗試 Chrome，或暫時停用瀏覽器擴充功能。",
         "exportErrorGeneric": "儲存失敗。",
+        "exportErrorReatic": "請先在設計中新增 REATIC Regular 字型檔，再儲存。",
         "exportErrorOriginal": "原始解析度匯出失敗，請選擇其他品質後重試。",
         "errorDetails": "詳細資訊",
         "reset": "重設",

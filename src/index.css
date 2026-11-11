@@ -135,6 +135,7 @@ button:not(:disabled),
 .card-preview.font-cookierun, .card-preview.font-cookierun *       { font-family: 'CookieRun', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
 .card-preview.font-galmuri9, .card-preview.font-galmuri9 *         { font-family: 'Galmuri9', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
 .card-preview.font-seogung, .card-preview.font-seogung *           { font-family: 'Seogung', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
+.card-preview.font-reatic, .card-preview.font-reatic * { font-family: 'Reatic Card Local', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
 .card-preview.font-cloudsanscode, .card-preview.font-cloudsanscode * { font-family: 'CloudSansCode', 'Pretendard', 'Meiryo', 'Microsoft YaHei', 'Microsoft JhengHei', 'PingFang SC', 'PingFang TC', sans-serif !important; }
 
 /* ===== Utilities ===== */

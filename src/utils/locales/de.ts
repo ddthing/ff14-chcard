@@ -156,6 +156,7 @@ export default {
         "saveImage": "Bild speichern",
         "exportErrorCors": "Eine Browser-Sicherheitsrichtlinie blockiert den Export. Versuche Chrome oder deaktiviere Erweiterungen vorübergehend.",
         "exportErrorGeneric": "Speichern fehlgeschlagen.",
+        "exportErrorReatic": "Füge die REATIC-Regular-Datei unter Design hinzu und speichere erneut.",
         "exportErrorOriginal": "Export in Originalauflösung fehlgeschlagen. Wähle eine andere Qualität und versuche es erneut.",
         "errorDetails": "Details",
         "reset": "Zurücksetzen",

@@ -1,0 +1,45 @@
+.reatic-font-import {
+  display: grid;
+  gap: 4px;
+  margin-block: 6px;
+  color: inherit;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+.reatic-font-import p {
+  margin: 0;
+}
+
+.reatic-font-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 10px;
+}
+
+.reatic-font-actions button,
+.reatic-font-actions a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: inherit;
+}
+
+.reatic-font-actions button {
+  padding-inline: 10px;
+  border: 1px solid currentColor;
+  border-radius: 6px;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+.reatic-font-actions button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
+
+.reatic-font-actions a {
+  text-decoration: underline;
+}

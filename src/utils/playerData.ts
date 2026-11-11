@@ -21,6 +21,7 @@ const FONT_IDS = new Set([
     'font-galmuri9',
     'font-seogung',
     'font-cloudsanscode',
+    'font-reatic',
 ]);
 
 export const DEFAULT_PLAYER_INFO: PlayerInfo = {

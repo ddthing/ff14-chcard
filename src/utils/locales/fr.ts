@@ -156,6 +156,7 @@ export default {
         "saveImage": "Enregistrer l’image",
         "exportErrorCors": "Échec : une règle de sécurité du navigateur bloque l’export. Essayez Chrome ou désactivez temporairement les extensions.",
         "exportErrorGeneric": "Échec de l’enregistrement.",
+        "exportErrorReatic": "Ajoutez le fichier REATIC Regular dans l’onglet Design, puis réessayez.",
         "exportErrorOriginal": "Échec à la résolution d’origine. Choisissez une autre qualité et réessayez.",
         "errorDetails": "Détails",
         "reset": "Réinitialiser",

@@ -156,6 +156,7 @@ export default {
         "saveImage": "保存图片",
         "exportErrorCors": "保存失败，浏览器安全策略阻止了导出。请尝试 Chrome，或暂时停用浏览器扩展。",
         "exportErrorGeneric": "保存失败。",
+        "exportErrorReatic": "请先在设计中添加 REATIC Regular 字体文件，再保存。",
         "exportErrorOriginal": "原始分辨率导出失败，请选择其他质量后重试。",
         "errorDetails": "详情",
         "reset": "重置",
